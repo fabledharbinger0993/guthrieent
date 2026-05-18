@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book DJ Cam · Guthrie Entertainment</title>
+  <meta name="description" content="Book Guthrie Entertainment for your next event — DJ services and full event sound in Philadelphia. Request a consult in minutes." />
+  <link rel="canonical" href="https://guthrieent.com/consult.html" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://guthrieent.com/consult.html" />
+  <meta property="og:title" content="Book DJ Cam · Guthrie Entertainment" />
+  <meta property="og:description" content="Request a consult for DJ services and event sound in Philadelphia." />
+  <meta property="og:image" content="https://guthrieent.com/logo-guthrie.png" />
+  <meta name="twitter:card" content="summary" />
+
+  <link rel="icon" type="image/png" href="logo-guthrie.png" />
+  <link rel="apple-touch-icon" href="logo-guthrie.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── TOKENS ─────────────────────────────────────────── */
+    :root {
+      --bg:        #0a0a09;
+      --surface:   #111110;
+      --border:    #2a2925;
+      --border-hi: #c9a84c;
+      --gold:      #c9a84c;
+      --gold-dim:  #8a6e2a;
+      --cream:     #f0e8d0;
+      --muted:     #6b6456;
+      --error:     #c0392b;
+      --radius:    4px;
+      --font-head: 'Bebas Neue', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    /* ── RESET ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    /* ── BASE ───────────────────────────────────────────── */
+    body {
+      background: var(--bg);
+      color: var(--cream);
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── HERO HEADER ────────────────────────────────────── */
+    .hero {
+      position: relative;
+      padding: 64px 24px 48px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 2px;
+      background: var(--gold);
+    }
+
+    /* ambient glow behind header */
+    .hero-glow {
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-family: var(--font-head);
+      font-size: clamp(52px, 10vw, 96px);
+      letter-spacing: 0.02em;
+      line-height: 0.9;
+      color: var(--cream);
+    }
+
+    .hero h1 span {
+      color: var(--gold);
+    }
+
+    .hero-sub {
+      margin-top: 20px;
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--muted);
+      max-width: 480px;
+      margin-inline: auto;
+    }
+
+    /* ── LAYOUT ─────────────────────────────────────────── */
+    .page {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+
+    /* ── SECTION LABELS ─────────────────────────────────── */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--border), transparent);
+    }
+
+    .form-section {
+      margin-bottom: 48px;
+    }
+
+    /* ── FIELD GROUPS ───────────────────────────────────── */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .req {
+      color: var(--gold);
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .hint {
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-style: italic;
+      color: var(--muted);
+      margin-top: 2px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    /* ── INPUTS ─────────────────────────────────────────── */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="date"],
+    input[type="url"],
+    textarea,
+    select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--cream);
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 400;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+    }
+
+    input.error,
+    textarea.error,
+    select.error {
+      border-color: var(--error);
+    }
+
+    .error-msg {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--error);
+      margin-top: 4px;
+      display: none;
+    }
+
+    .error-msg.visible {
+      display: block;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9a84c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    select option {
+      background: #1a1a18;
+    }
+
+    /* ── DATE RANGE TOGGLE ──────────────────────────────── */
+    .date-mode-tabs {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .date-tab {
+      flex: 1;
+      padding: 9px 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .date-tab + .date-tab {
+      border-left: 1px solid var(--border);
+    }
+
+    .date-tab.active {
+      background: var(--gold);
+      color: #0a0a09;
+      font-weight: 500;
+    }
+
+    .date-panel { display: none; }
+    .date-panel.active { display: block; }
+
+    /* ── SERVICE CHECKBOXES ─────────────────────────────── */
+    .check-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .check-item:hover {
+      border-color: var(--border-hi);
+      background: rgba(201,168,76,0.04);
+    }
+
+    .check-item input[type="checkbox"] {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: var(--surface);
+      cursor: pointer;
+      margin-top: 1px;
+      position: relative;
+      transition: all 0.15s;
+    }
+
+    .check-item input[type="checkbox"]:checked {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+
+    .check-item input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 5px;
+      width: 6px; height: 9px;
+      border: 2px solid #0a0a09;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .check-item.checked {
+      border-color: var(--gold-dim);
+      background: rgba(201,168,76,0.06);
+    }
+
+    .check-label {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .check-label strong {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--cream);
+      font-weight: 500;
+    }
+
+    .check-label span {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── RADIO CONSULT ──────────────────────────────────── */
+    .radio-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .radio-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .radio-item:hover { border-color: var(--border-hi); }
+
+    .radio-item input[type="radio"] {
+      appearance: none;
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: var(--surface);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s;
+    }
+
+    .radio-item input[type="radio"]:checked {
+      border-color: var(--gold);
+    }
+
+    .radio-item input[type="radio"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+
+    .radio-item.selected {
+      border-color: var(--gold-dim);
+      background: rgba(201,168,76,0.06);
+    }
+
+    .radio-label strong {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--cream);
+      font-weight: 500;
+    }
+
+    /* ── CONSENT ────────────────────────────────────────── */
+    .consent-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      background: rgba(201,168,76,0.06);
+      border: 1px solid var(--gold-dim);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .consent-box:hover {
+      background: rgba(201,168,76,0.1);
+    }
+
+    .consent-box input[type="checkbox"] {
+      appearance: none;
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+      border: 1px solid var(--gold-dim);
+      border-radius: 2px;
+      background: var(--surface);
+      cursor: pointer;
+      position: relative;
+      margin-top: 2px;
+      transition: all 0.15s;
+    }
+
+    .consent-box input[type="checkbox"]:checked {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+
+    .consent-box input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 5px;
+      width: 6px; height: 9px;
+      border: 2px solid #0a0a09;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .consent-text {
+      font-size: 13px;
+      color: var(--cream);
+      line-height: 1.5;
+    }
+
+    .consent-text em {
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    /* ── SUBMIT ─────────────────────────────────────────── */
+    .submit-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .submit-note {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .btn-submit {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 48px;
+      background: var(--gold);
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--font-head);
+      font-size: 22px;
+      letter-spacing: 0.08em;
+      color: #0a0a09;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.2s;
+    }
+
+    .btn-submit:hover::before {
+      background: rgba(255,255,255,0.12);
+    }
+
+    .btn-submit:active {
+      transform: scale(0.98);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── SUCCESS STATE ──────────────────────────────────── */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 80px 24px;
+    }
+
+    .success-screen.visible {
+      display: block;
+    }
+
+    .success-icon {
+      font-size: 48px;
+      margin-bottom: 24px;
+    }
+
+    .success-screen h2 {
+      font-family: var(--font-head);
+      font-size: 48px;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .success-screen p {
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 380px;
+      margin-inline: auto;
+    }
+
+    /* ── FORM HIDDEN ────────────────────────────────────── */
+    form.hidden { display: none; }
+
+    /* ── FOOTER ─────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+    }
+
+    /* ── RETURN NAV ─────────────────────────────────────── */
+    .back-nav {
+      position: fixed; top: 14px; left: 20px; z-index: 300;
+    }
+    .return-btn {
+      display: block;
+      width: clamp(80px, 9vw, 130px);
+      transition: transform 0.10s ease, filter 0.10s ease;
+    }
+    .return-btn img { display: block; width: 100%; height: auto; }
+    .return-btn:hover {
+      filter: brightness(1.2) drop-shadow(0 0 10px rgba(201,168,76,0.5));
+      transform: scale(1.05);
+    }
+    .return-btn:active {
+      transform: scale(0.93);
+      filter: brightness(0.68);
+      transition-duration: 0.05s;
+    }
+
+    /* ── GEAR BREAKDOWN PANEL ───────────────────────────── */
+    .gear-panel {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--gold-dim);
+      border-radius: var(--radius);
+      margin-bottom: 48px;
+      overflow: hidden;
+    }
+    .gear-panel.visible { display: block; }
+
+    .gear-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+    .gear-panel-header::before {
+      content: ''; position: absolute; top: 0; left: 20px;
+      width: 50px; height: 2px; background: var(--gold);
+    }
+    .gear-panel-title {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--gold-dim);
+    }
+    .gear-panel-edit {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none;
+      padding: 4px 10px;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .gear-panel-edit:hover { color: var(--gold); border-color: var(--gold-dim); }
+
+    .gear-panel-body { padding: 16px 20px 20px; }
+
+    .gear-cat-block { margin-bottom: 16px; }
+    .gear-cat-block:last-child { margin-bottom: 0; }
+
+    .gear-cat-name {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 8px;
+    }
+
+    .gear-item-row {
+      display: flex; justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(42,41,37,0.5);
+      font-family: var(--font-mono); font-size: 12px;
+    }
+    .gear-item-row:last-child { border-bottom: none; }
+    .gear-item-name { color: var(--cream); letter-spacing: 0.06em; }
+    .gear-item-qty  { color: var(--gold); letter-spacing: 0.12em; }
+
+    /* ── HERO LOGO ───────────────────────────────────────── */
+    .hero-logo {
+      width: clamp(150px, 20vw, 260px);
+      display: block;
+      margin: 0 auto 20px;
+      /* logo has black bg — blend it out */
+      mix-blend-mode: lighten;
+    }
+
+    /* ── OSOS SIGNOFF ────────────────────────────────────── */
+    .osos-signoff {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .osos-signoff p {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .osos-signoff img {
+      width: clamp(140px, 22vw, 220px);
+      opacity: 0.85;
+      transition: opacity 0.2s;
+    }
+
+    .osos-signoff img:hover { opacity: 1; }
+
+    /* ── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 540px) {
+      .field-row { grid-template-columns: 1fr; }
+      .radio-row { flex-direction: column; }
+    }
+
+    /* ── ANIMATIONS ─────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-logo { animation: fadeUp 0.5s ease both; }
+    .hero-sub  { animation: fadeUp 0.5s 0.15s ease both; }
+    .page      { animation: fadeUp 0.5s 0.25s ease both; }
+  </style>
+</head>
+<body>
+
+<nav class="back-nav">
+  <a href="index.html" class="return-btn" aria-label="Return to Osos Discos">
+    <img src="btn-navigate-osos.png" alt="Return" />
+  </a>
+</nav>
+
+<!-- HEADER -->
+<header class="hero">
+  <div class="hero-glow"></div>
+  <img class="hero-logo" src="logo-guthrie.png" alt="Guthrie Entertainment" />
+  <p class="hero-sub">Fill out the form below and we'll be in touch within 48 hours to talk details.</p>
+</header>
+
+<!-- MAIN -->
+<main class="page">
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">✦</div>
+    <h2>You're In.</h2>
+    <p>Your booking request has been received. Check your inbox — a confirmation copy is headed your way. We'll follow up within 48 hours.</p>
+  </div>
+
+  <!-- FORM -->
+  <form id="bookingForm" novalidate>
+
+    <!-- Honeypot: hidden from humans, bots fill it. Submissions with this filled are silently dropped. -->
+    <div style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+      <label>Leave this field empty
+        <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+      </label>
+    </div>
+
+    <!-- GEAR BREAKDOWN (populated from sessionStorage if arriving from gear.html) -->
+    <div class="gear-panel" id="gearPanel">
+      <div class="gear-panel-header">
+        <span class="gear-panel-title">Gear Builder Selection</span>
+        <a href="gear.html" class="gear-panel-edit">Edit Selection →</a>
+      </div>
+      <div class="gear-panel-body" id="gearPanelBody"></div>
+    </div>
+
+    <!-- 01 · WHO YOU ARE -->
+    <div class="form-section">
+      <p class="section-label">01 · Who You Are</p>
+
+      <div class="field-group">
+        <label for="name">Full Name <span class="req">*</span></label>
+        <input type="text" id="name" name="name" placeholder="First & Last" autocomplete="name" required />
+        <span class="error-msg" id="name-err">Name is required.</span>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="(555) 000-0000" autocomplete="tel" />
+        </div>
+        <div class="field-group">
+          <label for="email">Email Address <span class="req">*</span></label>
+          <input type="email" id="email" name="email" placeholder="you@email.com" autocomplete="email" required />
+          <span class="hint">We'll send you a confirmation</span>
+          <span class="error-msg" id="email-err">A valid email is required.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 · FIND ME ONLINE -->
+    <div class="form-section">
+      <p class="section-label">02 · Find Me Online</p>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="facebook">Facebook Name</label>
+          <input type="text" id="facebook" name="facebook" placeholder="Your name or page" />
+          <span class="hint">as it appears on Facebook</span>
+        </div>
+        <div class="field-group">
+          <label for="instagram">Instagram Handle</label>
+          <input type="text" id="instagram" name="instagram" placeholder="@yourhandle" />
+          <span class="hint">include the @</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 · THE EVENT -->
+    <div class="form-section">
+      <p class="section-label">03 · The Event</p>
+
+      <div class="field-group">
+        <label>Event Date <span class="req">*</span></label>
+
+        <div class="date-mode-tabs" role="tablist">
+          <button type="button" class="date-tab active" data-tab="single" role="tab" aria-selected="true">Single Date</button>
+          <button type="button" class="date-tab" data-tab="range"  role="tab" aria-selected="false">Date Range</button>
+          <button type="button" class="date-tab" data-tab="tbd"    role="tab" aria-selected="false">TBD</button>
+        </div>
+
+        <div class="date-panel active" id="panel-single">
+          <input type="date" id="date-single" name="date_single" />
+        </div>
+
+        <div class="date-panel" id="panel-range">
+          <div class="field-row">
+            <div class="field-group">
+              <label for="date-start">Start Date</label>
+              <input type="date" id="date-start" name="date_start" />
+            </div>
+            <div class="field-group">
+              <label for="date-end">End Date</label>
+              <input type="date" id="date-end" name="date_end" />
+            </div>
+          </div>
+        </div>
+
+        <div class="date-panel" id="panel-tbd">
+          <div class="field-group">
+            <label for="date-tbd-note">Timeframe or Notes</label>
+            <input type="text" id="date-tbd-note" name="date_tbd_note" placeholder="e.g. Late summer 2025, holiday weekend…" />
+          </div>
+        </div>
+
+        <span class="error-msg" id="date-err">Please provide an event date or timeframe.</span>
+      </div>
+
+      <div class="field-group">
+        <label for="location">Event Location <span class="req">*</span></label>
+        <input type="text" id="location" name="location" placeholder="Venue name, city, or address" required />
+        <span class="error-msg" id="location-err">Location is required.</span>
+      </div>
+    </div>
+
+    <!-- 04 · SERVICES NEEDED -->
+    <div class="form-section">
+      <p class="section-label">04 · Services Needed <span class="req" style="margin-left:4px; font-size:12px;">*</span></p>
+
+      <div class="check-group" id="servicesGroup">
+        <label class="check-item" id="ci-dj">
+          <input type="checkbox" name="service_dj" value="dj" />
+          <span class="check-label">
+            <strong>DJ Services</strong>
+            <span>Music programming, mixing, and MC if needed</span>
+          </span>
+        </label>
+        <label class="check-item" id="ci-audio">
+          <input type="checkbox" name="service_audio" value="audio" />
+          <span class="check-label">
+            <strong>Audio Equipment</strong>
+            <span>PA system, speakers, subwoofers, mics</span>
+          </span>
+        </label>
+        <label class="check-item" id="ci-both">
+          <input type="checkbox" name="service_both" value="both" />
+          <span class="check-label">
+            <strong>DJ + Full Audio Package</strong>
+            <span>Complete sound solution — equipment and performance</span>
+          </span>
+        </label>
+      </div>
+      <span class="error-msg" id="service-err">Please select at least one service.</span>
+    </div>
+
+    <!-- 05 · BUDGET & NOTES -->
+    <div class="form-section">
+      <p class="section-label">05 · Budget &amp; Notes</p>
+
+      <div class="field-group">
+        <label for="budget">Estimated Budget</label>
+        <select id="budget" name="budget">
+          <option value="" disabled selected>Select a range</option>
+          <option value="under500">Under $500</option>
+          <option value="500-1000">$500 – $1,000</option>
+          <option value="1000-2000">$1,000 – $2,000</option>
+          <option value="2000-3500">$2,000 – $3,500</option>
+          <option value="3500+">$3,500+</option>
+          <option value="flexible">Flexible / Let's talk</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label for="notes">Anything Else?</label>
+        <textarea id="notes" name="notes" placeholder="Event type, vibe, special requests, playlist direction…"></textarea>
+      </div>
+    </div>
+
+    <!-- 06 · CONSULT + CONSENT -->
+    <div class="form-section">
+      <p class="section-label">06 · Final Details</p>
+
+      <div class="field-group">
+        <label>Request a Consultation? <span class="req">*</span></label>
+        <div class="radio-row" id="consultGroup">
+          <label class="radio-item" id="ri-yes">
+            <input type="radio" name="consult" value="yes" required />
+            <span class="radio-label"><strong>Yes — let's talk</strong></span>
+          </label>
+          <label class="radio-item" id="ri-no">
+            <input type="radio" name="consult" value="no" />
+            <span class="radio-label"><strong>No, just send info</strong></span>
+          </label>
+        </div>
+        <span class="error-msg" id="consult-err">Please select an option.</span>
+      </div>
+
+      <div class="field-group">
+        <label class="consent-box" id="consentBox">
+          <input type="checkbox" id="consent" name="consent" required />
+          <span class="consent-text">
+            I agree to receive a confirmation email at the address I provided above.
+            <em>We won't spam you — it's just a record of your submission.</em>
+          </span>
+        </label>
+        <span class="error-msg" id="consent-err">You must agree to receive the confirmation email.</span>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="submit-area">
+      <p class="submit-note">Fields marked <span style="color:var(--gold)">*</span> are required</p>
+      <button type="submit" class="btn-submit" id="submitBtn">
+        Send the Request
+      </button>
+      <div class="osos-signoff">
+        <p>Thank you!</p>
+        <img src="logo-osos.png" alt="Osos Discos — Cameron Kelly &amp; Marshallo T" />
+      </div>
+    </div>
+
+  </form>
+</main>
+
+<footer>
+  &copy; <span id="yr"></span> Guthrie Entertainment LLC &nbsp;·&nbsp; Philadelphia, PA
+</footer>
+
+<script src="catalog.js"></script>
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  /* ── DATE PICKERS: prevent past dates ─────────────────── */
+  (function () {
+    const today = new Date().toISOString().split('T')[0];
+    ['date-single', 'date-start', 'date-end'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.min = today;
+    });
+  })();
+
+  /* ── GEAR BREAKDOWN FROM GEAR BUILDER ─────────────────── */
+  const CATALOG = (window.GEAR_CATALOG ? Object.fromEntries(
+    Object.entries(window.GEAR_CATALOG).map(([k, c]) => [k, {
+      title: c.title,
+      items: Object.fromEntries(c.items.map(i => [i.id, i.name]))
+    }])
+  ) : {});
+
+  const raw = sessionStorage.getItem('gearSelections');
+  if (raw) {
+    try {
+      const selections = JSON.parse(raw);
+      const panel = document.getElementById('gearPanel');
+      const body  = document.getElementById('gearPanelBody');
+      let html = '';
+      let hasAny = false;
+
+      Object.entries(CATALOG).forEach(([catKey, cat]) => {
+        const rows = Object.entries(cat.items)
+          .filter(([id]) => (selections[id] || 0) > 0)
+          .map(([id, name]) =>
+            `<div class="gear-item-row">
+              <span class="gear-item-name">${name}</span>
+              <span class="gear-item-qty">× ${selections[id]}</span>
+            </div>`
+          ).join('');
+
+        if (rows) {
+          hasAny = true;
+          html += `<div class="gear-cat-block">
+            <div class="gear-cat-name">${cat.title}</div>
+            ${rows}
+          </div>`;
+        }
+      });
+
+      if (hasAny) {
+        body.innerHTML = html;
+        panel.classList.add('visible');
+      }
+    } catch (err) {
+      // malformed data — just hide the panel
+    }
+  }
+
+  /* ── DATE TABS ─────────────────────────────────────── */
+  let dateMode = 'single';
+  document.querySelectorAll('.date-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.date-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.date-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      dateMode = tab.dataset.tab;
+      document.getElementById('panel-' + dateMode).classList.add('active');
+    });
+  });
+
+  /* ── CHECKBOX STYLING ──────────────────────────────── */
+  document.querySelectorAll('.check-item input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      cb.closest('.check-item').classList.toggle('checked', cb.checked);
+    });
+  });
+
+  document.querySelectorAll('.radio-item input[type="radio"]').forEach(rb => {
+    rb.addEventListener('change', () => {
+      document.querySelectorAll('.radio-item').forEach(ri => ri.classList.remove('selected'));
+      rb.closest('.radio-item').classList.add('selected');
+    });
+  });
+
+  /* ── VALIDATION HELPERS ────────────────────────────── */
+  function showErr(id, show) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('visible', show);
+  }
+
+  function markField(inputId, valid) {
+    const el = document.getElementById(inputId);
+    if (!el) return;
+    el.classList.toggle('error', !valid);
+  }
+
+  /* ── SUBMIT ────────────────────────────────────────── */
+  document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    let valid = true;
+
+    // Name
+    const name = document.getElementById('name').value.trim();
+    markField('name', name); showErr('name-err', !name);
+    if (!name) valid = false;
+
+    // Email
+    const email = document.getElementById('email').value.trim();
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    markField('email', emailOk); showErr('email-err', !emailOk);
+    if (!emailOk) valid = false;
+
+    // Date
+    let dateOk = false;
+    if (dateMode === 'single') {
+      dateOk = !!document.getElementById('date-single').value;
+    } else if (dateMode === 'range') {
+      dateOk = !!(document.getElementById('date-start').value || document.getElementById('date-end').value);
+    } else if (dateMode === 'tbd') {
+      dateOk = !!document.getElementById('date-tbd-note').value.trim();
+    }
+    showErr('date-err', !dateOk);
+    if (!dateOk) valid = false;
+
+    // Location
+    const location = document.getElementById('location').value.trim();
+    markField('location', location); showErr('location-err', !location);
+    if (!location) valid = false;
+
+    // Services
+    const services = [...document.querySelectorAll('#servicesGroup input[type="checkbox"]:checked')];
+    showErr('service-err', services.length === 0);
+    if (services.length === 0) valid = false;
+
+    // Consult
+    const consult = document.querySelector('input[name="consult"]:checked');
+    showErr('consult-err', !consult);
+    if (!consult) valid = false;
+
+    // Consent
+    const consent = document.getElementById('consent').checked;
+    showErr('consent-err', !consent);
+    if (!consent) valid = false;
+
+    if (!valid) {
+      document.querySelector('.error-msg.visible')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    /* ── BUILD & SEND TO FORMSPREE ───────────────────── */
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    // Readable date string
+    let dateStr = '';
+    if (dateMode === 'single') {
+      dateStr = document.getElementById('date-single').value || 'Not specified';
+    } else if (dateMode === 'range') {
+      const s = document.getElementById('date-start').value;
+      const en = document.getElementById('date-end').value;
+      dateStr = [s, en].filter(Boolean).join(' → ') || 'Not specified';
+    } else {
+      dateStr = document.getElementById('date-tbd-note').value.trim() || 'TBD';
+    }
+
+    // Readable gear list — reuse the shared CATALOG mapping built above.
+    const GEAR_CATALOG = CATALOG;
+    let gearText = 'None selected';
+    try {
+      const gearRaw = sessionStorage.getItem('gearSelections');
+      if (gearRaw) {
+        const gearObj = JSON.parse(gearRaw);
+        const lines = [];
+        Object.values(GEAR_CATALOG).forEach(cat => {
+          const catLines = Object.entries(cat.items)
+            .filter(([id]) => (gearObj[id] || 0) > 0)
+            .map(([id, name]) => `  ${name} × ${gearObj[id]}`);
+          if (catLines.length) lines.push(`${cat.title}:\n${catLines.join('\n')}`);
+        });
+        if (lines.length) gearText = lines.join('\n\n');
+      }
+    } catch (_) {}
+
+    // Checked services
+    const checkedServices = [...document.querySelectorAll('#servicesGroup input[type="checkbox"]:checked')]
+      .map(cb => cb.closest('.check-item').querySelector('strong').textContent)
+      .join(', ');
+
+    // Honeypot — must be empty
+    const gotcha = document.querySelector('input[name="_gotcha"]')?.value || '';
+
+    // Build payload
+    const payload = {
+      _gotcha:   gotcha,
+      _subject:  `New Consult Request — ${document.getElementById('name').value.trim()}`,
+      Name:      document.getElementById('name').value.trim(),
+      Phone:     document.getElementById('phone').value.trim() || 'Not provided',
+      Email:     document.getElementById('email').value.trim(),
+      Facebook:  document.getElementById('facebook').value.trim() || 'Not provided',
+      Instagram: document.getElementById('instagram').value.trim() || 'Not provided',
+      'Event Date': dateStr,
+      Location:  document.getElementById('location').value.trim(),
+      Services:  checkedServices,
+      Budget:    document.getElementById('budget').value || 'Not specified',
+      Notes:     document.getElementById('notes').value.trim() || 'None',
+      'Wants Consultation': document.querySelector('input[name="consult"]:checked')?.value === 'yes' ? 'Yes' : 'No',
+      'Gear Builder Selection': gearText,
+    };
+
+    try {
+      const res = await fetch('/api/consult', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        sessionStorage.removeItem('gearSelections');
+        window.location.href = 'thankyou.html';
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Send the Request';
+        alert('Something went wrong. Please try again or email us directly at admin@guthrieent.com');
+      }
+    } catch {
+      btn.disabled = false;
+      btn.textContent = 'Send the Request';
+      alert('Network error. Please check your connection and try again.');
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thank You · Guthrie Entertainment</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Thanks — your consult request was received." />
+  <link rel="icon" type="image/png" href="logo-guthrie.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --neon:    #ff1a1a;
+      --scarlet: #9b1a1a;
+      --purple:  #2d0a2e;
+      --muted:   #6b3a3a;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #000;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      overflow: hidden;
+    }
+
+    .main-image {
+      width: 40vw;
+      max-width: 600px;
+      min-width: 200px;
+      display: block;
+    }
+
+    /* Countdown */
+    .countdown-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .countdown-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--scarlet);
+    }
+
+    .countdown-ring {
+      position: relative;
+      width: 64px;
+      height: 64px;
+    }
+
+    .countdown-ring svg {
+      transform: rotate(-90deg);
+      width: 64px;
+      height: 64px;
+    }
+
+    .countdown-ring circle {
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    .ring-bg   { stroke: var(--purple); }
+    .ring-fill {
+      stroke: var(--neon);
+      stroke-dasharray: 201;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 1s linear;
+      filter: drop-shadow(0 0 6px rgba(255,26,26,0.8));
+    }
+
+    .countdown-num {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      color: var(--neon);
+      text-shadow: 0 0 12px rgba(255,26,26,0.9);
+    }
+
+    .redirect-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    body > * { animation: fadeIn 0.8s ease both; }
+  </style>
+</head>
+<body>
+
+  <h1 style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">Thank you — your consult request was received</h1>
+
+  <img class="main-image" src="page-thankyou.png" alt="" />
+
+  <div class="countdown-wrap">
+    <span class="countdown-label">Returning to Guthrieent</span>
+    <div class="countdown-ring">
+      <svg viewBox="0 0 72 72">
+        <circle class="ring-bg"   cx="36" cy="36" r="32" />
+        <circle class="ring-fill" cx="36" cy="36" r="32" id="ringFill" />
+      </svg>
+      <div class="countdown-num" id="countNum">6</div>
+    </div>
+    <span class="redirect-text" id="redirectText">in 6 seconds</span>
+  </div>
+
+  <script>
+    const DURATION     = 6;
+    const circumference = 2 * Math.PI * 32;
+
+    const ring  = document.getElementById('ringFill');
+    const numEl = document.getElementById('countNum');
+    const txtEl = document.getElementById('redirectText');
+
+    ring.style.strokeDasharray  = circumference;
+    ring.style.strokeDashoffset = 0;
+
+    let remaining = DURATION;
+
+    setInterval(() => {
+      remaining--;
+      numEl.textContent = remaining;
+      txtEl.textContent = `in ${remaining} second${remaining !== 1 ? 's' : ''}`;
+      ring.style.strokeDashoffset = circumference * (1 - remaining / DURATION);
+      if (remaining <= 0) window.location.href = 'index.html';
+    }, 1000);
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gear &amp; Setup · Guthrie Entertainment</title>
+  <meta name="description" content="Build your own gear package — QSC speakers, CDJs, Euphonia rotary mixer, lighting, and shelter. Powered by Guthrie Entertainment in Philadelphia." />
+  <link rel="canonical" href="https://guthrieent.com/gear.html" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://guthrieent.com/gear.html" />
+  <meta property="og:title" content="Gear &amp; Setup · Guthrie Entertainment" />
+  <meta property="og:description" content="Build your own custom event gear package." />
+  <meta property="og:image" content="https://guthrieent.com/logo-guthrie.png" />
+  <meta name="twitter:card" content="summary" />
+
+  <link rel="icon" type="image/png" href="logo-guthrie.png" />
+  <link rel="apple-touch-icon" href="logo-guthrie.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── TOKENS ─────────────────────────────────────────── */
+    :root {
+      --bg:        #0a0a09;
+      --surface:   #111110;
+      --border:    #2a2925;
+      --gold:      #c9a84c;
+      --gold-dim:  #8a6e2a;
+      --cream:     #f0e8d0;
+      --muted:     #6b6456;
+      --radius:    4px;
+      --font-head: 'Bebas Neue', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--cream);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* grain */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.035; pointer-events: none; z-index: 999;
+    }
+
+    a { color: var(--gold); text-decoration: none; }
+
+    /* ── HERO ───────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      padding: 64px 24px 48px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; bottom: -1px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 2px;
+      background: var(--gold);
+    }
+    .hero-glow {
+      position: absolute; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-logo {
+      width: clamp(80px, 12vw, 140px);
+      display: block; margin: 0 auto 20px;
+      mix-blend-mode: lighten;
+      /* strip purple → push to gold */
+      filter: grayscale(1) sepia(1) saturate(3.5) hue-rotate(-18deg) brightness(1.15);
+      animation: fadeUp 0.5s ease both;
+    }
+    .hero h1 {
+      font-family: var(--font-head);
+      font-size: clamp(48px, 10vw, 90px);
+      letter-spacing: 0.02em; line-height: 0.9;
+      animation: fadeUp 0.5s 0.1s ease both;
+    }
+    .hero h1 span { color: var(--gold); }
+    .hero-sub {
+      margin-top: 16px;
+      font-family: var(--font-mono);
+      font-size: 11px; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--muted);
+      animation: fadeUp 0.5s 0.2s ease both;
+    }
+
+    /* ── RETURN NAV ─────────────────────────────────────── */
+    .back-nav {
+      position: fixed; top: 14px; left: 20px; z-index: 300;
+    }
+    .return-btn {
+      display: block;
+      width: clamp(80px, 9vw, 130px);
+      transition: transform 0.10s ease, filter 0.10s ease;
+    }
+    .return-btn img { display: block; width: 100%; height: auto; }
+    .return-btn:hover {
+      filter: brightness(1.2) drop-shadow(0 0 10px rgba(201,168,76,0.5));
+      transform: scale(1.05);
+    }
+    .return-btn:active {
+      transform: scale(0.93);
+      filter: brightness(0.68);
+      transition-duration: 0.05s;
+    }
+
+    /* ── CLEAR SELECTION BUTTON ─────────────────────────── */
+    .clear-btn {
+      display: none;
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted);
+      background: none; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 6px 14px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .clear-btn.visible { display: inline-block; }
+    .clear-btn:hover { color: var(--cream); border-color: var(--muted); }
+
+    /* ── PAGE ───────────────────────────────────────────── */
+    .page {
+      max-width: 960px; margin: 0 auto;
+      padding: 56px 24px 80px;
+      animation: fadeUp 0.5s 0.25s ease both;
+    }
+
+    /* ── BIO ────────────────────────────────────────────── */
+    .bio-box {
+      background: var(--surface);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 24px 28px; margin-bottom: 48px;
+      position: relative;
+    }
+    .bio-box::before {
+      content: ''; position: absolute; top: 0; left: 24px;
+      width: 60px; height: 2px; background: var(--gold);
+    }
+    .bio-box p {
+      font-size: 14px; font-weight: 300; color: var(--muted);
+      line-height: 1.8;
+    }
+
+    /* ── SECTION LABEL ──────────────────────────────────── */
+    .section-label {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--gold-dim); margin-bottom: 24px;
+      padding-bottom: 8px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(to right, var(--border), transparent);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       GLASS CARD GRID
+    ═══════════════════════════════════════════════════ */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 48px;
+    }
+
+    /* Each card = photo bg + frosted glass overlay */
+    .gear-card {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      aspect-ratio: 4 / 3;
+      border: 1px solid rgba(201,168,76,0.2);
+      transition:
+        transform 0.22s cubic-bezier(0.34,1.56,0.64,1),
+        box-shadow 0.22s ease,
+        border-color 0.22s ease;
+      will-change: transform;
+    }
+
+    /* Photo layer */
+    .gear-card .card-photo {
+      position: absolute; inset: 0;
+      background-size: cover;
+      background-position: center;
+      transition: transform 0.4s ease, filter 0.3s ease;
+      filter: brightness(0.55) saturate(0.8);
+    }
+
+    /* Frosted glass panel — bottom third, always visible */
+    .gear-card .card-frost {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 16px 20px 18px;
+      background: rgba(10,9,7,0.52);
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
+      border-top: 1px solid rgba(201,168,76,0.25);
+      transition: background 0.25s ease;
+    }
+
+    .card-cat {
+      font-family: var(--font-mono);
+      font-size: 10px; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--gold-dim);
+      margin-bottom: 4px;
+    }
+
+    .card-title {
+      font-family: var(--font-head);
+      font-size: clamp(22px, 3.5vw, 32px);
+      letter-spacing: 0.04em; color: var(--cream);
+      line-height: 1;
+    }
+
+    /* Item preview — hidden until hover */
+    .card-preview {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.35s ease, opacity 0.25s ease;
+      opacity: 0;
+    }
+
+    .card-preview ul {
+      list-style: none; padding: 0; margin-top: 10px;
+    }
+
+    .card-preview li {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.08em; color: var(--muted);
+      padding: 3px 0;
+      border-bottom: 1px solid rgba(42,41,37,0.5);
+      display: flex; justify-content: space-between;
+    }
+
+    .card-preview li:last-child { border-bottom: none; }
+
+    .item-limit {
+      color: var(--gold-dim); font-size: 10px;
+    }
+
+    .card-hint {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--gold); margin-top: 12px;
+      opacity: 0; transition: opacity 0.2s ease 0.1s;
+    }
+
+    /* ── HOVER STATE ─────────────────────────────────── */
+    .gear-card:hover {
+      transform: scale(1.025);
+      box-shadow: 0 0 28px rgba(201,168,76,0.25), 0 8px 32px rgba(0,0,0,0.6);
+      border-color: rgba(201,168,76,0.5);
+    }
+
+    .gear-card:hover .card-photo {
+      transform: scale(1.06);
+      filter: brightness(0.7) saturate(1.1);
+    }
+
+    .gear-card:hover .card-frost {
+      background: rgba(10,9,7,0.68);
+    }
+
+    .gear-card:hover .card-preview {
+      max-height: 300px;
+      opacity: 1;
+    }
+
+    .gear-card:hover .card-hint {
+      opacity: 1;
+    }
+
+    /* ── ACTIVE / PRESS ──────────────────────────────── */
+    .gear-card:active {
+      transform: scale(0.975);
+      filter: brightness(0.85);
+      transition-duration: 0.08s;
+    }
+
+    /* Selected state */
+    .gear-card.has-selections {
+      border-color: rgba(201,168,76,0.6);
+      box-shadow: 0 0 16px rgba(201,168,76,0.2);
+    }
+
+    .gear-card.has-selections .card-cat::after {
+      content: ' ✦';
+      color: var(--gold);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       MODAL
+    ═══════════════════════════════════════════════════ */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(5,5,4,0.85);
+      backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 100%; max-width: 560px;
+      max-height: 90vh; overflow-y: auto;
+      position: relative;
+      animation: modalIn 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      position: sticky; top: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px 16px;
+      z-index: 10;
+    }
+
+    .modal-header::before {
+      content: ''; position: absolute; top: 0; left: 24px;
+      width: 60px; height: 2px; background: var(--gold);
+    }
+
+    .modal-eyebrow {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--gold-dim); margin-bottom: 4px;
+    }
+
+    .modal-title {
+      font-family: var(--font-head);
+      font-size: 36px; letter-spacing: 0.04em;
+      color: var(--cream);
+    }
+
+    .modal-close {
+      position: absolute; top: 18px; right: 20px;
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 20px;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 4px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .modal-close:hover { color: var(--cream); background: rgba(255,255,255,0.06); }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-note {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.08em; color: var(--muted);
+      padding: 12px 14px;
+      background: rgba(201,168,76,0.05);
+      border: 1px solid rgba(201,168,76,0.15);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    /* ── STEPPER ROWS ───────────────────────────────── */
+    .item-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+
+    .item-row:last-of-type { border-bottom: none; }
+
+    .item-info { flex: 1; }
+
+    .item-name {
+      font-family: var(--font-mono); font-size: 12px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--cream); font-weight: 500;
+    }
+
+    .item-cap {
+      font-size: 11px; color: var(--muted);
+      margin-top: 2px; font-family: var(--font-body);
+    }
+
+    /* Stepper control */
+    .stepper {
+      display: flex; align-items: center; gap: 0;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      overflow: hidden; flex-shrink: 0;
+    }
+
+    .stepper button {
+      width: 36px; height: 36px;
+      background: var(--surface); border: none; cursor: pointer;
+      color: var(--gold); font-size: 18px; font-weight: 300;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+      line-height: 1;
+    }
+
+    .stepper button:hover:not(:disabled) { background: rgba(201,168,76,0.12); }
+    .stepper button:disabled { color: var(--border); cursor: not-allowed; }
+
+    .stepper .count {
+      width: 40px; text-align: center;
+      font-family: var(--font-mono); font-size: 16px;
+      color: var(--cream); background: #0f0f0d;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      height: 36px; line-height: 36px;
+      user-select: none;
+    }
+
+    .stepper .count[data-active="true"] { color: var(--gold); }
+
+    /* ── MODAL FOOTER ───────────────────────────────── */
+    .modal-footer {
+      padding: 16px 24px 24px;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 10px;
+    }
+
+    .btn-confirm {
+      flex: 1; padding: 14px;
+      background: var(--gold); border: none; border-radius: var(--radius);
+      font-family: var(--font-head); font-size: 20px;
+      letter-spacing: 0.08em; color: #0a0a09;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-confirm:hover { opacity: 0.88; }
+
+    .btn-clear {
+      padding: 14px 18px;
+      background: transparent; border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--muted);
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-clear:hover { border-color: var(--muted); color: var(--cream); }
+
+    /* ═══════════════════════════════════════════════════
+       SUMMARY BAR
+    ═══════════════════════════════════════════════════ */
+    .summary-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(10,9,7,0.92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex; align-items: center; gap: 16px;
+      z-index: 400;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .summary-bar.visible { transform: translateY(0); }
+
+    .summary-text {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); flex: 1;
+    }
+
+    .summary-text strong { color: var(--gold); }
+
+    .btn-book {
+      display: inline-block; padding: 10px 24px;
+      background: var(--gold); border: none; border-radius: var(--radius);
+      font-family: var(--font-head); font-size: 18px;
+      letter-spacing: 0.08em; color: #0a0a09;
+      cursor: pointer; text-decoration: none;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .btn-book:hover { opacity: 0.88; }
+
+    /* ── CONSULT CTA ────────────────────────────────── */
+    .consult-cta {
+      text-align: center;
+      padding: 48px 24px 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .cta-btn {
+      display: inline-block;
+      width: clamp(140px, 20vw, 260px);
+      transition: transform 0.10s ease, filter 0.10s ease;
+      cursor: pointer;
+    }
+
+    .cta-btn img { display: block; width: 100%; height: auto; }
+
+    .cta-btn:hover {
+      filter: brightness(1.2) drop-shadow(0 0 14px rgba(201,168,76,0.5));
+      transform: scale(1.035);
+    }
+
+    .cta-btn:active {
+      transform: scale(0.93);
+      filter: brightness(0.68);
+      transition-duration: 0.05s;
+    }
+
+    /* ── FOOTER ─────────────────────────────────────── */
+    footer {
+      text-align: center; padding: 40px 24px 80px;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.15em; color: var(--muted);
+    }
+
+    /* ── ANIMATIONS ─────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────── */
+    @media (max-width: 600px) {
+      .card-grid { grid-template-columns: 1fr; }
+      .gear-card { aspect-ratio: 3 / 2; }
+      .modal { max-height: 95vh; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="back-nav">
+  <a href="index.html" class="return-btn" aria-label="Return to Osos Discos">
+    <img src="btn-navigate-osos.png" alt="Return" />
+  </a>
+</nav>
+
+<header class="hero">
+  <div class="hero-glow"></div>
+  <img class="hero-logo" src="logo-guthrie.png" alt="Guthrie Entertainment" />
+  <h1>Gear <span>&amp;</span> Setup</h1>
+  <p class="hero-sub">Cameron Kelly &amp; Marshallo T · Philadelphia, PA</p>
+</header>
+
+<main class="page">
+
+  <div class="bio-box">
+    <p>
+      Not sure exactly what you need? That's what we're here for. Use this tool to sketch out your ideal setup — speakers, lighting, DJ gear, shelter — and we'll take it from there. We work with your budget and steer you toward the right build based on your crowd size, venue, and vibe. Nothing here is locked in; it's just a starting point for our conversation. You're welcome to skip straight to the consult if you'd rather talk it through first.
+    </p>
+  </div>
+
+  <p class="section-label">Explore Your Setup</p>
+
+  <!-- ── FOUR GLASS CARDS ──────────────────────────── -->
+  <div style="text-align:left; margin-bottom: 10px;">
+    <button class="clear-btn" id="clearTop">Clear Selection</button>
+  </div>
+  <div class="card-grid">
+
+    <!-- SOUND: SPEAKERS -->
+    <div class="gear-card" data-category="speakers" tabindex="0" role="button" aria-label="Sound — Speakers, click to select">
+      <div class="card-photo" style="background-image: url('sound-speakers.png');"></div>
+      <div class="card-frost">
+        <div class="card-cat">Sound</div>
+        <div class="card-title">Speakers</div>
+        <div class="card-preview">
+          <ul>
+            <li>KS112 Sub <span class="item-limit">max 4</span></li>
+            <li>K10.2 Main <span class="item-limit">max 4</span></li>
+            <li>CP8 Monitor <span class="item-limit">max 2</span></li>
+            <li>DJ Booth <span class="item-limit">max 1</span></li>
+          </ul>
+        </div>
+        <div class="card-hint">Tap to select →</div>
+      </div>
+    </div>
+
+    <!-- SOUND: DJ EQUIP -->
+    <div class="gear-card" data-category="djequip" tabindex="0" role="button" aria-label="Sound — DJ Equipment, click to select">
+      <div class="card-photo" style="background-image: url('sound-mixers_players_essentials.png');"></div>
+      <div class="card-frost">
+        <div class="card-cat">Sound</div>
+        <div class="card-title">DJ Equip</div>
+        <div class="card-preview">
+          <ul>
+            <li>Alpha Theta Euphonia <span class="item-limit">max 1</span></li>
+            <li>Reloop RB7000-MK2 <span class="item-limit">max 2</span></li>
+            <li>Pioneer CDJ-3000 <span class="item-limit">max 2</span></li>
+          </ul>
+        </div>
+        <div class="card-hint">Tap to select →</div>
+      </div>
+    </div>
+
+    <!-- LIGHTING -->
+    <div class="gear-card" data-category="lighting" tabindex="0" role="button" aria-label="Lighting, click to select">
+      <div class="card-photo" style="background-image: url('lighting.png');"></div>
+      <div class="card-frost">
+        <div class="card-cat">Visual</div>
+        <div class="card-title">Lighting</div>
+        <div class="card-preview">
+          <ul>
+            <li>Wired PAR Light <span class="item-limit">max 6</span></li>
+            <li>Battery PAR Light <span class="item-limit">max 4</span></li>
+            <li>Mini USB DJ Light <span class="item-limit">max 6</span></li>
+            <li>Derby / Strobe Bar <span class="item-limit">max 1</span></li>
+          </ul>
+        </div>
+        <div class="card-hint">Tap to select →</div>
+      </div>
+    </div>
+
+    <!-- SHELTER -->
+    <div class="gear-card" data-category="shelter" tabindex="0" role="button" aria-label="Shelter, click to select">
+      <div class="card-photo" style="background-image: url('shelter.png');"></div>
+      <div class="card-frost">
+        <div class="card-cat">Outdoor</div>
+        <div class="card-title">Shelter</div>
+        <div class="card-preview">
+          <ul>
+            <li>10×10 Pop-up Tent <span class="item-limit">max 1</span></li>
+            <li>12×12 Pop-up Tent <span class="item-limit">max 1</span></li>
+            <li>12×12 Hexagon Tent <span class="item-limit">max 1</span></li>
+          </ul>
+        </div>
+        <div class="card-hint">Tap to select →</div>
+      </div>
+    </div>
+
+  </div>
+  <div style="text-align:left; margin-top: 10px;">
+    <button class="clear-btn" id="clearBottom">Clear Selection</button>
+  </div>
+
+</main>
+
+<section class="consult-cta">
+  <a href="consult.html" class="cta-btn" id="btnConsultCta">
+    <img src="btn-connect-consult.png" alt="Connect to Consult" />
+  </a>
+</section>
+
+<footer>
+  <span id="yr"></span> Guthrie Entertainment LLC &nbsp;·&nbsp; Philadelphia, PA
+</footer>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL
+═══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-eyebrow" id="modalEyebrow"></div>
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn-confirm" id="btnConfirm">Confirm Selection</button>
+      <button class="btn-clear" id="btnClear">Clear</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SUMMARY BAR
+═══════════════════════════════════════════════ -->
+<div class="summary-bar" id="summaryBar">
+  <div class="summary-text" id="summaryText"></div>
+</div>
+
+<script src="catalog.js"></script>
+<script>
+/* ── CATALOG ─────────────────────────────────────────── */
+/* Shared single source of truth — see catalog.js */
+const CATALOG = window.GEAR_CATALOG;
+
+/* ── STATE ───────────────────────────────────────────── */
+let selections = {};  // { itemId: count }
+let currentCat = null;
+let tempSelections = {};  // working copy while modal is open
+let lastFocusedEl = null;  // for focus restoration on close
+
+/* ── OPEN MODAL ─────────────────────────────── */
+function openModal(catKey) {
+  lastFocusedEl = document.activeElement;
+  const cat = CATALOG[catKey];
+  currentCat = catKey;
+
+  // Deep copy current selections for this category into temp
+  tempSelections = {};
+  cat.items.forEach(item => {
+    tempSelections[item.id] = selections[item.id] || 0;
+  });
+
+  document.getElementById('modalEyebrow').textContent = cat.eyebrow;
+  document.getElementById('modalTitle').textContent = cat.title;
+
+  let bodyHTML = '';
+
+  if (cat.note) {
+    bodyHTML += `<div class="modal-note">${cat.note}</div>`;
+  }
+
+  cat.items.forEach(item => {
+    const val = tempSelections[item.id] || 0;
+    bodyHTML += `
+      <div class="item-row">
+        <div class="item-info">
+          <div class="item-name">${item.name}</div>
+          <div class="item-cap">${item.sub} &nbsp;·&nbsp; max ${item.max}</div>
+        </div>
+        <div class="stepper" data-id="${item.id}" data-max="${item.max}">
+          <button class="dec" aria-label="Decrease" ${val === 0 ? 'disabled' : ''}>−</button>
+          <div class="count" data-active="${val > 0}">${val}</div>
+          <button class="inc" aria-label="Increase" ${val >= item.max ? 'disabled' : ''}>+</button>
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById('modalBody').innerHTML = bodyHTML;
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('modal').scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+
+  // Move focus into modal for keyboard/screen-reader users
+  setTimeout(() => {
+    const closeBtn = document.getElementById('modalClose');
+    if (closeBtn) closeBtn.focus();
+  }, 0);
+
+  // Wire steppers
+  document.querySelectorAll('.stepper').forEach(stepper => {
+    const id = stepper.dataset.id;
+    const max = parseInt(stepper.dataset.max);
+    const countEl = stepper.querySelector('.count');
+    const dec = stepper.querySelector('.dec');
+    const inc = stepper.querySelector('.inc');
+
+    dec.addEventListener('click', () => {
+      let v = tempSelections[id] || 0;
+      if (v > 0) {
+        v--;
+        tempSelections[id] = v;
+        countEl.textContent = v;
+        countEl.dataset.active = v > 0;
+        dec.disabled = v === 0;
+        inc.disabled = false;
+      }
+    });
+
+    inc.addEventListener('click', () => {
+      let v = tempSelections[id] || 0;
+      if (v < max) {
+        v++;
+        tempSelections[id] = v;
+        countEl.textContent = v;
+        countEl.dataset.active = v > 0;
+        inc.disabled = v >= max;
+        dec.disabled = false;
+      }
+    });
+  });
+}
+
+/* ── CLOSE MODAL ─────────────────────────────────────── */
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  currentCat = null;  if (lastFocusedEl && typeof lastFocusedEl.focus === 'function') {
+    lastFocusedEl.focus();
+    lastFocusedEl = null;
+  }}
+
+/* ── CONFIRM ─────────────────────────────────────────── */
+document.getElementById('btnConfirm').addEventListener('click', () => {
+  Object.assign(selections, tempSelections);
+  updateCards();
+  updateSummary();
+  updateClearButtons();
+  closeModal();
+});
+
+/* ── CLEAR ───────────────────────────────────────────── */
+document.getElementById('btnClear').addEventListener('click', () => {
+  if (!currentCat) return;
+  CATALOG[currentCat].items.forEach(item => {
+    tempSelections[item.id] = 0;
+  });
+  // Re-render steppers
+  document.querySelectorAll('.stepper').forEach(stepper => {
+    const id = stepper.dataset.id;
+    stepper.querySelector('.count').textContent = '0';
+    stepper.querySelector('.count').dataset.active = 'false';
+    stepper.querySelector('.dec').disabled = true;
+    stepper.querySelector('.inc').disabled = false;
+  });
+});
+
+/* ── UPDATE CARD INDICATOR ───────────────────────────── */
+function updateCards() {
+  document.querySelectorAll('.gear-card').forEach(card => {
+    const catKey = card.dataset.category;
+    const cat = CATALOG[catKey];
+    const hasAny = cat.items.some(item => (selections[item.id] || 0) > 0);
+    card.classList.toggle('has-selections', hasAny);
+  });
+}
+
+/* ── UPDATE SUMMARY BAR ──────────────────────────────── */
+function updateSummary() {
+  const bar = document.getElementById('summaryBar');
+  const text = document.getElementById('summaryText');
+
+  // Count total items
+  const total = Object.values(selections).reduce((a, b) => a + b, 0);
+
+  if (total === 0) {
+    bar.classList.remove('visible');
+    return;
+  }
+
+  // Build label list
+  const parts = [];
+  Object.entries(CATALOG).forEach(([catKey, cat]) => {
+    const catTotal = cat.items.reduce((a, item) => a + (selections[item.id] || 0), 0);
+    if (catTotal > 0) {
+      parts.push(`<strong>${catTotal} ${cat.title}</strong>`);
+    }
+  });
+
+  text.innerHTML = parts.join(' &nbsp;·&nbsp; ');
+  bar.classList.add('visible');
+}
+
+/* ── EVENT BINDINGS ──────────────────────────────────── */
+document.querySelectorAll('.gear-card').forEach(card => {
+  card.addEventListener('click', () => openModal(card.dataset.category));
+  card.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openModal(card.dataset.category);
+    }
+  });
+});
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* ── CLEAR ALL SELECTIONS ────────────────────────────── */
+function clearAllSelections() {
+  selections = {};
+  updateCards();
+  updateSummary();
+  updateClearButtons();
+}
+
+function updateClearButtons() {
+  const total = Object.values(selections).reduce((a, b) => a + b, 0);
+  document.getElementById('clearTop').classList.toggle('visible', total > 0);
+  document.getElementById('clearBottom').classList.toggle('visible', total > 0);
+}
+
+document.getElementById('clearTop').addEventListener('click', clearAllSelections);
+document.getElementById('clearBottom').addEventListener('click', clearAllSelections);
+
+/* ── SAVE SELECTIONS & NAVIGATE TO CONSULT ───────────── */
+function saveAndNavigate(e) {
+  e.preventDefault();
+  const total = Object.values(selections).reduce((a, b) => a + b, 0);
+  if (total > 0) {
+    sessionStorage.setItem('gearSelections', JSON.stringify(selections));
+  } else {
+    sessionStorage.removeItem('gearSelections');
+  }
+  window.location.href = 'consult.html';
+}
+
+document.getElementById('btnConsultCta').addEventListener('click', saveAndNavigate);
+
+/* ── YEAR ────────────────────────────────────────────── */
+document.getElementById('yr').textContent = '© ' + new Date().getFullYear();
+</script>
+</body>
+</html>

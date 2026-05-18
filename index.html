@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Osos Discos — Cameron Kelly & Marshall T · Philadelphia DJs</title>
+  <meta name="description" content="Osos Discos — Cameron Kelly & Marshall T. Philadelphia DJ duo and event sound. Book a consult or build your own gear package." />
+  <link rel="canonical" href="https://guthrieent.com/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://guthrieent.com/" />
+  <meta property="og:title" content="Osos Discos — Cameron Kelly & Marshall T" />
+  <meta property="og:description" content="Philadelphia DJ duo and event sound. Book a consult or build your own gear package." />
+  <meta property="og:image" content="https://guthrieent.com/bg-statue-aura.png" />
+  <meta property="og:image:alt" content="Osos Discos — disco statues bathed in colored light" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Osos Discos — Cameron Kelly & Marshall T" />
+  <meta name="twitter:description" content="Philadelphia DJ duo and event sound. Book a consult or build your own gear package." />
+  <meta name="twitter:image" content="https://guthrieent.com/bg-statue-aura.png" />
+
+  <link rel="icon" type="image/png" href="logo-osos.png" />
+  <link rel="apple-touch-icon" href="logo-osos.png" />
+
+  <style>
+    :root {
+      --w:       28vw;
+      --gap:     0.70vw;
+      --logo:    32vw;
+      --guthrie: 14vw;
+      --gw-w:    20vw;
+      --gw-h:    66vh;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background: #000;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND ─────────────────────────────────────── */
+    .bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      background: url('bg-statue-aura.png') center / cover no-repeat;
+    }
+
+    .bg-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .bg-video.ready { opacity: 1; }
+
+    @media (max-width: 600px) {
+      .bg { background-image: url('icon-bg-phone.png'); }
+      .bg-video { display: none; }
+    }
+
+    /* ── CONTENT COLUMN ─────────────────────────────────── */
+    .content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      width: var(--w);
+      margin: 0 auto;
+      padding: 0;
+      gap: var(--gap);
+    }
+
+    .el     { display: block; flex-shrink: 0; }
+    .el img { display: block; width: 100%; height: auto; }
+
+    .logo         { width: var(--logo); }
+    .full         { width: var(--w); }
+    .logo-guthrie { width: var(--guthrie); }
+    .logo-guthrie img { display: block; width: 100%; height: auto; }
+
+    .icon-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--gap);
+      width: var(--w);
+    }
+    .icon-row a { display: block; flex: 1; }
+    .icon-row a img { display: block; width: 100%; height: auto; }
+
+    .interactive {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.10s ease, filter 0.10s ease;
+    }
+    .interactive:hover {
+      filter: brightness(1.2) drop-shadow(0 0 14px rgba(140,100,255,0.65));
+      transform: scale(1.035);
+    }
+    .interactive:active {
+      transform: scale(0.93);
+      filter: brightness(0.68);
+      transition-duration: 0.05s;
+    }
+
+    /* ── REKITBOX BUTTON ────────────────────────────────── */
+    .rekitbox-wrap {
+      position: relative;
+      width: calc(var(--guthrie) * 0.72);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+    .rekitbox-wrap img { display: block; width: 100%; height: auto; }
+
+    /* ── REKITBOX POPUP MODAL ───────────────────────────── */
+    .rkb-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(4,2,12,0.72);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      align-items: center;
+      justify-content: center;
+    }
+    .rkb-overlay.open { display: flex; }
+
+    .rkb-modal {
+      position: relative;
+      width: clamp(260px, 34vw, 380px);
+      background: rgba(14,10,28,0.98);
+      border: 1px solid rgba(140,100,255,0.4);
+      border-radius: 18px;
+      padding: 28px 24px 22px;
+      box-shadow: 0 8px 48px rgba(80,40,180,0.45), 0 0 0 1px rgba(200,180,255,0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .rkb-close {
+      position: absolute;
+      top: 12px; right: 16px;
+      background: none;
+      border: none;
+      color: rgba(180,160,255,0.6);
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: color 0.12s ease, background 0.12s ease;
+    }
+    .rkb-close:hover { color: #c4b5fd; background: rgba(140,100,255,0.12); }
+
+    .rkb-modal h3 {
+      font-family: system-ui, sans-serif;
+      font-size: clamp(13px, 1.4vw, 16px);
+      font-weight: 700;
+      color: #c4b5fd;
+      letter-spacing: 0.07em;
+      text-align: center;
+      margin: 0;
+    }
+
+    .rkb-modal p {
+      font-family: system-ui, sans-serif;
+      font-size: clamp(11px, 1.1vw, 13px);
+      color: rgba(210,205,235,0.82);
+      line-height: 1.65;
+      text-align: center;
+      margin: 0;
+    }
+
+    .rkb-download {
+      display: block;
+      width: clamp(140px, 18vw, 210px);
+      transition: transform 0.10s ease, filter 0.10s ease;
+    }
+    .rkb-download img { display: block; width: 100%; height: auto; }
+    .rkb-download:hover {
+      filter: brightness(1.2) drop-shadow(0 0 12px rgba(140,100,255,0.7));
+      transform: scale(1.04);
+    }
+    .rkb-download:active { transform: scale(0.93); filter: brightness(0.7); transition-duration: 0.05s; }
+
+    @media (max-width: 600px) {
+      .rkb-modal { width: clamp(260px, 86vw, 360px); padding: 24px 18px 20px; }
+      .rkb-download { width: clamp(130px, 52vw, 200px); }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       GALLERY WINDOWS (left + right of central column)
+       ═══════════════════════════════════════════════════════ */
+    .gallery-window {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: var(--gw-w);
+      height: var(--gw-h);
+      z-index: 2;
+      background: rgba(8, 4, 16, 0.55);
+      border: 1px solid rgba(140, 100, 255, 0.35);
+      border-radius: 14px;
+      box-shadow:
+        0 8px 32px rgba(0,0,0,0.5),
+        0 0 24px rgba(140, 100, 255, 0.18),
+        inset 0 0 0 1px rgba(200, 180, 255, 0.05);
+      backdrop-filter: blur(6px) saturate(1.2);
+      -webkit-backdrop-filter: blur(6px) saturate(1.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    .gallery-window.ready { opacity: 1; }
+    .gallery-left  { left:  3vw; }
+    .gallery-right { right: 3vw; }
+
+    .gw-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(20, 12, 40, 0.85);
+      border-bottom: 1px solid rgba(140, 100, 255, 0.25);
+      flex-shrink: 0;
+    }
+
+    .gw-title {
+      font-family: 'DM Mono', ui-monospace, monospace;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(196, 181, 253, 0.85);
+    }
+
+    .gw-toggle {
+      background: rgba(140, 100, 255, 0.12);
+      border: 1px solid rgba(140, 100, 255, 0.3);
+      color: #c4b5fd;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: background 0.15s ease;
+    }
+    .gw-toggle:hover { background: rgba(140, 100, 255, 0.25); }
+    .gw-toggle:focus-visible { outline: 2px solid #c4b5fd; outline-offset: 2px; }
+
+    .gw-viewport {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      mask-image: linear-gradient(to bottom, transparent 0%, #000 8%, #000 92%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 8%, #000 92%, transparent 100%);
+    }
+
+    .gw-strip {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px 10px;
+      animation: scroll-up 50s linear infinite;
+      will-change: transform;
+    }
+    .gallery-right .gw-strip {
+      animation-name: scroll-down;
+      animation-duration: 55s;
+    }
+
+    .gallery-window[data-paused="true"] .gw-strip {
+      animation-play-state: paused;
+    }
+
+    .gw-strip img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+      border: 1px solid rgba(140, 100, 255, 0.2);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+
+    @keyframes scroll-up {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-50%); }
+    }
+    @keyframes scroll-down {
+      from { transform: translateY(-50%); }
+      to   { transform: translateY(0); }
+    }
+
+    /* Hide galleries on narrow screens — central column needs the room. */
+    @media (max-width: 1100px) {
+      .gallery-window { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gw-strip { animation: none; }
+    }
+
+    /* ── MOBILE ─────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      :root {
+        --w:       88vw;
+        --gap:     2.5vw;
+        --logo:    104vw;
+        --guthrie: 44vw;
+      }
+      .content {
+        min-height: auto;
+        padding: 6vw 0 10vw;
+        justify-content: flex-start;
+      }
+      .rekitbox-wrap { width: calc(var(--guthrie) * 0.72); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg">
+    <!-- Drop a `hero-bg.mp4` in the repo root to enable. Falls back to bg-statue-aura.png automatically. -->
+    <video class="bg-video" id="bgVideo" autoplay muted loop playsinline preload="metadata" poster="bg-statue-aura.png">
+      <source src="hero-bg.mp4" type="video/mp4" />
+    </video>
+  </div>
+
+  <!-- ═══ LEFT GALLERY WINDOW ═══ -->
+  <aside class="gallery-window gallery-left" id="galleryLeft" aria-label="Photo gallery (left)" data-paused="false">
+    <div class="gw-bar">
+      <span class="gw-title">Live · Set 01</span>
+      <button class="gw-toggle" type="button" aria-label="Pause gallery" data-target="galleryLeft">⏸</button>
+    </div>
+    <div class="gw-viewport"><div class="gw-strip" id="stripLeft"></div></div>
+  </aside>
+
+  <!-- ═══ RIGHT GALLERY WINDOW ═══ -->
+  <aside class="gallery-window gallery-right" id="galleryRight" aria-label="Photo gallery (right)" data-paused="false">
+    <div class="gw-bar">
+      <span class="gw-title">Live · Set 02</span>
+      <button class="gw-toggle" type="button" aria-label="Pause gallery" data-target="galleryRight">⏸</button>
+    </div>
+    <div class="gw-viewport"><div class="gw-strip" id="stripRight"></div></div>
+  </aside>
+
+  <div class="content">
+
+    <a class="el logo" aria-label="Osos Discos">
+      <img src="logo-osos.png" alt="Osos Discos" />
+    </a>
+
+    <a class="el full interactive" href="https://www.instagram.com/camalama/" target="_blank" rel="noopener" aria-label="Cameron on Instagram">
+      <img src="icon-instagram-cameron.png" alt="" />
+    </a>
+
+    <a class="el full interactive" href="https://www.instagram.com/djmarshall.t/" target="_blank" rel="noopener" aria-label="Marshall on Instagram">
+      <img src="icon-instagram-marshall.png" alt="" />
+    </a>
+
+    <div class="icon-row">
+      <a class="interactive" href="gear.html" aria-label="Build your gear package">
+        <img src="btn-gear.png" alt="Gear Builder" />
+      </a>
+      <a class="interactive" href="consult.html" aria-label="Request a consult">
+        <img src="btn-booker.png" alt="Event Consult" />
+      </a>
+    </div>
+
+    <div class="icon-row">
+      <a class="interactive" href="https://www.twitch.tv/chefcamalama" target="_blank" rel="noopener" aria-label="Twitch">
+        <img src="icon-twitch.png" alt="" />
+      </a>
+      <a class="interactive" href="https://soundcloud.com/kineticnola" target="_blank" rel="noopener" aria-label="SoundCloud">
+        <img src="icon-soundcloud.png" alt="" />
+      </a>
+      <a class="interactive" href="https://www.facebook.com/DjCameronKelly/" target="_blank" rel="noopener" aria-label="Facebook">
+        <img src="icon-facebook-cameron.png" alt="" />
+      </a>
+    </div>
+
+    <a class="el logo-guthrie interactive" href="consult.html" aria-label="Guthrie Entertainment — book a consult">
+      <img src="logo-guthrie.png" alt="Guthrie Entertainment" />
+    </a>
+
+    <div class="rekitbox-wrap interactive" id="rkb-open" role="button" tabindex="0" aria-label="Learn about RekitBox">
+      <img src="icon-rekitbox.png" alt="RekitBox" />
+    </div>
+
+  </div>
+
+  <!-- RekitBox popup modal -->
+  <div class="rkb-overlay" id="rkb-overlay" role="dialog" aria-modal="true" aria-labelledby="rkb-heading">
+    <div class="rkb-modal">
+      <button class="rkb-close" id="rkb-close" aria-label="Close" type="button">✕</button>
+      <h3 id="rkb-heading">RekitBox</h3>
+      <p>A free Mac app that fills the gaps Rekordbox leaves open. Reads and writes your Rekordbox database directly — BPM &amp; key detection, acoustic fingerprint duplicate finding, import, broken path repair, playlist linking, and more. No cloud, no account, no subscription. Runs entirely on your local machine.</p>
+      <a class="rkb-download"
+         href="https://github.com/fabledharbinger0993/RekitBox/releases/latest/download/RekitBox.zip"
+         aria-label="Download RekitBox">
+        <img src="icon-rekitbox-download.png" alt="Download RekitBox" />
+      </a>
+    </div>
+  </div>
+
+  <script>
+    /* ── HERO VIDEO ───────────────────────────────────────
+       If hero-bg.mp4 exists, fade it in over the poster.
+       If not (404 or codec failure), leave the static background. */
+    (function () {
+      const v = document.getElementById('bgVideo');
+      if (!v) return;
+      v.addEventListener('canplay', () => v.classList.add('ready'), { once: true });
+      v.addEventListener('error', () => v.remove());
+      // If no <source> resolves, the video silently has no readyState — clean up.
+      setTimeout(() => { if (v.readyState === 0) v.remove(); }, 3000);
+    })();
+
+    /* ── REKITBOX MODAL (with basic focus management) ─── */
+    (function () {
+      const overlay  = document.getElementById('rkb-overlay');
+      const openBtn  = document.getElementById('rkb-open');
+      const closeBtn = document.getElementById('rkb-close');
+      let lastFocus = null;
+
+      function openModal() {
+        lastFocus = document.activeElement;
+        overlay.classList.add('open');
+        closeBtn.focus();
+      }
+      function closeModal() {
+        overlay.classList.remove('open');
+        if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+      }
+
+      openBtn.addEventListener('click', openModal);
+      openBtn.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(); }
+      });
+      closeBtn.addEventListener('click', closeModal);
+      overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+      });
+    })();
+
+    /* ── GALLERY ──────────────────────────────────────────
+       Populate by editing the GALLERY arrays below.
+       Drop your images in /gallery/ then list the filenames here.
+       Missing images are removed automatically — the gallery hides
+       itself entirely if no images load. */
+    (function () {
+      const GALLERY = {
+        left: [
+          'gallery/01.jpg',
+          'gallery/02.jpg',
+          'gallery/03.jpg',
+          'gallery/04.jpg',
+          'gallery/05.jpg',
+          'gallery/06.jpg',
+        ],
+        right: [
+          'gallery/07.jpg',
+          'gallery/08.jpg',
+          'gallery/09.jpg',
+          'gallery/10.jpg',
+          'gallery/11.jpg',
+          'gallery/12.jpg',
+        ],
+      };
+
+      function mount(stripId, windowId, sources) {
+        const strip = document.getElementById(stripId);
+        const win   = document.getElementById(windowId);
+        if (!strip || !win) return;
+
+        let loaded = 0;
+        const total = sources.length;
+        const elements = [];
+
+        sources.forEach((src, i) => {
+          const img = new Image();
+          img.alt = '';
+          img.loading = i < 2 ? 'eager' : 'lazy';
+          img.decoding = 'async';
+          img.src = src;
+          img.onload = () => {
+            elements.push(img);
+            loaded++;
+            if (loaded === total) finish();
+          };
+          img.onerror = () => {
+            loaded++;
+            if (loaded === total) finish();
+          };
+        });
+
+        function finish() {
+          if (elements.length === 0) {
+            win.remove();
+            return;
+          }
+          // Append originals + a duplicate set so the CSS animation loops seamlessly.
+          elements.forEach(el => strip.appendChild(el));
+          elements.forEach(el => strip.appendChild(el.cloneNode(true)));
+          win.classList.add('ready');
+        }
+      }
+
+      mount('stripLeft',  'galleryLeft',  GALLERY.left);
+      mount('stripRight', 'galleryRight', GALLERY.right);
+
+      // Play/pause toggles
+      document.querySelectorAll('.gw-toggle').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const win = document.getElementById(btn.dataset.target);
+          if (!win) return;
+          const paused = win.dataset.paused === 'true';
+          win.dataset.paused = String(!paused);
+          btn.textContent = paused ? '⏸' : '▶';
+          btn.setAttribute('aria-label', paused ? 'Pause gallery' : 'Play gallery');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

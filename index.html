@@ -13,14 +13,14 @@
   <meta property="og:url" content="https://guthrieent.com/" />
   <meta property="og:title" content="Osos Discos — Cameron Kelly & Marshall T" />
   <meta property="og:description" content="Philadelphia DJ duo and event sound. Book a consult or build your own gear package." />
-  <meta property="og:image" content="https://guthrieent.com/bg-statue-aura.png" />
+  <meta property="og:image" content="https://guthrieent.com/icon-bg-phone.png" />
   <meta property="og:image:alt" content="Osos Discos — disco statues bathed in colored light" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Osos Discos — Cameron Kelly & Marshall T" />
   <meta name="twitter:description" content="Philadelphia DJ duo and event sound. Book a consult or build your own gear package." />
-  <meta name="twitter:image" content="https://guthrieent.com/bg-statue-aura.png" />
+  <meta name="twitter:image" content="https://guthrieent.com/icon-bg-phone.png" />
 
   <link rel="icon" type="image/png" href="logo-osos.png" />
   <link rel="apple-touch-icon" href="logo-osos.png" />
@@ -51,7 +51,13 @@
       z-index: 0;
       pointer-events: none;
       overflow: hidden;
-      background: url('bg-statue-aura.png') center / cover no-repeat;
+      background-color: #6f5131;
+      background-image:
+        radial-gradient(ellipse at 50% 20%, rgba(232, 189, 117, 0.26) 0%, rgba(111, 81, 49, 0.28) 55%, rgba(22, 14, 8, 0.55) 100%),
+        image-set(url('/icon-bg-phone.webp') type('image/webp'), url('/icon-bg-phone.png') type('image/png'));
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
     }
 
     .bg-video {
@@ -66,7 +72,11 @@
     .bg-video.ready { opacity: 1; }
 
     @media (max-width: 600px) {
-      .bg { background-image: url('icon-bg-phone.png'); }
+      .bg {
+        background-image:
+          radial-gradient(ellipse at 50% 20%, rgba(232, 189, 117, 0.22) 0%, rgba(111, 81, 49, 0.24) 55%, rgba(22, 14, 8, 0.5) 100%),
+          image-set(url('/icon-bg-phone.webp') type('image/webp'), url('/icon-bg-phone.png') type('image/png'));
+      }
       .bg-video { display: none; }
     }
 
@@ -346,8 +356,8 @@
 <body>
 
   <div class="bg">
-    <!-- Drop a `hero-bg.mp4` in the repo root to enable. Falls back to bg-statue-aura.png automatically. -->
-    <video class="bg-video" id="bgVideo" autoplay muted loop playsinline preload="metadata" poster="bg-statue-aura.png">
+    <!-- Drop a `hero-bg.mp4` in the repo root to enable. Falls back to icon-bg-phone.png automatically. -->
+    <video class="bg-video" id="bgVideo" autoplay muted loop playsinline preload="metadata" poster="/icon-bg-phone.png">
       <source src="hero-bg.mp4" type="video/mp4" />
     </video>
   </div>

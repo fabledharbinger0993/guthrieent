@@ -10,13 +10,13 @@
   Cache-Control: public, max-age=300, must-revalidate
 
 /*.png
-  Cache-Control: public, max-age=604800, must-revalidate
+  Cache-Control: public, max-age=86400, must-revalidate
 
 /*.webp
-  Cache-Control: public, max-age=604800, must-revalidate
+  Cache-Control: public, max-age=86400, must-revalidate
 
 /*.jpg
-  Cache-Control: public, max-age=604800, must-revalidate
+  Cache-Control: public, max-age=86400, must-revalidate
 
 /*.mp4
   Cache-Control: public, max-age=604800, must-revalidate

@@ -128,8 +128,8 @@
       transition-duration: 0.05s;
     }
 
-    /* ── REKITBOX BUTTON ────────────────────────────────── */
-    .rekitbox-wrap {
+    /* ── FABLEGEAR BUTTON ────────────────────────────────── */
+    .fablegear-wrap {
       position: relative;
       width: calc(var(--guthrie) * 0.72);
       display: flex;
@@ -137,9 +137,9 @@
       align-items: center;
       cursor: pointer;
     }
-    .rekitbox-wrap img { display: block; width: 100%; height: auto; }
+    .fablegear-wrap img { display: block; width: 100%; height: auto; }
 
-    /* ── REKITBOX POPUP MODAL ───────────────────────────── */
+    /* ── FABLEGEAR POPUP MODAL ───────────────────────────── */
     .rkb-overlay {
       display: none;
       position: fixed;
@@ -349,7 +349,7 @@
         padding: 6vw 0 10vw;
         justify-content: flex-start;
       }
-      .rekitbox-wrap { width: calc(var(--guthrie) * 0.72); }
+      .fablegear-wrap { width: calc(var(--guthrie) * 0.72); }
     }
   </style>
 </head>
@@ -419,23 +419,24 @@
       <img src="logo-guthrie.png" alt="Guthrie Entertainment" />
     </a>
 
-    <div class="rekitbox-wrap interactive" id="rkb-open" role="button" tabindex="0" aria-label="Learn about RekitBox">
-      <img src="icon-rekitbox.png" alt="RekitBox" />
+    <div class="fablegear-wrap interactive" id="rkb-open" role="button" tabindex="0" aria-label="Learn about FableGear">
+      <img src="FableGear-logo.png" alt="FableGear" />
     </div>
 
   </div>
 
-  <!-- RekitBox popup modal -->
+  <!-- FableGear popup modal -->
   <div class="rkb-overlay" id="rkb-overlay" role="dialog" aria-modal="true" aria-labelledby="rkb-heading">
     <div class="rkb-modal">
       <button class="rkb-close" id="rkb-close" aria-label="Close" type="button">✕</button>
-      <h3 id="rkb-heading">RekitBox</h3>
+      <h3 id="rkb-heading">FableGear</h3>
       <p>A free Mac app that fills the gaps Rekordbox leaves open. Reads and writes your Rekordbox database directly — BPM &amp; key detection, acoustic fingerprint duplicate finding, import, broken path repair, playlist linking, and more. No cloud, no account, no subscription. Runs entirely on your local machine.</p>
-      <a class="rkb-download"
-         href="https://github.com/fabledharbinger0993/RekitBox/releases/latest/download/RekitBox.zip"
-         aria-label="Download RekitBox">
-        <img src="icon-rekitbox-download.png" alt="Download RekitBox" />
-      </a>
+        <a href="https://guthrieent.com/fablegear" 
+        class="fablegear-wrap interactive" 
+        id="rkb-open" 
+        aria-label="Learn about FableGear">
+       <img src="FableGear-logo.png" alt="FableGear" />
+     </a>
     </div>
   </div>
 
@@ -452,33 +453,12 @@
       setTimeout(() => { if (v.readyState === 0) v.remove(); }, 3000);
     })();
 
-    /* ── REKITBOX MODAL (with basic focus management) ─── */
-    (function () {
-      const overlay  = document.getElementById('rkb-overlay');
-      const openBtn  = document.getElementById('rkb-open');
-      const closeBtn = document.getElementById('rkb-close');
-      let lastFocus = null;
-
-      function openModal() {
-        lastFocus = document.activeElement;
-        overlay.classList.add('open');
-        closeBtn.focus();
-      }
-      function closeModal() {
-        overlay.classList.remove('open');
-        if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
-      }
-
-      openBtn.addEventListener('click', openModal);
-      openBtn.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(); }
-      });
-      closeBtn.addEventListener('click', closeModal);
-      overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
-      document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
-      });
-    })();
+    <a href="https://guthrieent.com/fablegear" 
+   class="fablegear-wrap interactive" 
+   id="rkb-open" 
+   aria-label="Learn about FableGear">
+  <img src="FableGear-logo.png" alt="FableGear" />
+</a>
 
     /* ── GALLERY ──────────────────────────────────────────
        Populate by editing the GALLERY arrays below.

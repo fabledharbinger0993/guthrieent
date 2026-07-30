@@ -110,6 +110,22 @@
         .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
         header, main, footer { position: relative; z-index: 1; }
 
+        /* Same return-to-home control gear.html and consult.html use, so this
+           page behaves like the rest of guthrieent.com. Glow is tinted to this
+           page's palette rather than the site gold. */
+        .back-nav { position: fixed; top: 14px; left: 20px; z-index: 90; }
+        .return-btn {
+            display: block;
+            width: clamp(80px, 9vw, 130px);
+            transition: transform 0.10s ease, filter 0.10s ease;
+        }
+        .return-btn img { display: block; width: 100%; height: auto; }
+        .return-btn:hover {
+            filter: brightness(1.2) drop-shadow(0 0 10px rgba(255,61,158,0.5));
+            transform: scale(1.05);
+        }
+        .return-btn:active { transform: scale(0.93); }
+
         header { padding: 36px 0 8px; text-align: center; }
         .brand {
             font-family: 'Chakra Petch', sans-serif;
@@ -330,6 +346,12 @@
     </video>
     <button id="splash-skip" type="button">Skip</button>
 </div>
+
+<nav class="back-nav">
+    <a href="index.html" class="return-btn" aria-label="Return to Osos Discos">
+        <img src="btn-navigate-osos.png" alt="Return" />
+    </a>
+</nav>
 
 <header class="wrap">
     <a href="#" class="brand">FABLEGEAR</a>

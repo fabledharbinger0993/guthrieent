@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FableGear — repair and manage a rekordbox library</title>
+    <meta name="description" content="A free, local macOS app that repairs broken file paths, finds duplicates, and analyzes tempo and key in a rekordbox library. Open source, no account, no cloud.">
+
+    <!-- Canonical is the extensionless /fablegear because that is the URL
+         already published from index.html and shared publicly. Note that
+         gear.html and consult.html canonicalize to their .html form, so the
+         site is inconsistent about this; worth unifying one way or the other,
+         but not something to change unilaterally here. -->
+    <link rel="canonical" href="https://guthrieent.com/fablegear" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://guthrieent.com/fablegear" />
+    <meta property="og:title" content="FableGear · Free library repair for rekordbox" />
+    <meta property="og:description" content="A free, open source macOS app that repairs broken file paths, finds duplicate tracks, and detects tempo and key. Runs on your machine. No account, no cloud." />
+    <meta property="og:image" content="https://guthrieent.com/FableGear-logo.png" />
+    <meta property="og:image:alt" content="FableGear logo" />
+    <!-- `summary`, not `summary_large_image`: the only art available is a
+         square logo, which a wide card would crop badly. A purpose-made
+         1200x630 image would be worth adding before any real launch push. -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="FableGear · Free library repair for rekordbox" />
+    <meta name="twitter:description" content="Free, open source, runs locally. Repairs broken paths, finds duplicates, detects tempo and key." />
+    <meta name="twitter:image" content="https://guthrieent.com/FableGear-logo.png" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #07060b;
+            --panel: rgba(19, 14, 28, 0.86);
+            --line: rgba(255, 255, 255, 0.09);
+            --magenta: #ff3d9e;
+            --violet: #8d5cf6;
+            --cyan: #3ddbff;
+            --ink: #f4eff9;
+            --ink-dim: #ab9dc5;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--ink-dim);
+            font-family: 'IBM Plex Sans', sans-serif;
+            margin: 0;
+            line-height: 1.65;
+            position: relative;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            /* The old page pointed at Fable_Mascot.png, which is not in the
+               repo — that background has been silently 404ing. Using the logo
+               that does exist. Drop Fable_Mascot.png in beside this file and
+               change this line back if you want the mascot art instead. */
+            background-image: url('FableGear-logo.png');
+            background-size: 680px;
+            background-position: center 60px;
+            background-repeat: no-repeat;
+            opacity: 0.14;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: repeating-linear-gradient(
+                0deg,
+                rgba(255,255,255,0.012) 0px,
+                rgba(255,255,255,0.012) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Splash gate ────────────────────────────────────────────────────
+           Covers the page while the intro plays. Every exit path removes it:
+           video end, skip button, keypress, load error, or the watchdog. The
+           page underneath is fully rendered the whole time, so a failure here
+           can never keep someone from reading the site. */
+        #splash {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.6s ease;
+        }
+        #splash.done { opacity: 0; pointer-events: none; }
+        #splash video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        #splash-skip {
+            position: absolute;
+            bottom: 28px;
+            right: 28px;
+            background: rgba(0,0,0,0.45);
+            border: 1px solid rgba(255,255,255,0.28);
+            color: #fff;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            padding: 9px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        #splash-skip:hover { border-color: var(--magenta); color: var(--magenta); }
+        /* Stop the page scrolling behind the splash without hiding it from
+           screen readers or search crawlers. */
+        body.splash-open { overflow: hidden; }
+
+        @media (prefers-reduced-motion: reduce) {
+            #splash { display: none; }
+        }
+
+        .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+        header, main, footer { position: relative; z-index: 1; }
+
+        /* Same return-to-home control gear.html and consult.html use, so this
+           page behaves like the rest of guthrieent.com. Glow is tinted to this
+           page's palette rather than the site gold. */
+        .back-nav { position: fixed; top: 14px; left: 20px; z-index: 90; }
+        .return-btn {
+            display: block;
+            width: clamp(80px, 9vw, 130px);
+            transition: transform 0.10s ease, filter 0.10s ease;
+        }
+        .return-btn img { display: block; width: 100%; height: auto; }
+        .return-btn:hover {
+            filter: brightness(1.2) drop-shadow(0 0 10px rgba(255,61,158,0.5));
+            transform: scale(1.05);
+        }
+        .return-btn:active { transform: scale(0.93); }
+
+        header { padding: 36px 0 8px; text-align: center; }
+        .brand {
+            font-family: 'Chakra Petch', sans-serif;
+            color: var(--ink);
+            font-size: 32px;
+            font-weight: 700;
+            text-decoration: none;
+            letter-spacing: 2px;
+            transition: color 0.2s ease;
+        }
+        .brand:hover { color: var(--magenta); }
+        .kicker {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2.5px;
+            color: var(--ink-dim);
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 110px 0 90px;
+            background:
+                radial-gradient(circle at 50% 28%, rgba(141, 92, 246, 0.16) 0%, rgba(7,6,11,0) 55%),
+                radial-gradient(circle at 50% 28%, rgba(61, 219, 255, 0.07) 0%, rgba(7,6,11,0) 62%);
+        }
+
+        h1 {
+            font-family: 'Chakra Petch', sans-serif;
+            color: var(--ink);
+            font-size: clamp(32px, 6vw, 52px);
+            margin-bottom: 22px;
+            line-height: 1.18;
+        }
+
+        .lede { font-size: 1.1rem; max-width: 640px; margin: 0 auto; }
+
+        .cta-wrap { margin-top: 30px; }
+
+        .cta-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--magenta), var(--violet));
+            color: #0a0710;
+            padding: 13px 32px;
+            border-radius: 6px;
+            font-family: 'Chakra Petch', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-decoration: none;
+            transition: box-shadow 0.25s ease, transform 0.25s ease;
+        }
+        .cta-btn:hover {
+            box-shadow: 0 0 30px rgba(255,61,158,0.45);
+            transform: translateY(-1px);
+        }
+
+        .cta-note {
+            display: block;
+            margin-top: 16px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: var(--ink-dim);
+            letter-spacing: 0.5px;
+        }
+
+        .cta-version {
+            display: block;
+            margin-top: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--cyan);
+            letter-spacing: 1px;
+        }
+
+        section.panel {
+            padding: 48px;
+            background: var(--panel);
+            border-radius: 14px;
+            margin-bottom: 28px;
+            border: 1px solid var(--line);
+            backdrop-filter: blur(6px);
+        }
+        section.panel p { margin-bottom: 16px; }
+        section.panel p:last-child { margin-bottom: 0; }
+
+        h2 {
+            font-family: 'Chakra Petch', sans-serif;
+            color: var(--ink);
+            font-size: 26px;
+            margin: 0 0 18px;
+        }
+        h3 {
+            font-family: 'Chakra Petch', sans-serif;
+            color: var(--ink);
+            font-size: 17px;
+            margin: 30px 0 10px;
+        }
+
+        .feature-list { display: grid; gap: 18px; list-style: none; padding: 0; margin: 0; }
+        .feature-item {
+            padding: 22px 24px;
+            border-left: 3px solid var(--magenta);
+            background: rgba(255,255,255,0.025);
+            border-radius: 4px;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        .feature-item:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--cyan);
+        }
+        .feature-tag {
+            display: block;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--cyan);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+        .feature-item strong {
+            color: var(--ink);
+            font-family: 'Chakra Petch', sans-serif;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 1.05rem;
+        }
+
+        table.data {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+            margin: 8px 0 4px;
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        table.data th, table.data td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--line);
+        }
+        table.data th {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        table.data td.num {
+            font-family: 'IBM Plex Mono', monospace;
+            color: var(--ink);
+        }
+        table.data tr.highlight td { color: var(--ink); font-weight: 600; }
+
+        .dep {
+            padding: 14px 0;
+            border-bottom: 1px solid var(--line);
+        }
+        .dep:last-child { border-bottom: none; }
+        .dep-name {
+            font-family: 'IBM Plex Mono', monospace;
+            color: var(--ink);
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        .dep-lic {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: var(--ink-dim);
+            border: 1px solid var(--line);
+            padding: 2px 7px;
+            border-radius: 3px;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+        .dep-why { display: block; margin-top: 5px; }
+
+        .caveat {
+            border-left: 3px solid var(--cyan);
+            background: rgba(61,219,255,0.05);
+            padding: 18px 22px;
+            border-radius: 4px;
+            margin-top: 22px;
+            font-size: 0.95rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 48px 24px 56px;
+            font-size: 13px;
+            font-family: 'IBM Plex Mono', monospace;
+            letter-spacing: 0.3px;
+        }
+        footer a {
+            color: var(--magenta);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,61,158,0.4);
+            transition: color 0.2s ease, border-color 0.2s ease;
+        }
+        footer a:hover { color: var(--cyan); border-color: var(--cyan); }
+
+        @media (max-width: 640px) {
+            section.panel { padding: 32px 22px; }
+            .hero { padding: 80px 0 60px; }
+            #splash-skip { bottom: 18px; right: 18px; }
+        }
+    </style>
+</head>
+<body class="splash-open">
+
+<!-- ═══ Intro ═══ Place fablegear-splash.mp4 in the same folder as this file. -->
+<div id="splash">
+    <video id="splash-video" muted playsinline autoplay preload="auto">
+        <source src="fablegear-splash.mp4" type="video/mp4">
+    </video>
+    <button id="splash-skip" type="button">Skip</button>
+</div>
+
+<nav class="back-nav">
+    <a href="index.html" class="return-btn" aria-label="Return to Osos Discos">
+        <img src="btn-navigate-osos.png" alt="Return" />
+    </a>
+</nav>
+
+<header class="wrap">
+    <a href="#" class="brand">FABLEGEAR</a>
+    <div class="kicker">Free library repair for rekordbox · macOS</div>
+</header>
+
+<main class="wrap">
+    <section class="hero">
+        <h1>Your library is worth more than the software managing it.</h1>
+        <p class="lede">FableGear is a free, open source macOS app that fixes the problems a rekordbox library develops over years: tracks it can no longer find, the same song filed four times, and tempo and key values you can't fully trust. It runs on your own machine, reads your real library, and shows you what it found before it changes anything.</p>
+        <div class="cta-wrap">
+            <a id="dl-btn"
+               href="https://github.com/fabledharbinger0993/FableGear/releases/latest/download/FableGear.zip"
+               class="cta-btn">Download for macOS  ↓</a>
+            <span id="dl-version" class="cta-version" style="display:none"></span>
+        </div>
+        <span class="cta-note">Free · MIT licensed · No account · Nothing leaves your computer</span>
+    </section>
+
+    <section class="panel">
+        <h2>Why we built it</h2>
+        <p>Rekordbox tracks your music by storing the exact location of every file. That works until a file moves. Rename a drive, reorganize folders, or restore from a backup that missed something, and tracks that played fine last week show up as missing when you load a set.</p>
+        <p>The database rekordbox keeps is a closed file. When the references inside it break, there is no screen that tells you which ones broke or why, and most advice online assumes you still have a healthy library. That is not much use once yours already has three hundred missing tracks in it.</p>
+        <p>We also got tired of paying four separate companies to do four things to the same folder of music, with no single place to see the results. So FableGear reads the file references your library actually uses, repairs the ones pointing nowhere, and reports what it found. Your cue points, hot cues, playlists, and ratings are not touched.</p>
+    </section>
+
+    <section class="panel">
+        <h2>What you can do with it</h2>
+        <ul class="feature-list">
+            <li class="feature-item">
+                <span class="feature-tag">[ 01 ] REPAIR</span>
+                <strong>Reconnect tracks rekordbox lost</strong>
+                When a drive gets renamed or a folder moves, FableGear finds the files rekordbox can no longer locate and points the library back at them. Cue points, hot cues, ratings, and playlist membership stay as they were.
+            </li>
+            <li class="feature-item">
+                <span class="feature-tag">[ 02 ] DEDUPLICATE</span>
+                <strong>Find the same song filed more than once</strong>
+                It compares audio fingerprints rather than filenames, so it recognizes a raw rip and the same track after a Mixed In Key or Platinum Notes pass as one song. Duration is part of the match, which is what stops a 3:30 radio edit from being merged with a 7:00 extended mix. You choose what to keep, and playlist membership moves to the copy you keep instead of being lost.
+            </li>
+            <li class="feature-item">
+                <span class="feature-tag">[ 03 ] ANALYZE</span>
+                <strong>Tempo and key you can check</strong>
+                FableGear detects BPM and musical key and writes them to your file tags. It also reports how confident it was, so you can review the handful of tracks it was unsure about instead of trusting all of them equally.
+            </li>
+            <li class="feature-item">
+                <span class="feature-tag">[ 04 ] RECOVER</span>
+                <strong>Rebuild playlists from a USB stick</strong>
+                If your laptop library is gone but you still have an exported drive, FableGear can read the crates off that drive and rebuild them, then write them back into a live rekordbox library.
+            </li>
+            <li class="feature-item">
+                <span class="feature-tag">[ 05 ] ORGANIZE</span>
+                <strong>Rename and sort by what you choose</strong>
+                Rename files from their tags and sort them into folders by label, artist, genre, or the structure of your own crates. Every move is written to a log first, so you can see what happened and undo it.
+            </li>
+            <li class="feature-item">
+                <span class="feature-tag">[ 06 ] EXPORT</span>
+                <strong>Write a USB that a CDJ reads</strong>
+                FableGear can write the Pioneer library format and the analysis files that go with it, including beat grids and waveforms. See the honest note about this below.
+            </li>
+        </ul>
+    </section>
+
+    <section class="panel">
+        <h2>Numbers, and how we got them</h2>
+        <p>Claims about analysis quality are easy to make and hard to check, so here is ours with the method attached. Rekordbox writes its own beat grid for every track it analyzes. We read 12,687 of those grids out of one working DJ library and used them as the answer key, then ran a random 300-track sample through FableGear and compared.</p>
+        <table class="data">
+            <thead>
+                <tr><th>Beat detection</th><th>Within 4%</th><th>Within 1%</th><th>Exact</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Our previous method</td><td class="num">90.7%</td><td class="num">36.8%</td><td class="num">13.4%</td></tr>
+                <tr class="highlight"><td>What ships now</td><td class="num">98.3%</td><td class="num">94.8%</td><td class="num">91.4%</td></tr>
+            </tbody>
+        </table>
+        <p>The last column is the one that matters. A tempo that is 4% off drifts a full beat within about 25 bars, which is useless for a beat grid even though it looks fine as a percentage. Exact agreement with rekordbox on 91.4% of tracks is what makes a grid worth putting on a USB stick.</p>
+        <p>We also found and fixed a real bug in our own loudness tool while measuring this. It was raising volume to hit a target without checking how close the audio already was to maximum, which clipped the file and deleted the original. On the tracks we tested it damaged 39 out of 39. It now refuses to raise volume past the point where clipping starts, and tells you when it cannot reach the target instead of ruining the file to get there.</p>
+        <div class="caveat">
+            <strong style="color:var(--ink)">What that measurement does not prove:</strong> it is one library, with one person's taste in music, and 300 tracks. A collection of drum and bass or hip hop would score differently. We publish the method so you can disagree with it.
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>How it compares to DJ software</h2>
+        <p>FableGear does not try to beat the specialists at their own specialty. It does the library maintenance parts in one free local app instead of four paid ones.</p>
+        <ul class="feature-list">
+            <li class="feature-item">
+                <span class="feature-tag">REKORDBOX</span>
+                <strong>Still required for some things</strong>
+                Rekordbox is a player and a performance tool, and it is good at that. It is not built to keep a large archive readable through years of drive changes. FableGear does the archive work and leaves performance to rekordbox. You can run both.
+            </li>
+            <li class="feature-item">
+                <span class="feature-tag">MIXED IN KEY</span>
+                <strong>Key and energy analysis</strong>
+                Mixed In Key is a mature paid product and its energy ratings have no equivalent here. Our key detection is good but we have not measured it against an answer key the way we did with tempo, so we are not going to claim it is better. FableGear is free and includes key detection as part of library work rather than as a separate purchase.
+            </li>
+            <li class="feature-item">
+                <span class="feature-tag">PLATINUM NOTES</span>
+                <strong>Loudness and correction</strong>
+                Platinum Notes is a paid batch processor that rewrites your audio. FableGear measures loudness to the same broadcast standard on your own machine for free, but it is deliberately more conservative: it will decline to change a file rather than clip it. If you want aggressive per-track mastering, Platinum Notes does that and we do not.
+            </li>
+            <li class="feature-item">
+                <span class="feature-tag">LEXICON</span>
+                <strong>Library management across apps</strong>
+                Lexicon is a polished paid app that syncs libraries between rekordbox, Serato, Traktor, and others. It is more finished than FableGear and supports more platforms. FableGear is free, open source, macOS only, and focused on rekordbox specifically, including reading and writing the Pioneer USB format directly.
+            </li>
+            <li class="feature-item">
+                <span class="feature-tag">REKORDCLOUD</span>
+                <strong>Cloud library tools</strong>
+                Rekord Cloud does library conversion and cleanup through a browser, on a subscription. FableGear does its work on your machine with no account and no upload. If you prefer a hosted service with support, that is a fair reason to pick theirs.
+            </li>
+        </ul>
+    </section>
+
+    <section class="panel">
+        <h2>How it compares to general file tools</h2>
+        <p>Plenty of people already clean music folders with tools that were not written for DJs. Those tools are often excellent, and they do not know what a cue point is.</p>
+        <ul class="feature-list">
+            <li class="feature-item">
+                <span class="feature-tag">MUSICBRAINZ PICARD</span>
+                <strong>Fingerprint tagging</strong>
+                Picard is free, cross platform, and better than FableGear at filling in correct release metadata from MusicBrainz. It also happily reorganizes files in ways that leave rekordbox unable to find them. FableGear uses the same fingerprinting service but updates the rekordbox database alongside the files, so tagging does not break your library.
+            </li>
+            <li class="feature-item">
+                <span class="feature-tag">MP3TAG</span>
+                <strong>Bulk tag editing</strong>
+                Mp3tag is faster and more flexible for pure tag editing, and it has years of refinement behind it. It has no idea your library exists. FableGear edits fewer fields but keeps the database in agreement with what it wrote.
+            </li>
+            <li class="feature-item">
+                <span class="feature-tag">DUPEGURU / GEMINI</span>
+                <strong>Duplicate finders</strong>
+                General duplicate finders match on filename, size, or hash. That misses the case DJs actually have, where the same song exists as a raw rip and again after processing, so the bytes differ completely. FableGear matches on audio fingerprint and duration, and shows you which playlists each copy is in before you delete anything.
+            </li>
+            <li class="feature-item">
+                <span class="feature-tag">FINDER, FOOBAR2000, VLC</span>
+                <strong>Moving files and auditioning them</strong>
+                Moving files in Finder is exactly what breaks a rekordbox library, because Finder does not update the database. FableGear moves files and updates the references in the same operation. It also has preview decks built in, so you do not need a second player open to hear what you are about to change.
+            </li>
+        </ul>
+    </section>
+
+    <section class="panel">
+        <h2>What it is built on</h2>
+        <p>FableGear is Python. It leans on open source projects that are better at their jobs than anything we would write, and it is worth knowing what they are, because they determine what the app can and cannot do. Our own code is MIT licensed. These are installed from the Python package index on your machine when you first run the app rather than shipped inside the download.</p>
+
+        <h3>Audio analysis</h3>
+        <div class="dep">
+            <span class="dep-name">ffmpeg</span><span class="dep-lic">LGPL / GPL</span>
+            <span class="dep-why">Decodes every format, measures loudness and true peak to the EBU R128 standard, and handles format conversion. Installed separately with Homebrew. Nearly everything audio in FableGear goes through it.</span>
+        </div>
+        <div class="dep">
+            <span class="dep-name">essentia</span><span class="dep-lic">AGPL-3.0</span>
+            <span class="dep-why">Beat tracking, from the Music Technology Group at Universitat Pompeu Fabra. This is the single biggest reason our tempo numbers improved from 13% to 91% exact. It is optional: if there is no build available for your macOS and Python version, the app installs without it, falls back to a less accurate method, and says so in its health panel rather than quietly giving you worse grids.</span>
+        </div>
+        <div class="dep">
+            <span class="dep-name">librosa</span><span class="dep-lic">ISC</span>
+            <span class="dep-why">Musical key detection, waveform generation, and the tempo fallback when essentia is unavailable. Works everywhere, which is why it stays.</span>
+        </div>
+        <div class="dep">
+            <span class="dep-name">pyacoustid and Chromaprint</span><span class="dep-lic">MIT / LGPL</span>
+            <span class="dep-why">Audio fingerprinting, used to recognize duplicates and to look up metadata from AcoustID and MusicBrainz. This is what lets duplicate detection work on processed copies.</span>
+        </div>
+
+        <h3>Reading and writing your library</h3>
+        <div class="dep">
+            <span class="dep-name">pyrekordbox</span><span class="dep-lic">MIT</span>
+            <span class="dep-why">Reads and writes the rekordbox database and its analysis files. Dylan Jones' work here is the reason an app like this is possible at all.</span>
+        </div>
+        <div class="dep">
+            <span class="dep-name">mutagen</span><span class="dep-lic">GPL-2.0-or-later</span>
+            <span class="dep-why">Reads and writes tags across MP3, AIFF, FLAC, WAV, and M4A. Every tag FableGear touches goes through it.</span>
+        </div>
+        <div class="dep">
+            <span class="dep-name">numpy and soundfile</span><span class="dep-lic">BSD</span>
+            <span class="dep-why">Numerical work and audio file inspection, including reading the bit depth of a source file so a conversion does not silently downgrade it.</span>
+        </div>
+
+        <h3>The app itself</h3>
+        <div class="dep">
+            <span class="dep-name">Flask, Waitress, pywebview</span><span class="dep-lic">BSD / ZPL</span>
+            <span class="dep-why">FableGear runs a small web server on your machine and shows it in a native window. That is why the interface looks like a web app: it is one, served only to you, on localhost.</span>
+        </div>
+        <div class="dep">
+            <span class="dep-name">yt-dlp</span><span class="dep-lic">Unlicense</span>
+            <span class="dep-why">Powers the download tool. What you do with it is your responsibility.</span>
+        </div>
+        <div class="dep">
+            <span class="dep-name">Model Context Protocol SDK</span><span class="dep-lic">MIT</span>
+            <span class="dep-why">Lets an AI assistant drive FableGear's tools directly, with a required order so it cannot deduplicate a library it has not audited yet.</span>
+        </div>
+
+        <p style="margin-top:24px">Two projects deserve credit without being dependencies. The reverse engineering of Pioneer's USB formats by Deep Symmetry (crate-digger and dysentery) and by Jan Holthuis (rekordcrate) is what made the export work possible. We did not figure that format out; we read their documentation.</p>
+    </section>
+
+    <section class="panel">
+        <h2>What we are not going to pretend about</h2>
+        <p><strong style="color:var(--ink)">The USB export works, once, on one player.</strong> We wrote a USB stick with FableGear, with no rekordbox involved, and it loaded and played on a CDJ-3000. That is a real result and it changes what this app can become. It is also one player on one day. We have not tested an XDJ, an OPUS-QUAD, or older 2000NXS2 hardware, and until we do, take a rekordbox-made stick to the gig as well.</p>
+        <p><strong style="color:var(--ink)">Loudness normalization will often decline to do anything.</strong> Most commercial music is already mastered close to maximum. Our default target asks for more volume than those files have room for, so the tool correctly skips them instead of clipping. That is the safe behavior, but it means the feature does less than the name suggests. We would rather it do nothing than damage your audio.</p>
+        <p><strong style="color:var(--ink)">It is macOS only.</strong> There is no Windows build. The code is not deeply tied to macOS, but nobody has done the work, so we are not going to promise a date.</p>
+        <p><strong style="color:var(--ink)">It is young.</strong> There are 528 automated tests and the destructive operations are the most heavily tested parts, because those are the ones that can cost you something. It is still a young project maintained by a small team. Back up your library before you point any new tool at it, including this one.</p>
+        <p><strong style="color:var(--ink)">It writes to your files and your database.</strong> That is the entire point, and it is also the risk. Every operation that changes something writes to a log first and can be undone, and destructive tools default to a preview run. Read the preview.</p>
+    </section>
+
+    <section class="panel">
+        <h2>Where this is going</h2>
+        <p>Right now FableGear supports rekordbox and expects you to keep using it. That support is not going away. Everything the app does is designed to leave your rekordbox library working.</p>
+        <p>The longer aim is that you should not need rekordbox to get music onto a player. The USB export result above is the first evidence that is achievable rather than wishful. If it holds up across more hardware, the choice of what manages your collection stops being made for you by whoever built the gear. That is the reason this is free and the source is public: a library tool you depend on should not be something that can be taken away or priced up later.</p>
+        <div class="cta-wrap" style="text-align:center">
+            <a href="https://github.com/fabledharbinger0993/FableGear/releases/latest/download/FableGear.zip" class="cta-btn">Download for macOS  ↓</a>
+            <span class="cta-note">Unzip, open FableGear.app, and it sets itself up. Requires macOS 12 or later.</span>
+        </div>
+    </section>
+</main>
+
+<footer>
+    Built by Guthrie Entertainment LLC in Philadelphia.<br>
+    <a href="https://github.com/fabledharbinger0993/FableGear">Source code and issue tracker on GitHub</a>
+</footer>
+
+<script>
+(function () {
+    // ── Download button: static GitHub link works with no JS. This only adds
+    // the version and file size when the release endpoint is reachable.
+    var btn = document.getElementById('dl-btn');
+    var versionTag = document.getElementById('dl-version');
+    fetch('/fablegear/release')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.mac_url) btn.href = data.mac_url;
+            if (data.tag) {
+                versionTag.textContent = data.mac_size_mb
+                    ? data.tag + ' · ' + data.mac_size_mb + ' MB'
+                    : data.tag;
+                versionTag.style.display = 'block';
+            }
+        })
+        .catch(function () { /* keep the static download link */ });
+
+    // ── Splash gate.
+    // Rule: the page must become readable no matter what the video does.
+    // Every failure mode below ends in reveal(), including the case where the
+    // file is missing entirely or the browser refuses to autoplay.
+    var splash = document.getElementById('splash');
+    var video = document.getElementById('splash-video');
+    var skip = document.getElementById('splash-skip');
+    if (!splash) return;
+
+    var revealed = false;
+    var watchdog = null;
+
+    function reveal() {
+        if (revealed) return;
+        revealed = true;
+        if (watchdog) clearTimeout(watchdog);
+        splash.classList.add('done');
+        document.body.classList.remove('splash-open');
+        try { video.pause(); } catch (e) {}
+        // Remove from the layout once the fade finishes so it can never
+        // intercept a click.
+        setTimeout(function () { splash.remove(); }, 700);
+        try { sessionStorage.setItem('fg_splash_seen', '1'); } catch (e) {}
+    }
+
+    // Already watched this session, or the visitor asked for reduced motion:
+    // skip straight to the page.
+    var seen = false;
+    try { seen = sessionStorage.getItem('fg_splash_seen') === '1'; } catch (e) {}
+    var reduced = window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (seen || reduced) { reveal(); return; }
+
+    video.addEventListener('ended', reveal);
+    video.addEventListener('error', reveal);
+    // A missing or unplayable source fires error on the <source>, not the video.
+    var src = video.querySelector('source');
+    if (src) src.addEventListener('error', reveal);
+
+    skip.addEventListener('click', reveal);
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') reveal();
+    });
+
+    // Hard ceiling. Covers a stalled network, a video that never fires
+    // 'ended', and anything else unforeseen. 15s clip, so 17s is generous
+    // without being a trap.
+    watchdog = setTimeout(reveal, 17000);
+
+    // Autoplay is blocked in some configurations. If play() rejects, don't
+    // sit on a black screen.
+    var attempt = video.play();
+    if (attempt && typeof attempt.catch === 'function') {
+        attempt.catch(reveal);
+    }
+
+    // If metadata never arrives the file is probably not there.
+    setTimeout(function () {
+        if (!revealed && video.readyState === 0) reveal();
+    }, 4000);
+})();
+</script>
+
+</body>
+</html>

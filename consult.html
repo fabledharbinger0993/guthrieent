@@ -966,6 +966,8 @@
 
     <!-- SUBMIT -->
     <div class="submit-area">
+      <!-- Turnstile renders here only once TURNSTILE_SITE_KEY is set below. -->
+      <div id="turnstileHolder" style="display:none;margin-bottom:16px"></div>
       <p class="submit-note">Fields marked <span style="color:var(--gold)">*</span> are required</p>
       <button type="submit" class="btn-submit" id="submitBtn">
         Send the Request
@@ -1003,6 +1005,33 @@
       items: Object.fromEntries(c.items.map(i => [i.id, i.name]))
     }])
   ) : {});
+
+  /* ── TURNSTILE ────────────────────────────────────────────
+     Cloudflare's human check. Free, no cookies, no puzzle for most visitors.
+
+     TO ENABLE: create a widget at Cloudflare dashboard → Turnstile, then paste
+     the SITE key below (it is public — safe in this file). Deploy. Only then
+     add TURNSTILE_SECRET_KEY in Pages → Settings → Environment variables.
+     That order matters: the function rejects submissions the moment the secret
+     exists, so the widget has to be live first.
+
+     While this is empty the form behaves exactly as it does today. */
+  const TURNSTILE_SITE_KEY = '';
+
+  (function () {
+    if (!TURNSTILE_SITE_KEY) return;
+    const holder = document.getElementById('turnstileHolder');
+    if (!holder) return;
+    holder.style.display = 'block';
+    holder.innerHTML =
+      '<div class="cf-turnstile" data-sitekey="' + TURNSTILE_SITE_KEY +
+      '" data-theme="dark"></div>';
+    const s = document.createElement('script');
+    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+    s.async = true;
+    s.defer = true;
+    document.head.appendChild(s);
+  })();
 
   /* ── PLAYLIST PREVIEW ─────────────────────────────────────
      Paste a Spotify link, hear it here before sending. Uses Spotify's public
@@ -1229,8 +1258,14 @@
     const gotcha = document.querySelector('input[name="_gotcha"]')?.value || '';
 
     // Build payload
+    // Turnstile writes its result into a hidden input the widget creates.
+    // Empty when the widget is not enabled, which the function tolerates.
+    const turnstileToken =
+      document.querySelector('[name="cf-turnstile-response"]')?.value || '';
+
     const payload = {
       _gotcha:   gotcha,
+      _turnstile: turnstileToken,
       _subject:  `New Consult Request — ${document.getElementById('name').value.trim()}`,
       Name:      document.getElementById('name').value.trim(),
       Phone:     document.getElementById('phone').value.trim() || 'Not provided',

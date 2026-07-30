@@ -15,7 +15,7 @@
  *   4. Redeploy. That's it — the form will POST to /api/consult automatically.
  */
 
-const SKIP_KEYS = new Set(['_gotcha', '_subject', '_replyto']);
+const SKIP_KEYS = new Set(['_gotcha', '_subject', '_replyto', '_turnstile']);
 
 export async function onRequestPost({ request, env }) {
   let data;
@@ -28,6 +28,23 @@ export async function onRequestPost({ request, env }) {
   // Honeypot: bots fill hidden fields. Pretend success, send nothing.
   if (data._gotcha) {
     return json({ ok: true });
+  }
+
+  // Turnstile. Only enforced once TURNSTILE_SECRET_KEY exists, so adding this
+  // code cannot break the live form before the widget is created. Once the
+  // secret IS set it fails closed: a missing or bad token is rejected.
+  //
+  // Set the site key in consult.html FIRST, deploy, then add the secret here.
+  // Doing it the other way round rejects real submissions in between.
+  if (env.TURNSTILE_SECRET_KEY) {
+    const token = String(data._turnstile || '');
+    if (!token) {
+      return json({ ok: false, error: 'Please complete the human check and try again.' }, 400);
+    }
+    const ok = await verifyTurnstile(token, env.TURNSTILE_SECRET_KEY, request);
+    if (!ok) {
+      return json({ ok: false, error: 'Human check failed. Please try again.' }, 403);
+    }
   }
 
   const name = String(data.Name || '').trim();
@@ -211,6 +228,39 @@ function formatCustomerHtml(data, name) {
     </td></tr>
   </table>
 </body></html>`;
+}
+
+// ── Turnstile verification ──────────────────────────────────────────────────
+// Cloudflare's siteverify call. The visitor's IP is passed when available,
+// which Cloudflare uses to strengthen the check. Any network failure returns
+// false: with a secret configured we would rather reject and let the person
+// retry than wave through unverified traffic.
+
+async function verifyTurnstile(token, secret, request) {
+  const body = new FormData();
+  body.append('secret', secret);
+  body.append('response', token);
+  const ip = request.headers.get('CF-Connecting-IP');
+  if (ip) body.append('remoteip', ip);
+
+  try {
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body,
+    });
+    if (!res.ok) {
+      console.error('Turnstile siteverify HTTP', res.status);
+      return false;
+    }
+    const out = await res.json();
+    if (!out.success) {
+      console.error('Turnstile rejected:', out['error-codes']);
+    }
+    return out.success === true;
+  } catch (err) {
+    console.error('Turnstile verify error:', err);
+    return false;
+  }
 }
 
 function json(body, status = 200) {

@@ -820,6 +820,17 @@
           <span class="hint">include the @</span>
         </div>
       </div>
+
+      <!-- Playlist: paste a Spotify link and it plays right here, so you can
+           check it is the right one before sending. Uses Spotify's public
+           embed, which needs no account and no API key. -->
+      <div class="field-group" style="margin-top:18px">
+        <label for="playlist">Music You Like <span style="opacity:.6">(optional)</span></label>
+        <input type="url" id="playlist" name="playlist" inputmode="url"
+               placeholder="https://open.spotify.com/playlist/..." />
+        <span class="hint" id="playlistHint">Paste a Spotify playlist, album, artist, or track link and it will play below so you can check it before sending.</span>
+        <div id="playlistPreview" style="display:none;margin-top:12px"></div>
+      </div>
     </div>
 
     <!-- 03 · THE EVENT -->
@@ -992,6 +1003,58 @@
       items: Object.fromEntries(c.items.map(i => [i.id, i.name]))
     }])
   ) : {});
+
+  /* ── PLAYLIST PREVIEW ─────────────────────────────────────
+     Paste a Spotify link, hear it here before sending. Uses Spotify's public
+     embed player: no account, no API key, no SDK. The URL is parsed locally
+     and only the extracted id is ever put in the iframe src, so nothing the
+     visitor types is injected into the page as markup.
+     The CSP in _headers must allow frame-src https://open.spotify.com. */
+  (function () {
+    const input   = document.getElementById('playlist');
+    const preview = document.getElementById('playlistPreview');
+    const hint    = document.getElementById('playlistHint');
+    if (!input || !preview) return;
+
+    const BASE_HINT = hint ? hint.textContent : '';
+    // playlist | album | track | artist, optionally with /intl-xx/ prefixes.
+    const RE = /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?(playlist|album|track|artist)\/([A-Za-z0-9]{16,32})/;
+
+    function render() {
+      const val = input.value.trim();
+      preview.innerHTML = '';
+      if (!val) {
+        preview.style.display = 'none';
+        if (hint) hint.textContent = BASE_HINT;
+        return;
+      }
+      const m = val.match(RE);
+      if (!m) {
+        preview.style.display = 'none';
+        if (hint) {
+          hint.textContent =
+            'That does not look like a Spotify link, but we will still pass it along.';
+        }
+        return;
+      }
+      const [, kind, id] = m;
+      const frame = document.createElement('iframe');
+      frame.src = `https://open.spotify.com/embed/${kind}/${id}`;
+      frame.width = '100%';
+      frame.height = kind === 'track' ? '152' : '352';
+      frame.style.border = '0';
+      frame.style.borderRadius = '12px';
+      frame.loading = 'lazy';
+      frame.title = 'Spotify preview';
+      frame.allow = 'clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+      preview.appendChild(frame);
+      preview.style.display = 'block';
+      if (hint) hint.textContent = 'Have a listen — this is what we will get.';
+    }
+
+    input.addEventListener('input', render);
+    input.addEventListener('paste', () => setTimeout(render, 0));
+  })();
 
   const raw = sessionStorage.getItem('gearSelections');
   if (raw) {
@@ -1179,6 +1242,7 @@
       Services:  checkedServices,
       Budget:    document.getElementById('budget').value || 'Not specified',
       Notes:     document.getElementById('notes').value.trim() || 'None',
+      Playlist:  document.getElementById('playlist').value.trim() || 'Not provided',
       'Wants Consultation': document.querySelector('input[name="consult"]:checked')?.value === 'yes' ? 'Yes' : 'No',
       'Gear Builder Selection': gearText,
     };

@@ -4,13 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FableGear — repair and manage a rekordbox library</title>
-    <meta name="description" content="A free, local macOS app that repairs broken file paths, finds duplicates, and analyzes tempo and key in a rekordbox library. Open source, no account, no cloud.">
+    <meta name="description" content="A free, local macOS app that repairs broken file paths, finds duplicates, and analyzes tempo and key in a rekordbox library. Try the beta and help shape what ships next.">
 
-    <!-- Canonical is the extensionless /fablegear because that is the URL
-         already published from index.html and shared publicly. Note that
-         gear.html and consult.html canonicalize to their .html form, so the
-         site is inconsistent about this; worth unifying one way or the other,
-         but not something to change unilaterally here. -->
     <link rel="canonical" href="https://guthrieent.com/fablegear" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://guthrieent.com/fablegear" />
@@ -18,9 +13,6 @@
     <meta property="og:description" content="A free, open source macOS app that repairs broken file paths, finds duplicate tracks, and detects tempo and key. Runs on your machine. No account, no cloud." />
     <meta property="og:image" content="https://guthrieent.com/FableGear-logo.png" />
     <meta property="og:image:alt" content="FableGear logo" />
-    <!-- `summary`, not `summary_large_image`: the only art available is a
-         square logo, which a wide card would crop badly. A purpose-made
-         1200x630 image would be worth adding before any real launch push. -->
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="FableGear · Free library repair for rekordbox" />
     <meta name="twitter:description" content="Free, open source, runs locally. Repairs broken paths, finds duplicates, detects tempo and key." />
@@ -54,10 +46,6 @@
             content: '';
             position: fixed;
             inset: 0;
-            /* The old page pointed at Fable_Mascot.png, which is not in the
-               repo — that background has been silently 404ing. Using the logo
-               that does exist. Drop Fable_Mascot.png in beside this file and
-               change this line back if you want the mascot art instead. */
             background-image: url('FableGear-logo.png');
             background-size: 680px;
             background-position: center 60px;
@@ -82,11 +70,7 @@
             z-index: 0;
         }
 
-        /* ── Splash gate ────────────────────────────────────────────────────
-           Covers the page while the intro plays. Every exit path removes it:
-           video end, skip button, keypress, load error, or the watchdog. The
-           page underneath is fully rendered the whole time, so a failure here
-           can never keep someone from reading the site. */
+        /* ── Splash gate ─────────────────────────────────────────────── */
         #splash {
             position: fixed;
             inset: 0;
@@ -99,11 +83,7 @@
             transition: opacity 0.6s ease;
         }
         #splash.done { opacity: 0; pointer-events: none; }
-        #splash video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+        #splash video { width: 100%; height: 100%; object-fit: contain; }
         #splash-skip {
             position: absolute;
             bottom: 28px;
@@ -120,31 +100,19 @@
             text-transform: uppercase;
         }
         #splash-skip:hover { border-color: var(--magenta); color: var(--magenta); }
-        /* Stop the page scrolling behind the splash without hiding it from
-           screen readers or search crawlers. */
         body.splash-open { overflow: hidden; }
-
-        @media (prefers-reduced-motion: reduce) {
-            #splash { display: none; }
-        }
+        @media (prefers-reduced-motion: reduce) { #splash { display: none; } }
 
         .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
         header, main, footer { position: relative; z-index: 1; }
 
-        /* Same return-to-home control gear.html and consult.html use, so this
-           page behaves like the rest of guthrieent.com. Glow is tinted to this
-           page's palette rather than the site gold. */
+        a { color: var(--cyan); }
+        :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+
         .back-nav { position: fixed; top: 14px; left: 20px; z-index: 90; }
-        .return-btn {
-            display: block;
-            width: clamp(80px, 9vw, 130px);
-            transition: transform 0.10s ease, filter 0.10s ease;
-        }
+        .return-btn { display: block; width: clamp(80px, 9vw, 130px); transition: transform 0.10s ease, filter 0.10s ease; }
         .return-btn img { display: block; width: 100%; height: auto; }
-        .return-btn:hover {
-            filter: brightness(1.2) drop-shadow(0 0 10px rgba(255,61,158,0.5));
-            transform: scale(1.05);
-        }
+        .return-btn:hover { filter: brightness(1.2) drop-shadow(0 0 10px rgba(255,61,158,0.5)); transform: scale(1.05); }
         .return-btn:active { transform: scale(0.93); }
 
         header { padding: 36px 0 8px; text-align: center; }
@@ -184,9 +152,7 @@
         }
 
         .lede { font-size: 1.1rem; max-width: 640px; margin: 0 auto; }
-
         .cta-wrap { margin-top: 30px; }
-
         .cta-btn {
             display: inline-block;
             background: linear-gradient(135deg, var(--magenta), var(--violet));
@@ -197,13 +163,13 @@
             font-weight: 700;
             letter-spacing: 0.5px;
             text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
             transition: box-shadow 0.25s ease, transform 0.25s ease;
         }
-        .cta-btn:hover {
-            box-shadow: 0 0 30px rgba(255,61,158,0.45);
-            transform: translateY(-1px);
-        }
-
+        .cta-btn:hover { box-shadow: 0 0 30px rgba(255,61,158,0.45); transform: translateY(-1px); }
+        .cta-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
         .cta-note {
             display: block;
             margin-top: 16px;
@@ -212,7 +178,6 @@
             color: var(--ink-dim);
             letter-spacing: 0.5px;
         }
-
         .cta-version {
             display: block;
             margin-top: 8px;
@@ -246,6 +211,16 @@
             margin: 30px 0 10px;
         }
 
+        .step-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 10px;
+        }
+
         .feature-list { display: grid; gap: 18px; list-style: none; padding: 0; margin: 0; }
         .feature-item {
             padding: 22px 24px;
@@ -254,10 +229,7 @@
             border-radius: 4px;
             transition: background 0.2s ease, border-color 0.2s ease;
         }
-        .feature-item:hover {
-            background: rgba(255,255,255,0.05);
-            border-color: var(--cyan);
-        }
+        .feature-item:hover { background: rgba(255,255,255,0.05); border-color: var(--cyan); }
         .feature-tag {
             display: block;
             font-family: 'IBM Plex Mono', monospace;
@@ -284,11 +256,7 @@
             overflow-x: auto;
             white-space: nowrap;
         }
-        table.data th, table.data td {
-            padding: 10px 14px;
-            text-align: left;
-            border-bottom: 1px solid var(--line);
-        }
+        table.data th, table.data td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); }
         table.data th {
             font-family: 'IBM Plex Mono', monospace;
             font-size: 11px;
@@ -297,23 +265,12 @@
             text-transform: uppercase;
             font-weight: 600;
         }
-        table.data td.num {
-            font-family: 'IBM Plex Mono', monospace;
-            color: var(--ink);
-        }
+        table.data td.num { font-family: 'IBM Plex Mono', monospace; color: var(--ink); }
         table.data tr.highlight td { color: var(--ink); font-weight: 600; }
 
-        .dep {
-            padding: 14px 0;
-            border-bottom: 1px solid var(--line);
-        }
+        .dep { padding: 14px 0; border-bottom: 1px solid var(--line); }
         .dep:last-child { border-bottom: none; }
-        .dep-name {
-            font-family: 'IBM Plex Mono', monospace;
-            color: var(--ink);
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
+        .dep-name { font-family: 'IBM Plex Mono', monospace; color: var(--ink); font-size: 0.95rem; font-weight: 600; }
         .dep-lic {
             font-family: 'IBM Plex Mono', monospace;
             font-size: 10px;
@@ -335,6 +292,7 @@
             margin-top: 22px;
             font-size: 0.95rem;
         }
+        .caveat strong { color: var(--ink); }
 
         footer {
             text-align: center;
@@ -351,6 +309,153 @@
         }
         footer a:hover { color: var(--cyan); border-color: var(--cyan); }
 
+        /* ── Survey-specific additions ──────────────────────────────────
+           Everything below is new for the research/beta flow. Nothing
+           above this line redefines a selector that already existed —
+           the survey reuses .panel, h2, h3, .cta-btn, .cta-note,
+           .caveat, .feature-list etc. as-is. */
+
+        .signal-chain {
+            position: sticky;
+            top: 12px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(7,6,11,0.92);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            color: var(--ink-dim);
+            margin: 24px 0;
+            backdrop-filter: blur(8px);
+        }
+        .signal-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--line);
+            flex-shrink: 0;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+        .signal-dot.live { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+        .signal-chain strong { color: var(--ink); }
+
+        fieldset { border: none; margin: 0 0 26px; padding: 0; }
+        legend { padding: 0; margin: 0 0 12px; width: 100%; }
+
+        .check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+        .check-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: rgba(255,255,255,0.025);
+            cursor: pointer;
+            transition: border-color 0.15s ease, background 0.15s ease;
+            font-size: 0.9rem;
+        }
+        .check-row:hover { border-color: var(--violet); }
+        .check-row input[type="checkbox"] { accent-color: var(--magenta); width: 15px; height: 15px; flex-shrink: 0; }
+        .check-row input:checked ~ span { color: var(--ink); }
+
+        .other-text { margin-top: 8px; display: block; }
+        .other-text input[type="text"] { width: 100%; }
+
+        .qblock {
+            border-left: 3px solid var(--violet);
+            background: rgba(255,255,255,0.025);
+            border-radius: 4px;
+            padding: 20px 22px;
+            margin-bottom: 16px;
+            animation: patch-in 0.35s ease;
+        }
+        .qblock[data-kind="meta"] { border-left-color: var(--cyan); }
+        .qblock[data-kind="system"] { border-left-color: var(--magenta); }
+        @keyframes patch-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+        @media (prefers-reduced-motion: reduce) { .qblock { animation: none; } }
+        .qblock-title { font-family: 'Chakra Petch', sans-serif; color: var(--ink); font-weight: 700; font-size: 1rem; margin-bottom: 14px; }
+
+        .likert { margin-bottom: 16px; }
+        .likert:last-child { margin-bottom: 0; }
+        .likert-text { font-size: 0.92rem; margin-bottom: 8px; color: var(--ink-dim); }
+        .likert-options { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        .likert-opt {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            text-align: center;
+            cursor: pointer;
+            padding: 7px 4px 4px;
+            border: 1px solid var(--line);
+            border-radius: 5px;
+            transition: border-color 0.15s ease;
+        }
+        .likert-opt:hover { border-color: var(--cyan); }
+        .likert-opt input { accent-color: var(--violet); }
+        .likert-opt input:checked ~ span { color: var(--ink); font-weight: 600; }
+        .likert-opt span { font-size: 10px; line-height: 1.25; color: var(--ink-dim); }
+        @media (max-width: 560px) {
+            .likert-options { grid-template-columns: 1fr; }
+            .likert-opt { flex-direction: row; justify-content: flex-start; text-align: left; padding: 8px 10px; }
+        }
+
+        .toggle-row { display: flex; gap: 10px; margin-bottom: 4px; }
+        .toggle-opt {
+            position: relative;
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Chakra Petch', sans-serif;
+            font-weight: 700;
+            color: var(--ink-dim);
+            transition: border-color 0.15s ease, color 0.15s ease;
+        }
+        .toggle-opt:hover { border-color: var(--violet); }
+        .toggle-opt input { position: absolute; opacity: 0; pointer-events: none; }
+        .toggle-opt input:checked ~ span { color: var(--ink); }
+        .toggle-opt:has(input:checked) { border-color: var(--magenta); background: rgba(255,61,158,0.06); }
+
+        textarea, input[type="text"], input[type="email"], select {
+            width: 100%;
+            background: rgba(7,6,11,0.6);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            color: var(--ink);
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.92rem;
+            padding: 11px 13px;
+            resize: vertical;
+        }
+        textarea:focus, input:focus, select:focus { border-color: var(--cyan); }
+        textarea { min-height: 90px; }
+        label.field-label { display: block; font-size: 0.92rem; color: var(--ink-dim); margin-bottom: 8px; }
+        .field-group { margin-bottom: 20px; }
+
+        .fg-nudge { border: 1px dashed var(--line); border-radius: 6px; padding: 16px 18px; font-size: 0.9rem; margin-top: 4px; }
+
+        .hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+        #status-panel { display: none; }
+        #status-panel.show { display: block; }
+        #status-panel pre {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 14px;
+            font-size: 11px;
+            overflow-x: auto;
+            color: var(--ink-dim);
+            max-height: 260px;
+        }
+
         @media (max-width: 640px) {
             section.panel { padding: 32px 22px; }
             .hero { padding: 80px 0 60px; }
@@ -360,7 +465,6 @@
 </head>
 <body class="splash-open">
 
-<!-- ═══ Intro ═══ Place fablegear-splash.mp4 in the same folder as this file. -->
 <div id="splash">
     <video id="splash-video" muted playsinline autoplay preload="auto">
         <source src="fablegear-splash.mp4" type="video/mp4">
@@ -376,7 +480,7 @@
 
 <header class="wrap">
     <a href="#" class="brand">FABLEGEAR</a>
-    <div class="kicker">Free library repair for rekordbox · macOS</div>
+    <div class="kicker">Free library repair for rekordbox · macOS · Beta</div>
 </header>
 
 <main class="wrap">
@@ -384,12 +488,9 @@
         <h1>Your library is worth more than the software managing it.</h1>
         <p class="lede">FableGear is a free, open source macOS app that fixes the problems a rekordbox library develops over years: tracks it can no longer find, the same song filed four times, and tempo and key values you can't fully trust. It runs on your own machine, reads your real library, and shows you what it found before it changes anything.</p>
         <div class="cta-wrap">
-            <a id="dl-btn"
-               href="https://github.com/fabledharbinger0993/FableGear/releases/latest/download/FableGear.zip"
-               class="cta-btn">Download for macOS  ↓</a>
-            <span id="dl-version" class="cta-version" style="display:none"></span>
+            <a href="#inventory" class="cta-btn">Get the beta ↓</a>
         </div>
-        <span class="cta-note">Free · MIT licensed · No account · Nothing leaves your computer</span>
+        <span class="cta-note">Free · MIT licensed · no account to install · a few questions unlock the download</span>
     </section>
 
     <section class="panel">
@@ -439,9 +540,7 @@
         <h2>Numbers, and how we got them</h2>
         <p>Claims about analysis quality are easy to make and hard to check, so here is ours with the method attached. Rekordbox writes its own beat grid for every track it analyzes. We read 12,687 of those grids out of one working DJ library and used them as the answer key, then ran a random 300-track sample through FableGear and compared.</p>
         <table class="data">
-            <thead>
-                <tr><th>Beat detection</th><th>Within 4%</th><th>Within 1%</th><th>Exact</th></tr>
-            </thead>
+            <thead><tr><th>Beat detection</th><th>Within 4%</th><th>Within 1%</th><th>Exact</th></tr></thead>
             <tbody>
                 <tr><td>Our previous method</td><td class="num">90.7%</td><td class="num">36.8%</td><td class="num">13.4%</td></tr>
                 <tr class="highlight"><td>What ships now</td><td class="num">98.3%</td><td class="num">94.8%</td><td class="num">91.4%</td></tr>
@@ -449,40 +548,18 @@
         </table>
         <p>The last column is the one that matters. A tempo that is 4% off drifts a full beat within about 25 bars, which is useless for a beat grid even though it looks fine as a percentage. Exact agreement with rekordbox on 91.4% of tracks is what makes a grid worth putting on a USB stick.</p>
         <p>We also found and fixed a real bug in our own loudness tool while measuring this. It was raising volume to hit a target without checking how close the audio already was to maximum, which clipped the file and deleted the original. On the tracks we tested it damaged 39 out of 39. It now refuses to raise volume past the point where clipping starts, and tells you when it cannot reach the target instead of ruining the file to get there.</p>
-        <div class="caveat">
-            <strong style="color:var(--ink)">What that measurement does not prove:</strong> it is one library, with one person's taste in music, and 300 tracks. A collection of drum and bass or hip hop would score differently. We publish the method so you can disagree with it.
-        </div>
+        <div class="caveat"><strong>What that measurement does not prove:</strong> it is one library, with one person's taste in music, and 300 tracks. A collection of drum and bass or hip hop would score differently. We publish the method so you can disagree with it.</div>
     </section>
 
     <section class="panel">
         <h2>How it compares to DJ software</h2>
         <p>FableGear does not try to beat the specialists at their own specialty. It does the library maintenance parts in one free local app instead of four paid ones.</p>
         <ul class="feature-list">
-            <li class="feature-item">
-                <span class="feature-tag">REKORDBOX</span>
-                <strong>Still required for some things</strong>
-                Rekordbox is a player and a performance tool, and it is good at that. It is not built to keep a large archive readable through years of drive changes. FableGear does the archive work and leaves performance to rekordbox. You can run both.
-            </li>
-            <li class="feature-item">
-                <span class="feature-tag">MIXED IN KEY</span>
-                <strong>Key and energy analysis</strong>
-                Mixed In Key is a mature paid product and its energy ratings have no equivalent here. Our key detection is good but we have not measured it against an answer key the way we did with tempo, so we are not going to claim it is better. FableGear is free and includes key detection as part of library work rather than as a separate purchase.
-            </li>
-            <li class="feature-item">
-                <span class="feature-tag">PLATINUM NOTES</span>
-                <strong>Loudness and correction</strong>
-                Platinum Notes is a paid batch processor that rewrites your audio. FableGear measures loudness to the same broadcast standard on your own machine for free, but it is deliberately more conservative: it will decline to change a file rather than clip it. If you want aggressive per-track mastering, Platinum Notes does that and we do not.
-            </li>
-            <li class="feature-item">
-                <span class="feature-tag">LEXICON</span>
-                <strong>Library management across apps</strong>
-                Lexicon is a polished paid app that syncs libraries between rekordbox, Serato, Traktor, and others. It is more finished than FableGear and supports more platforms. FableGear is free, open source, macOS only, and focused on rekordbox specifically, including reading and writing the Pioneer USB format directly.
-            </li>
-            <li class="feature-item">
-                <span class="feature-tag">REKORDCLOUD</span>
-                <strong>Cloud library tools</strong>
-                Rekord Cloud does library conversion and cleanup through a browser, on a subscription. FableGear does its work on your machine with no account and no upload. If you prefer a hosted service with support, that is a fair reason to pick theirs.
-            </li>
+            <li class="feature-item"><span class="feature-tag">REKORDBOX</span><strong>Still required for some things</strong>Rekordbox is a player and a performance tool, and it is good at that. It is not built to keep a large archive readable through years of drive changes. FableGear does the archive work and leaves performance to rekordbox. You can run both.</li>
+            <li class="feature-item"><span class="feature-tag">MIXED IN KEY</span><strong>Key and energy analysis</strong>Mixed In Key is a mature paid product and its energy ratings have no equivalent here. Our key detection is good but we have not measured it against an answer key the way we did with tempo, so we are not going to claim it is better. FableGear is free and includes key detection as part of library work rather than as a separate purchase.</li>
+            <li class="feature-item"><span class="feature-tag">PLATINUM NOTES</span><strong>Loudness and correction</strong>Platinum Notes is a paid batch processor that rewrites your audio. FableGear measures loudness to the same broadcast standard on your own machine for free, but it is deliberately more conservative: it will decline to change a file rather than clip it. If you want aggressive per-track mastering, Platinum Notes does that and we do not.</li>
+            <li class="feature-item"><span class="feature-tag">LEXICON</span><strong>Library management across apps</strong>Lexicon is a polished paid app that syncs libraries between rekordbox, Serato, Traktor, and others. It is more finished than FableGear and supports more platforms. FableGear is free, open source, macOS only, and focused on rekordbox specifically, including reading and writing the Pioneer USB format directly.</li>
+            <li class="feature-item"><span class="feature-tag">REKORDCLOUD</span><strong>Cloud library tools</strong>Rekord Cloud does library conversion and cleanup through a browser, on a subscription. FableGear does its work on your machine with no account and no upload. If you prefer a hosted service with support, that is a fair reason to pick theirs.</li>
         </ul>
     </section>
 
@@ -490,26 +567,10 @@
         <h2>How it compares to general file tools</h2>
         <p>Plenty of people already clean music folders with tools that were not written for DJs. Those tools are often excellent, and they do not know what a cue point is.</p>
         <ul class="feature-list">
-            <li class="feature-item">
-                <span class="feature-tag">MUSICBRAINZ PICARD</span>
-                <strong>Fingerprint tagging</strong>
-                Picard is free, cross platform, and better than FableGear at filling in correct release metadata from MusicBrainz. It also happily reorganizes files in ways that leave rekordbox unable to find them. FableGear uses the same fingerprinting service but updates the rekordbox database alongside the files, so tagging does not break your library.
-            </li>
-            <li class="feature-item">
-                <span class="feature-tag">MP3TAG</span>
-                <strong>Bulk tag editing</strong>
-                Mp3tag is faster and more flexible for pure tag editing, and it has years of refinement behind it. It has no idea your library exists. FableGear edits fewer fields but keeps the database in agreement with what it wrote.
-            </li>
-            <li class="feature-item">
-                <span class="feature-tag">DUPEGURU / GEMINI</span>
-                <strong>Duplicate finders</strong>
-                General duplicate finders match on filename, size, or hash. That misses the case DJs actually have, where the same song exists as a raw rip and again after processing, so the bytes differ completely. FableGear matches on audio fingerprint and duration, and shows you which playlists each copy is in before you delete anything.
-            </li>
-            <li class="feature-item">
-                <span class="feature-tag">FINDER, FOOBAR2000, VLC</span>
-                <strong>Moving files and auditioning them</strong>
-                Moving files in Finder is exactly what breaks a rekordbox library, because Finder does not update the database. FableGear moves files and updates the references in the same operation. It also has preview decks built in, so you do not need a second player open to hear what you are about to change.
-            </li>
+            <li class="feature-item"><span class="feature-tag">MUSICBRAINZ PICARD</span><strong>Fingerprint tagging</strong>Picard is free, cross platform, and better than FableGear at filling in correct release metadata from MusicBrainz. It also happily reorganizes files in ways that leave rekordbox unable to find them. FableGear uses the same fingerprinting service but updates the rekordbox database alongside the files, so tagging does not break your library.</li>
+            <li class="feature-item"><span class="feature-tag">MP3TAG</span><strong>Bulk tag editing</strong>Mp3tag is faster and more flexible for pure tag editing, and it has years of refinement behind it. It has no idea your library exists. FableGear edits fewer fields but keeps the database in agreement with what it wrote.</li>
+            <li class="feature-item"><span class="feature-tag">DUPEGURU / GEMINI</span><strong>Duplicate finders</strong>General duplicate finders match on filename, size, or hash. That misses the case DJs actually have, where the same song exists as a raw rip and again after processing, so the bytes differ completely. FableGear matches on audio fingerprint and duration, and shows you which playlists each copy is in before you delete anything.</li>
+            <li class="feature-item"><span class="feature-tag">FINDER, FOOBAR2000, VLC</span><strong>Moving files and auditioning them</strong>Moving files in Finder is exactly what breaks a rekordbox library, because Finder does not update the database. FableGear moves files and updates the references in the same operation. It also has preview decks built in, so you do not need a second player open to hear what you are about to change.</li>
         </ul>
     </section>
 
@@ -518,50 +579,20 @@
         <p>FableGear is Python. It leans on open source projects that are better at their jobs than anything we would write, and it is worth knowing what they are, because they determine what the app can and cannot do. Our own code is MIT licensed. These are installed from the Python package index on your machine when you first run the app rather than shipped inside the download.</p>
 
         <h3>Audio analysis</h3>
-        <div class="dep">
-            <span class="dep-name">ffmpeg</span><span class="dep-lic">LGPL / GPL</span>
-            <span class="dep-why">Decodes every format, measures loudness and true peak to the EBU R128 standard, and handles format conversion. Installed separately with Homebrew. Nearly everything audio in FableGear goes through it.</span>
-        </div>
-        <div class="dep">
-            <span class="dep-name">essentia</span><span class="dep-lic">AGPL-3.0</span>
-            <span class="dep-why">Beat tracking, from the Music Technology Group at Universitat Pompeu Fabra. This is the single biggest reason our tempo numbers improved from 13% to 91% exact. It is optional: if there is no build available for your macOS and Python version, the app installs without it, falls back to a less accurate method, and says so in its health panel rather than quietly giving you worse grids.</span>
-        </div>
-        <div class="dep">
-            <span class="dep-name">librosa</span><span class="dep-lic">ISC</span>
-            <span class="dep-why">Musical key detection, waveform generation, and the tempo fallback when essentia is unavailable. Works everywhere, which is why it stays.</span>
-        </div>
-        <div class="dep">
-            <span class="dep-name">pyacoustid and Chromaprint</span><span class="dep-lic">MIT / LGPL</span>
-            <span class="dep-why">Audio fingerprinting, used to recognize duplicates and to look up metadata from AcoustID and MusicBrainz. This is what lets duplicate detection work on processed copies.</span>
-        </div>
+        <div class="dep"><span class="dep-name">ffmpeg</span><span class="dep-lic">LGPL / GPL</span><span class="dep-why">Decodes every format, measures loudness and true peak to the EBU R128 standard, and handles format conversion. Installed separately with Homebrew. Nearly everything audio in FableGear goes through it.</span></div>
+        <div class="dep"><span class="dep-name">essentia</span><span class="dep-lic">AGPL-3.0</span><span class="dep-why">Beat tracking, from the Music Technology Group at Universitat Pompeu Fabra. This is the single biggest reason our tempo numbers improved from 13% to 91% exact. It is optional: if there is no build available for your macOS and Python version, the app installs without it, falls back to a less accurate method, and says so in its health panel rather than quietly giving you worse grids.</span></div>
+        <div class="dep"><span class="dep-name">librosa</span><span class="dep-lic">ISC</span><span class="dep-why">Musical key detection, waveform generation, and the tempo fallback when essentia is unavailable. Works everywhere, which is why it stays.</span></div>
+        <div class="dep"><span class="dep-name">pyacoustid and Chromaprint</span><span class="dep-lic">MIT / LGPL</span><span class="dep-why">Audio fingerprinting, used to recognize duplicates and to look up metadata from AcoustID and MusicBrainz. This is what lets duplicate detection work on processed copies.</span></div>
 
         <h3>Reading and writing your library</h3>
-        <div class="dep">
-            <span class="dep-name">pyrekordbox</span><span class="dep-lic">MIT</span>
-            <span class="dep-why">Reads and writes the rekordbox database and its analysis files. Dylan Jones' work here is the reason an app like this is possible at all.</span>
-        </div>
-        <div class="dep">
-            <span class="dep-name">mutagen</span><span class="dep-lic">GPL-2.0-or-later</span>
-            <span class="dep-why">Reads and writes tags across MP3, AIFF, FLAC, WAV, and M4A. Every tag FableGear touches goes through it.</span>
-        </div>
-        <div class="dep">
-            <span class="dep-name">numpy and soundfile</span><span class="dep-lic">BSD</span>
-            <span class="dep-why">Numerical work and audio file inspection, including reading the bit depth of a source file so a conversion does not silently downgrade it.</span>
-        </div>
+        <div class="dep"><span class="dep-name">pyrekordbox</span><span class="dep-lic">MIT</span><span class="dep-why">Reads and writes the rekordbox database and its analysis files. Dylan Jones' work here is the reason an app like this is possible at all.</span></div>
+        <div class="dep"><span class="dep-name">mutagen</span><span class="dep-lic">GPL-2.0-or-later</span><span class="dep-why">Reads and writes tags across MP3, AIFF, FLAC, WAV, and M4A. Every tag FableGear touches goes through it.</span></div>
+        <div class="dep"><span class="dep-name">numpy and soundfile</span><span class="dep-lic">BSD</span><span class="dep-why">Numerical work and audio file inspection, including reading the bit depth of a source file so a conversion does not silently downgrade it.</span></div>
 
         <h3>The app itself</h3>
-        <div class="dep">
-            <span class="dep-name">Flask, Waitress, pywebview</span><span class="dep-lic">BSD / ZPL</span>
-            <span class="dep-why">FableGear runs a small web server on your machine and shows it in a native window. That is why the interface looks like a web app: it is one, served only to you, on localhost.</span>
-        </div>
-        <div class="dep">
-            <span class="dep-name">yt-dlp</span><span class="dep-lic">Unlicense</span>
-            <span class="dep-why">Powers the download tool. What you do with it is your responsibility.</span>
-        </div>
-        <div class="dep">
-            <span class="dep-name">Model Context Protocol SDK</span><span class="dep-lic">MIT</span>
-            <span class="dep-why">Lets an AI assistant drive FableGear's tools directly, with a required order so it cannot deduplicate a library it has not audited yet.</span>
-        </div>
+        <div class="dep"><span class="dep-name">Flask, Waitress, pywebview</span><span class="dep-lic">BSD / ZPL</span><span class="dep-why">FableGear runs a small web server on your machine and shows it in a native window. That is why the interface looks like a web app: it is one, served only to you, on localhost.</span></div>
+        <div class="dep"><span class="dep-name">yt-dlp</span><span class="dep-lic">Unlicense</span><span class="dep-why">Powers the download tool. What you do with it is your responsibility.</span></div>
+        <div class="dep"><span class="dep-name">Model Context Protocol SDK</span><span class="dep-lic">MIT</span><span class="dep-why">Lets an AI assistant drive FableGear's tools directly, with a required order so it cannot deduplicate a library it has not audited yet.</span></div>
 
         <p style="margin-top:24px">Two projects deserve credit without being dependencies. The reverse engineering of Pioneer's USB formats by Deep Symmetry (crate-digger and dysentery) and by Jan Holthuis (rekordcrate) is what made the export work possible. We did not figure that format out; we read their documentation.</p>
     </section>
@@ -580,10 +611,161 @@
         <p>Right now FableGear supports rekordbox and expects you to keep using it. That support is not going away. Everything the app does is designed to leave your rekordbox library working.</p>
         <p>The longer aim is that you should not need rekordbox to get music onto a player. The USB export result above is the first evidence that is achievable rather than wishful. If it holds up across more hardware, the choice of what manages your collection stops being made for you by whoever built the gear. That is the reason this is free and the source is public: a library tool you depend on should not be something that can be taken away or priced up later.</p>
         <div class="cta-wrap" style="text-align:center">
-            <a href="https://github.com/fabledharbinger0993/FableGear/releases/latest/download/FableGear.zip" class="cta-btn">Download for macOS  ↓</a>
-            <span class="cta-note">Unzip, open FableGear.app, and it sets itself up. Requires macOS 12 or later.</span>
+            <a href="#inventory" class="cta-btn">Get the beta — 8 minutes first ↓</a>
+            <span class="cta-note">A few questions about your setup unlock the download below. Same app either way.</span>
         </div>
     </section>
+
+    <!-- ═══════════════════════ Research / beta-gate flow ═══════════════════════ -->
+
+    <section class="panel">
+        <span class="step-label">Why we're asking</span>
+        <h2>Three people's blind spots aren't the DJ community's</h2>
+        <p>FableGear was built to fix problems in our own library, then a shared one. That's a couple of working DJs and a lot of hours in one setup — not a representative sample of how everyone actually works. Before this goes wider, we want to know what a library setup outside our bubble looks like, and where FableGear's assumptions don't hold.</p>
+        <div class="caveat"><strong>What this section won't do:</strong> there's no mailing list you're forced onto, no dark patterns, and no requirement to have installed FableGear yet. If you haven't tried it, the tool survey below still matters on its own — and finishing it is what unlocks the download.</div>
+    </section>
+
+    <form id="research-form" novalidate>
+
+        <div class="hp-field" aria-hidden="true">
+            <label for="hp-website">Leave this field blank</label>
+            <input type="text" id="hp-website" name="hp-website" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div class="signal-chain" id="signal-chain">
+            <span class="signal-dot" id="signal-dot"></span>
+            <span><strong id="signal-count">0</strong> modules patched in — <span id="signal-questions">the survey below will adjust as you check boxes</span></span>
+        </div>
+
+        <section class="panel" id="inventory">
+            <span class="step-label">Step 00</span>
+            <h2>Start here: what's actually in your setup?</h2>
+            <p>Check everything that applies. Nothing below is a trick question — "none of these" or "just one" are completely normal answers.</p>
+
+            <fieldset>
+                <legend><h3>Library / performance software</h3></legend>
+                <div class="check-grid" id="group-lib"></div>
+            </fieldset>
+            <fieldset>
+                <legend><h3>Metadata / tagging / key &amp; BPM analysis</h3></legend>
+                <div class="check-grid" id="group-meta"></div>
+            </fieldset>
+            <fieldset>
+                <legend><h3>File management / backup</h3></legend>
+                <div class="check-grid" id="group-backup"></div>
+            </fieldset>
+            <fieldset>
+                <legend><h3>Music acquisition</h3></legend>
+                <div class="check-grid" id="group-acq"></div>
+            </fieldset>
+        </section>
+
+        <section class="panel">
+            <span class="step-label">Step 01</span>
+            <h2>Satisfaction — only the tools you checked</h2>
+            <p>Each block below appeared because you checked the matching box above. If you don't see a tool you use, it means you didn't check it — scroll up and fix that.</p>
+            <div id="tool-blocks"></div>
+        </section>
+
+        <section class="panel">
+            <span class="step-label">Step 02 · optional</span>
+            <h2>Hardware</h2>
+            <p>Do you use standalone hardware — CDJs, controllers, and the like — as part of your setup?</p>
+            <div class="toggle-row" role="radiogroup" aria-label="Do you use standalone hardware?">
+                <label class="toggle-opt"><input type="radio" name="hw-used" value="yes" id="hw-yes"><span>Yes</span></label>
+                <label class="toggle-opt"><input type="radio" name="hw-used" value="no" id="hw-no"><span>No</span></label>
+            </div>
+            <div class="qblock" data-kind="system" id="hw-panel" hidden style="margin-top:18px;">
+                <div class="qblock-title">Which hardware?</div>
+                <div class="check-grid" id="group-hw" style="margin-bottom:18px;"></div>
+                <div class="likert" data-name="hw-export-satisfaction">
+                    <p class="likert-text">I'm satisfied with how my library exports to USB/hardware today</p>
+                    <div class="likert-options"></div>
+                </div>
+                <div class="likert" data-name="hw-sync-issues">
+                    <p class="likert-text">I've had export/sync issues between my software library and my hardware in the past year</p>
+                    <div class="likert-options"></div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label" for="hw-open">What's the most annoying part of getting your library onto hardware?</label>
+                    <textarea id="hw-open" name="hw-open"></textarea>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <span class="step-label">Step 03</span>
+            <h2>Have you installed and tried FableGear yet?</h2>
+            <div class="toggle-row" role="radiogroup" aria-label="Have you tried FableGear?">
+                <label class="toggle-opt"><input type="radio" name="fg-tried" value="yes" id="fg-yes"><span>Yes</span></label>
+                <label class="toggle-opt"><input type="radio" name="fg-tried" value="no" id="fg-no"><span>Not yet</span></label>
+            </div>
+            <div class="qblock" data-kind="system" id="fg-panel" hidden style="margin-top:18px;">
+                <div class="qblock-title">FableGear workflow feedback</div>
+                <div class="likert" data-name="fg-install-easy">
+                    <p class="likert-text">I found FableGear easy to install and get running</p>
+                    <div class="likert-options"></div>
+                </div>
+                <div class="likert" data-name="fg-clear-purpose">
+                    <p class="likert-text">I understood what FableGear does differently from Rekordbox / my main tool</p>
+                    <div class="likert-options"></div>
+                </div>
+                <div class="likert" data-name="fg-trust-primary">
+                    <p class="likert-text">I would trust FableGear with my primary library today</p>
+                    <div class="likert-options"></div>
+                </div>
+                <div class="likert" data-name="fg-trust-secondary">
+                    <p class="likert-text">I would trust FableGear as a secondary/backup tool today</p>
+                    <div class="likert-options"></div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label" for="fg-open-different">What did FableGear do that your usual tool doesn't?</label>
+                    <textarea id="fg-open-different" name="fg-open-different"></textarea>
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                    <label class="field-label" for="fg-open-missing">What's missing that would stop you from using it regularly?</label>
+                    <textarea id="fg-open-missing" name="fg-open-missing"></textarea>
+                </div>
+            </div>
+            <div class="fg-nudge" id="fg-nudge" hidden>
+                No worries — the tool survey above is genuinely useful on its own. Finish the form below and the beta link shows up on the confirmation screen.
+            </div>
+        </section>
+
+        <section class="panel">
+            <span class="step-label">Last part</span>
+            <h2>Anything we haven't asked</h2>
+            <div class="field-group">
+                <label class="field-label" for="pain-point">What's the most annoying part of managing your library today — any tool, any step?</label>
+                <textarea id="pain-point" name="pain-point"></textarea>
+            </div>
+            <div class="field-group" style="margin-bottom:0;">
+                <label class="field-label" for="blind-spot">A blind spot, a complaint, a feature you wish existed — anything else.</label>
+                <textarea id="blind-spot" name="blind-spot"></textarea>
+            </div>
+        </section>
+
+        <section class="panel">
+            <span class="step-label">Optional</span>
+            <h2>Leave an email if you're open to a follow-up</h2>
+            <p>Not required. Only used to ask a clarifying question about your answers or let you know about future updates — never shared, never sold.</p>
+            <div class="field-group" style="margin-bottom:0;">
+                <label class="field-label" for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="you@wherever.com">
+            </div>
+        </section>
+
+        <section class="panel" style="text-align:center;">
+            <button type="submit" class="cta-btn" id="submit-btn">Submit and get the beta</button>
+            <p class="cta-note" id="submit-hint">You can leave anything blank. The download link appears right after this.</p>
+        </section>
+
+        <section class="panel" id="status-panel">
+            <h2 id="status-title">Thanks — got it.</h2>
+            <p id="status-body"></p>
+        </section>
+
+    </form>
 </main>
 
 <footer>
@@ -593,27 +775,22 @@
 
 <script>
 (function () {
-    // ── Download button: static GitHub link works with no JS. This only adds
-    // the version and file size when the release endpoint is reachable.
-    var btn = document.getElementById('dl-btn');
-    var versionTag = document.getElementById('dl-version');
+    // ── Live release info: used later to power the post-submit download
+    // link with the real current version/size instead of a hardcoded URL.
+    window.__releaseInfo = { url: null, label: null };
     fetch('/fablegear/release')
         .then(function (r) { return r.json(); })
         .then(function (data) {
-            if (data.mac_url) btn.href = data.mac_url;
+            if (data.mac_url) window.__releaseInfo.url = data.mac_url;
             if (data.tag) {
-                versionTag.textContent = data.mac_size_mb
+                window.__releaseInfo.label = data.mac_size_mb
                     ? data.tag + ' · ' + data.mac_size_mb + ' MB'
                     : data.tag;
-                versionTag.style.display = 'block';
             }
         })
-        .catch(function () { /* keep the static download link */ });
+        .catch(function () { /* fall back to the static URL at submit time */ });
 
-    // ── Splash gate.
-    // Rule: the page must become readable no matter what the video does.
-    // Every failure mode below ends in reveal(), including the case where the
-    // file is missing entirely or the browser refuses to autoplay.
+    // ── Splash gate. Every failure mode ends in reveal(). ──────────────
     var splash = document.getElementById('splash');
     var video = document.getElementById('splash-video');
     var skip = document.getElementById('splash-skip');
@@ -629,23 +806,17 @@
         splash.classList.add('done');
         document.body.classList.remove('splash-open');
         try { video.pause(); } catch (e) {}
-        // Remove from the layout once the fade finishes so it can never
-        // intercept a click.
         setTimeout(function () { splash.remove(); }, 700);
         try { sessionStorage.setItem('fg_splash_seen', '1'); } catch (e) {}
     }
 
-    // Already watched this session, or the visitor asked for reduced motion:
-    // skip straight to the page.
     var seen = false;
     try { seen = sessionStorage.getItem('fg_splash_seen') === '1'; } catch (e) {}
-    var reduced = window.matchMedia
-        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (seen || reduced) { reveal(); return; }
 
     video.addEventListener('ended', reveal);
     video.addEventListener('error', reveal);
-    // A missing or unplayable source fires error on the <source>, not the video.
     var src = video.querySelector('source');
     if (src) src.addEventListener('error', reveal);
 
@@ -654,22 +825,383 @@
         if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') reveal();
     });
 
-    // Hard ceiling. Covers a stalled network, a video that never fires
-    // 'ended', and anything else unforeseen. 15s clip, so 17s is generous
-    // without being a trap.
     watchdog = setTimeout(reveal, 17000);
 
-    // Autoplay is blocked in some configurations. If play() rejects, don't
-    // sit on a black screen.
     var attempt = video.play();
-    if (attempt && typeof attempt.catch === 'function') {
-        attempt.catch(reveal);
-    }
+    if (attempt && typeof attempt.catch === 'function') { attempt.catch(reveal); }
 
-    // If metadata never arrives the file is probably not there.
     setTimeout(function () {
         if (!revealed && video.readyState === 0) reveal();
     }, 4000);
+})();
+</script>
+
+<script>
+(function () {
+    'use strict';
+
+    // TODO: point this at the Cloudflare Worker once it's built (Worker
+    // relays to a Google Apps Script Web App under FabledHarbinger@gmail.com,
+    // per the research plan doc). Left blank for now — submissions fall
+    // back to an on-page JSON preview + local save so nothing is lost
+    // while this is being wired up.
+    const SUBMIT_ENDPOINT = '';
+    const BETA_DOWNLOAD_URL_FALLBACK = 'https://github.com/fabledharbinger0993/FableGear/releases/latest/download/FableGear.zip';
+
+    const LIKERT_SCALE = [
+        { value: '1', label: 'Strongly disagree' },
+        { value: '2', label: 'Somewhat disagree' },
+        { value: '3', label: 'Indifferent' },
+        { value: '4', label: 'Somewhat agree' },
+        { value: '5', label: 'Strongly agree' },
+    ];
+
+    const LIB_TOOLS = [
+        { id: 'lib-rekordbox', label: 'Rekordbox' },
+        { id: 'lib-serato', label: 'Serato DJ' },
+        { id: 'lib-traktor', label: 'Traktor Pro' },
+        { id: 'lib-virtualdj', label: 'VirtualDJ' },
+        { id: 'lib-djay', label: 'djay' },
+        { id: 'lib-enginedj', label: 'Engine DJ' },
+        { id: 'lib-mixxx', label: 'Mixxx' },
+        { id: 'lib-denondj', label: 'Denon DJ software' },
+        { id: 'lib-other', label: 'Other', other: true },
+    ];
+    const LIB_STATEMENTS = [
+        { key: 'organize', text: 'I am satisfied with how {tool} lets me organize my library' },
+        { key: 'metadata', text: 'I am satisfied with how {tool} handles metadata (genre, key, BPM, tags, comments)' },
+        { key: 'trust', text: 'I trust {tool} not to corrupt or lose my library data' },
+        { key: 'switching', text: 'Switching computers or reinstalling {tool} is (or would be) painless' },
+    ];
+
+    const META_TOOLS = [
+        { id: 'meta-mik', label: 'Mixed In Key' },
+        { id: 'meta-tunebat', label: 'Tunebat' },
+        { id: 'meta-builtin', label: 'Built-in analysis only (whatever ships with my main tool)' },
+        { id: 'meta-manual', label: 'Manual tagging / no dedicated tool' },
+        { id: 'meta-other', label: 'Other', other: true },
+    ];
+    const META_STATEMENTS = [
+        { key: 'accurate', text: "{tool}'s tagging / key-detection is accurate enough that I don't second-guess it" },
+        { key: 'manualfix', text: "I've had to manually fix data {tool} got wrong" },
+    ];
+    const META_TOOLS_WITH_BLOCKS = ['meta-mik', 'meta-tunebat'];
+
+    const BACKUP_TOOLS = [
+        { id: 'backup-dedicated', label: 'Dedicated backup tool (Time Machine, Backblaze, etc.)' },
+        { id: 'backup-manual', label: 'Manual folder copies' },
+        { id: 'backup-cloud', label: 'Cloud sync (Dropbox/Drive/etc.) for music files' },
+        { id: 'backup-none', label: 'No regular backup' },
+        { id: 'backup-other', label: 'Other', other: true },
+    ];
+
+    const ACQ_TOOLS = [
+        { id: 'acq-beatport', label: 'Beatport' },
+        { id: 'acq-beatsource', label: 'Beatsource' },
+        { id: 'acq-bandcamp', label: 'Bandcamp' },
+        { id: 'acq-traxsource', label: 'Traxsource' },
+        { id: 'acq-collection', label: 'Ripped / personal collection primarily' },
+        { id: 'acq-other', label: 'Other', other: true },
+    ];
+
+    const HW_TOOLS = [
+        { id: 'hw-cdj3000', label: 'CDJ-3000' },
+        { id: 'hw-cdj2000nxs2', label: 'CDJ-2000NXS2' },
+        { id: 'hw-xdj', label: 'XDJ series' },
+        { id: 'hw-denon', label: 'Denon SC / Prime series' },
+        { id: 'hw-controller', label: 'Controller' },
+        { id: 'hw-other-check', label: 'Other', other: true },
+    ];
+
+    function renderCheckGroup(containerId, items, groupClass) {
+        const container = document.getElementById(containerId);
+        items.forEach(function (item) {
+            const row = document.createElement('label');
+            row.className = 'check-row';
+            row.innerHTML =
+                '<input type="checkbox" id="' + item.id + '" class="chk ' + groupClass + '">' +
+                '<span>' + item.label + '</span>';
+            container.appendChild(row);
+
+            if (item.other) {
+                const wrap = document.createElement('div');
+                wrap.className = 'other-text';
+                wrap.dataset.requires = item.id;
+                wrap.hidden = true;
+                wrap.style.gridColumn = '1 / -1';
+                wrap.innerHTML = '<input type="text" placeholder="What is it?" id="' + item.id + '-text" name="' + item.id + '-text">';
+                container.appendChild(wrap);
+            }
+        });
+    }
+
+    function renderLikertOptions(container, name) {
+        LIKERT_SCALE.forEach(function (opt) {
+            const label = document.createElement('label');
+            label.className = 'likert-opt';
+            label.innerHTML =
+                '<input type="radio" name="' + name + '" value="' + opt.value + '">' +
+                '<span>' + opt.label + '</span>';
+            container.appendChild(label);
+        });
+    }
+
+    document.querySelectorAll('.likert').forEach(function (block) {
+        const name = block.dataset.name;
+        const optsDiv = block.querySelector('.likert-options');
+        if (optsDiv && name) renderLikertOptions(optsDiv, name);
+    });
+
+    function buildToolBlock(tool, statements, kind) {
+        const block = document.createElement('fieldset');
+        block.className = 'qblock';
+        block.dataset.kind = kind;
+        block.dataset.requires = tool.id;
+        block.hidden = true;
+
+        const title = document.createElement('legend');
+        title.className = 'qblock-title';
+        title.textContent = tool.label;
+        block.appendChild(title);
+
+        statements.forEach(function (st) {
+            const name = tool.id + '__' + st.key;
+            const wrap = document.createElement('div');
+            wrap.className = 'likert';
+            wrap.dataset.name = name;
+
+            const p = document.createElement('p');
+            p.className = 'likert-text';
+            p.textContent = st.text.replace('{tool}', tool.label);
+            wrap.appendChild(p);
+
+            const optsDiv = document.createElement('div');
+            optsDiv.className = 'likert-options';
+            renderLikertOptions(optsDiv, name);
+            wrap.appendChild(optsDiv);
+
+            block.appendChild(wrap);
+        });
+
+        return block;
+    }
+
+    renderCheckGroup('group-lib', LIB_TOOLS, 'chk-lib');
+    renderCheckGroup('group-meta', META_TOOLS, 'chk-meta');
+    renderCheckGroup('group-backup', BACKUP_TOOLS, 'chk-backup');
+    renderCheckGroup('group-acq', ACQ_TOOLS, 'chk-acq');
+    renderCheckGroup('group-hw', HW_TOOLS, 'chk-hw');
+
+    const toolBlocksContainer = document.getElementById('tool-blocks');
+
+    LIB_TOOLS.filter(function (t) { return !t.other; }).forEach(function (tool) {
+        toolBlocksContainer.appendChild(buildToolBlock(tool, LIB_STATEMENTS, 'lib'));
+    });
+
+    META_TOOLS.filter(function (t) { return META_TOOLS_WITH_BLOCKS.indexOf(t.id) !== -1; })
+        .forEach(function (tool) {
+            toolBlocksContainer.appendChild(buildToolBlock(tool, META_STATEMENTS, 'meta'));
+        });
+
+    const multiToolBlock = document.createElement('fieldset');
+    multiToolBlock.className = 'qblock';
+    multiToolBlock.dataset.kind = 'system';
+    multiToolBlock.id = 'multi-tool-block';
+    multiToolBlock.hidden = true;
+    multiToolBlock.innerHTML =
+        '<legend class="qblock-title">Using more than one of these together</legend>' +
+        '<div class="field-group" style="margin-bottom:0;">' +
+        '<label class="field-label" for="multi-tool-friction">If you use more than one tool above, the friction is mostly:</label>' +
+        '<select id="multi-tool-friction" name="multi-tool-friction">' +
+        '<option value="">Choose one</option>' +
+        '<option value="sync">Keeping metadata in sync across tools</option>' +
+        '<option value="reanalyze">Re-analyzing tracks separately in each tool</option>' +
+        '<option value="rebuild">Rebuilding playlists in each tool</option>' +
+        '<option value="export">Exporting to USB or hardware from the "wrong" tool</option>' +
+        '<option value="other">Something else</option>' +
+        '</select></div>';
+    toolBlocksContainer.appendChild(multiToolBlock);
+
+    const backupBlock = document.createElement('fieldset');
+    backupBlock.className = 'qblock';
+    backupBlock.dataset.kind = 'system';
+    backupBlock.id = 'backup-block';
+    backupBlock.hidden = true;
+    backupBlock.innerHTML =
+        '<legend class="qblock-title">Backup confidence</legend>' +
+        '<div class="likert" data-name="backup-confidence">' +
+        '<p class="likert-text">I\'m confident I could recover my library if my main drive failed tomorrow</p>' +
+        '<div class="likert-options"></div></div>' +
+        '<div class="likert" data-name="backup-loss" style="margin-bottom:0;">' +
+        '<p class="likert-text">I\'ve lost tracks, cues, or playlists to a crash or corrupted database in the past year</p>' +
+        '<div class="likert-options"></div></div>';
+    toolBlocksContainer.appendChild(backupBlock);
+    backupBlock.querySelectorAll('.likert').forEach(function (block) {
+        renderLikertOptions(block.querySelector('.likert-options'), block.dataset.name);
+    });
+
+    function isChecked(id) {
+        const el = document.getElementById(id);
+        return !!(el && el.checked);
+    }
+    function countChecked(groupClass) { return document.querySelectorAll('.' + groupClass + ':checked').length; }
+    function anyChecked(groupClass) { return countChecked(groupClass) > 0; }
+
+    function updateVisibility() {
+        document.querySelectorAll('[data-requires]').forEach(function (el) {
+            el.hidden = !isChecked(el.dataset.requires);
+        });
+        multiToolBlock.hidden = countChecked('chk-lib') < 2;
+        backupBlock.hidden = !anyChecked('chk-backup');
+        document.getElementById('hw-panel').hidden = !isChecked('hw-yes');
+
+        const triedFg = isChecked('fg-yes');
+        const notTriedFg = isChecked('fg-no');
+        document.getElementById('fg-panel').hidden = !triedFg;
+        document.getElementById('fg-nudge').hidden = !notTriedFg;
+
+        updateSignalChain();
+    }
+
+    function updateSignalChain() {
+        const modules = countChecked('chk-lib') + countChecked('chk-meta') + countChecked('chk-backup') + countChecked('chk-acq');
+        const visibleBlocks = document.querySelectorAll('#tool-blocks .qblock:not([hidden])').length +
+            (document.getElementById('hw-panel').hidden ? 0 : 1) +
+            (document.getElementById('fg-panel').hidden ? 0 : 1);
+
+        document.getElementById('signal-count').textContent = modules;
+        const dot = document.getElementById('signal-dot');
+        dot.classList.toggle('live', modules > 0);
+
+        const questionsEl = document.getElementById('signal-questions');
+        questionsEl.textContent = modules === 0
+            ? 'the survey below will adjust as you check boxes'
+            : visibleBlocks + ' question block' + (visibleBlocks === 1 ? '' : 's') + ' active below';
+    }
+
+    document.getElementById('inventory').addEventListener('change', updateVisibility);
+    document.getElementById('hw-yes').addEventListener('change', updateVisibility);
+    document.getElementById('hw-no').addEventListener('change', updateVisibility);
+    document.getElementById('fg-yes').addEventListener('change', updateVisibility);
+    document.getElementById('fg-no').addEventListener('change', updateVisibility);
+    updateVisibility();
+
+    function collectAnswers() {
+        const data = { submitted_at: new Date().toISOString() };
+        function groupValues(groupClass) {
+            return Array.from(document.querySelectorAll('.' + groupClass + ':checked')).map(function (c) { return c.id; });
+        }
+        data.tools_library = groupValues('chk-lib');
+        data.tools_metadata = groupValues('chk-meta');
+        data.tools_backup = groupValues('chk-backup');
+        data.tools_acquisition = groupValues('chk-acq');
+
+        ['lib-other-text', 'meta-other-text', 'backup-other-text', 'acq-other-text'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (el && el.value.trim()) data[id] = el.value.trim();
+        });
+
+        document.querySelectorAll('.likert').forEach(function (block) {
+            if (block.closest('[hidden]')) return;
+            const checked = block.querySelector('input:checked');
+            data[block.dataset.name] = checked ? checked.value : null;
+        });
+
+        const multiToolSelect = document.getElementById('multi-tool-friction');
+        if (!multiToolBlock.hidden && multiToolSelect.value) data.multi_tool_friction = multiToolSelect.value;
+
+        if (!document.getElementById('hw-panel').hidden) {
+            data.hardware = groupValues('chk-hw');
+            const hwOtherText = document.getElementById('hw-other-check-text');
+            if (hwOtherText && hwOtherText.value.trim()) data.hardware_other = hwOtherText.value.trim();
+            data.hw_open = document.getElementById('hw-open').value.trim();
+        }
+        if (!document.getElementById('fg-panel').hidden) {
+            data.fg_open_different = document.getElementById('fg-open-different').value.trim();
+            data.fg_open_missing = document.getElementById('fg-open-missing').value.trim();
+        }
+        data.fg_tried = isChecked('fg-yes') ? 'yes' : (isChecked('fg-no') ? 'no' : null);
+        data.hw_used = isChecked('hw-yes') ? 'yes' : (isChecked('hw-no') ? 'no' : null);
+
+        data.pain_point = document.getElementById('pain-point').value.trim();
+        data.blind_spot = document.getElementById('blind-spot').value.trim();
+        data.email = document.getElementById('email').value.trim();
+        return data;
+    }
+
+    const form = document.getElementById('research-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const statusPanel = document.getElementById('status-panel');
+    const statusTitle = document.getElementById('status-title');
+    const statusBody = document.getElementById('status-body');
+
+    function appendDownload() {
+        const url = (window.__releaseInfo && window.__releaseInfo.url) || BETA_DOWNLOAD_URL_FALLBACK;
+        const dl = document.createElement('a');
+        dl.className = 'cta-btn';
+        dl.style.marginTop = '18px';
+        dl.style.display = 'inline-block';
+        dl.href = url;
+        dl.textContent = 'Download the beta ↓';
+        statusPanel.appendChild(dl);
+
+        const dlNote = document.createElement('span');
+        dlNote.className = 'cta-note';
+        dlNote.textContent = (window.__releaseInfo && window.__releaseInfo.label)
+            ? window.__releaseInfo.label + ' · unzip and open'
+            : 'Free · macOS 12+ · unzip and open';
+        statusPanel.appendChild(dlNote);
+    }
+
+    function showSuccess(note) {
+        form.querySelectorAll('section.panel:not(#status-panel)').forEach(function (s) { s.style.display = 'none'; });
+        document.getElementById('signal-chain').style.display = 'none';
+        statusTitle.textContent = 'Thanks — got it.';
+        statusBody.textContent = note;
+        statusPanel.classList.add('show');
+        appendDownload();
+        statusPanel.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (document.getElementById('hp-website').value.trim() !== '') return;
+
+        const payload = collectAnswers();
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending…';
+
+        if (!SUBMIT_ENDPOINT) {
+            try {
+                const drafts = JSON.parse(localStorage.getItem('fablegear-research-drafts') || '[]');
+                drafts.push(payload);
+                localStorage.setItem('fablegear-research-drafts', JSON.stringify(drafts));
+            } catch (err) { /* non-fatal */ }
+
+            showSuccess('This build isn’t wired to a live spreadsheet yet, so your answers were saved locally in this browser and are shown below for review.');
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(payload, null, 2);
+            statusPanel.appendChild(pre);
+            return;
+        }
+
+        fetch(SUBMIT_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        })
+            .then(function (res) {
+                if (!res.ok) throw new Error('Bad response: ' + res.status);
+                showSuccess('Your answers went straight to a private spreadsheet. No account was created, nothing else was tracked.');
+            })
+            .catch(function () {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit and get the beta';
+                statusTitle.textContent = 'Something went wrong sending that.';
+                statusBody.textContent = 'Your answers are still on this page — try again in a moment, or refresh only if you have to.';
+                statusPanel.classList.add('show');
+            });
+    });
 })();
 </script>
 

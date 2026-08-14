@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FableGear — repair and manage a rekordbox library</title>
-    <meta name="description" content="A free, local macOS app that repairs broken file paths, finds duplicates, and analyzes tempo and key in a rekordbox library. Try the beta and help shape what ships next.">
+    <meta name="description" content="An open source macOS app that repairs broken file paths, finds duplicates, and analyzes tempo and key in a rekordbox library. The beta is free — try it and help shape what ships next.">
 
     <link rel="canonical" href="https://guthrieent.com/fablegear" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://guthrieent.com/fablegear" />
-    <meta property="og:title" content="FableGear · Free library repair for rekordbox" />
-    <meta property="og:description" content="A free, open source macOS app that repairs broken file paths, finds duplicate tracks, and detects tempo and key. Runs on your machine. No account, no cloud." />
+    <meta property="og:title" content="FableGear · Library repair for rekordbox" />
+    <meta property="og:description" content="An open source macOS app that repairs broken file paths, finds duplicate tracks, and detects tempo and key. Runs on your machine. No account, no cloud. Free while in beta." />
     <meta property="og:image" content="https://guthrieent.com/FableGear-logo.png" />
     <meta property="og:image:alt" content="FableGear logo" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="FableGear · Free library repair for rekordbox" />
-    <meta name="twitter:description" content="Free, open source, runs locally. Repairs broken paths, finds duplicates, detects tempo and key." />
+    <meta name="twitter:title" content="FableGear · Library repair for rekordbox" />
+    <meta name="twitter:description" content="Open source, runs locally. Repairs broken paths, finds duplicates, detects tempo and key. Free while in beta." />
     <meta name="twitter:image" content="https://guthrieent.com/FableGear-logo.png" />
 
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -185,6 +185,150 @@
             font-size: 11px;
             color: var(--cyan);
             letter-spacing: 1px;
+        }
+        .lede-sub { margin-top: 14px; font-size: 1rem; color: var(--ink-dim); }
+        .lede-sub strong { color: var(--ink); }
+
+        /* ── Three ways in. Presented as equals so the survey reads as an
+              invitation rather than a toll gate; only the weighting differs. */
+        .path-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin: 34px auto 0;
+            max-width: 940px;
+            text-align: left;
+        }
+        .path-card {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            padding: 20px 20px 18px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: var(--panel);
+            text-decoration: none;
+            color: var(--ink-dim);
+            transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .path-card:hover {
+            border-color: var(--cyan);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        .path-card strong {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 1.02rem;
+            color: var(--ink);
+            line-height: 1.35;
+        }
+        .path-index {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--violet);
+        }
+        .path-note { font-size: 0.86rem; line-height: 1.5; }
+        .path-go {
+            margin-top: auto;
+            padding-top: 10px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11.5px;
+            color: var(--cyan);
+            letter-spacing: 0.5px;
+        }
+        .path-card--primary {
+            border-color: rgba(255,61,158,0.5);
+            background: linear-gradient(160deg, rgba(255,61,158,0.10), var(--panel) 60%);
+        }
+        .path-card--primary .path-index { color: var(--magenta); }
+        .path-card--primary:hover { border-color: var(--magenta); }
+        .path-card--quiet { opacity: 0.82; }
+        .path-card--quiet:hover { opacity: 1; }
+
+        .promise-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin: 26px 0 22px;
+        }
+        .promise-item {
+            padding: 18px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.22);
+            font-size: 0.88rem;
+            line-height: 1.55;
+        }
+        .promise-item strong {
+            display: block;
+            margin-bottom: 7px;
+            font-family: 'Chakra Petch', sans-serif;
+            color: var(--cyan);
+            font-size: 0.95rem;
+        }
+
+        /* ── Mascot. Rides a rail beside the survey and hops to whichever block
+              is active, alternating sides so it reads as travelling with you.
+              Purely decorative: aria-hidden, and it never blocks a click. */
+        .mascot {
+            position: fixed;
+            width: 74px;
+            height: 74px;
+            left: 0;
+            top: 50%;
+            z-index: 6;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate3d(0, 0, 0) scale(0.7);
+            background-image: url('FableGear-logo.png');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: drop-shadow(0 0 16px rgba(141,92,246,0.55));
+            transition:
+                transform 0.72s cubic-bezier(0.34, 1.26, 0.44, 1),
+                opacity 0.4s ease;
+        }
+        .mascot.is-visible { opacity: 0.95; }
+        .mascot.is-hopping { animation: mascot-bob 0.72s ease-in-out; }
+        @keyframes mascot-bob {
+            0%   { filter: drop-shadow(0 0 16px rgba(141,92,246,0.55)); }
+            45%  { filter: drop-shadow(0 0 30px rgba(61,219,255,0.85)); }
+            100% { filter: drop-shadow(0 0 16px rgba(141,92,246,0.55)); }
+        }
+        .mascot-tip {
+            position: fixed;
+            z-index: 6;
+            max-width: 190px;
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(19,14,28,0.95);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            line-height: 1.45;
+            color: var(--ink-dim);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .mascot-tip.is-visible { opacity: 1; }
+
+        /* Blocks that unlock mid-survey glide in rather than snapping. */
+        .qblock[data-revealed] {
+            animation: block-glide 0.45s cubic-bezier(0.22, 0.9, 0.3, 1);
+        }
+        @keyframes block-glide {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .mascot, .mascot-tip { transition: opacity 0.2s linear; }
+            .mascot.is-hopping { animation: none; }
+            .qblock[data-revealed] { animation: none; }
+            .path-card:hover { transform: none; }
         }
 
         section.panel {
@@ -456,10 +600,16 @@
             max-height: 260px;
         }
 
+        @media (max-width: 900px) {
+            .path-grid, .promise-grid { grid-template-columns: 1fr; }
+        }
         @media (max-width: 640px) {
             section.panel { padding: 32px 22px; }
             .hero { padding: 80px 0 60px; }
             #splash-skip { bottom: 18px; right: 18px; }
+            /* The rail has nowhere to go on a phone; the tip carries the copy. */
+            .mascot { width: 52px; height: 52px; }
+            .mascot-tip { display: none; }
         }
     </style>
 </head>
@@ -480,20 +630,40 @@
 
 <header class="wrap">
     <a href="#" class="brand">FABLEGEAR</a>
-    <div class="kicker">Free library repair for rekordbox · macOS · Beta</div>
+    <div class="kicker">Library repair for rekordbox · macOS · Open beta</div>
 </header>
 
 <main class="wrap">
     <section class="hero">
         <h1>Your library is worth more than the software managing it.</h1>
-        <p class="lede">FableGear is a free, open source macOS app that fixes the problems a rekordbox library develops over years: tracks it can no longer find, the same song filed four times, and tempo and key values you can't fully trust. It runs on your own machine, reads your real library, and shows you what it found before it changes anything.</p>
-        <div class="cta-wrap">
-            <a href="#inventory" class="cta-btn">Get the beta ↓</a>
+        <p class="lede">FableGear is an open source macOS app that fixes the problems a rekordbox library develops over years: tracks it can no longer find, the same song filed four times, and tempo and key values you can't fully trust. It runs on your own machine, reads your real library, and shows you what it found before it changes anything.</p>
+        <p class="lede lede-sub">It is in <strong>open beta</strong>, and the beta is free. We are still deciding how the finished thing should behave — which is the entire reason for the survey below.</p>
+
+        <div class="path-grid" id="paths">
+            <a class="path-card path-card--primary" href="#survey-start" data-path="survey">
+                <span class="path-index">01</span>
+                <strong>Take the survey, then grab the beta</strong>
+                <span class="path-note">Mostly tapping, and it moves fast — later questions adapt to what you already told us, so you never answer about a tool you don't use.</span>
+                <span class="path-go">Start with question one →</span>
+            </a>
+            <a class="path-card" href="#what-it-is" data-path="read">
+                <span class="path-index">02</span>
+                <strong>Just let me read about it</strong>
+                <span class="path-note">Skip the questions. The full write-up — what it does, how it compares, and what we are not going to pretend about.</span>
+                <span class="path-go">Read the page →</span>
+            </a>
+            <a class="path-card path-card--quiet" href="#get-beta" data-path="download">
+                <span class="path-index">03</span>
+                <strong>Skip everything, just download already</strong>
+                <span class="path-note">Fair enough. It is the beta build — unsigned, macOS 12 or later, and it says so on first launch.</span>
+                <span class="path-go">Take me to the download →</span>
+            </a>
         </div>
-        <span class="cta-note">Free · MIT licensed · no account to install · a few questions unlock the download</span>
+
+        <span class="cta-note">Open source · no account · nothing leaves your computer · the beta is free</span>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="what-it-is">
         <h2>Why we built it</h2>
         <p>Rekordbox tracks your music by storing the exact location of every file. That works until a file moves. Rename a drive, reorganize folders, or restore from a backup that missed something, and tracks that played fine last week show up as missing when you load a set.</p>
         <p>The database rekordbox keeps is a closed file. When the references inside it break, there is no screen that tells you which ones broke or why, and most advice online assumes you still have a healthy library. That is not much use once yours already has three hundred missing tracks in it.</p>
@@ -609,20 +779,40 @@
     <section class="panel">
         <h2>Where this is going</h2>
         <p>Right now FableGear supports rekordbox and expects you to keep using it. That support is not going away. Everything the app does is designed to leave your rekordbox library working.</p>
-        <p>The longer aim is that you should not need rekordbox to get music onto a player. The USB export result above is the first evidence that is achievable rather than wishful. If it holds up across more hardware, the choice of what manages your collection stops being made for you by whoever built the gear. That is the reason this is free and the source is public: a library tool you depend on should not be something that can be taken away or priced up later.</p>
-        <div class="cta-wrap" style="text-align:center">
-            <a href="#inventory" class="cta-btn">Get the beta — 8 minutes first ↓</a>
-            <span class="cta-note">A few questions about your setup unlock the download below. Same app either way.</span>
+        <p>The longer aim is that you should not need rekordbox to get music onto a player. The USB export result above is the first evidence that is achievable rather than wishful. If it holds up across more hardware, the choice of what manages your collection stops being made for you by whoever built the gear. That is the reason the source is public: a library tool you depend on should not be something that can be taken away from you.</p>
+    </section>
+
+    <section class="panel" id="pricing">
+        <h2>What it will cost, and what it won't</h2>
+        <p>We would rather tell you this now, while you are deciding whether to install a beta, than spring it on you at 1.0.</p>
+        <p><strong>The beta is free.</strong> When FableGear reaches 1.0 — signed, notarized, and verified on more than one player — the finished build becomes a <strong>one-time purchase in the $9.99–$16 range</strong>. One payment. No subscription, not now and not later. There is also a <strong>pay-what-you-want option</strong> above that floor, for anyone who wants to fund the hardware testing that makes the next version possible.</p>
+
+        <div class="promise-grid">
+            <div class="promise-item">
+                <strong>The source stays open</strong>
+                It is MIT licensed and it stays that way. Anyone who wants to build it themselves can, for nothing, forever. What you would be buying is the signed, notarized, self-updating build — the convenience, not the capability.
+            </div>
+            <div class="promise-item">
+                <strong>Everyone in the beta is grandfathered</strong>
+                If you test this before 1.0, you keep it. Free, permanently, including the paid build and every update after it. Leave an email at the end of the survey and that is the list we will use.
+            </div>
+            <div class="promise-item">
+                <strong>Nothing gets taken away</strong>
+                No feature that works in the beta will be moved behind the purchase later. The free build will always tell you exactly what is wrong with your library.
+            </div>
         </div>
+
+        <div class="caveat"><strong>Being straight about the change:</strong> an earlier version of this page said the app would be free, full stop. That was written before we understood what verifying this on real hardware costs. We would rather change the plan in the open, with the reasoning attached, than quietly ship a price later — so if the sentence above is a dealbreaker, the source is still public and that has not changed.</div>
     </section>
 
     <!-- ═══════════════════════ Research / beta-gate flow ═══════════════════════ -->
 
-    <section class="panel">
+    <section class="panel" id="survey-start">
         <span class="step-label">Why we're asking</span>
         <h2>Three people's blind spots aren't the DJ community's</h2>
         <p>FableGear was built to fix problems in our own library, then a shared one. That's a couple of working DJs and a lot of hours in one setup — not a representative sample of how everyone actually works. Before this goes wider, we want to know what a library setup outside our bubble looks like, and where FableGear's assumptions don't hold.</p>
-        <div class="caveat"><strong>What this section won't do:</strong> there's no mailing list you're forced onto, no dark patterns, and no requirement to have installed FableGear yet. If you haven't tried it, the tool survey below still matters on its own — and finishing it is what unlocks the download.</div>
+        <p>We are asking about everything that touches your music, not just DJ software: the player you audition in, the tool that tags it, the thing you trust to back it up, and where you buy it. The parts that break tend to be the seams between those, and seams are exactly what we can't see from inside one setup.</p>
+        <div class="caveat"><strong>What this section won't do:</strong> there's no mailing list you're forced onto, no dark patterns, and no requirement to have installed FableGear yet. <strong>The download is not behind this survey</strong> — it's <a href="#get-beta">right down there</a> whenever you want it. We're asking because the answers change what gets built, not to make you pay a toll.</div>
     </section>
 
     <form id="research-form" novalidate>
@@ -749,6 +939,7 @@
             <span class="step-label">Optional</span>
             <h2>Leave an email if you're open to a follow-up</h2>
             <p>Not required. Only used to ask a clarifying question about your answers or let you know about future updates — never shared, never sold.</p>
+            <p>It is also how we identify the beta cohort for the permanent free license described <a href="#pricing">above</a>. No email, no way for us to find you later — that is the only reason to leave one.</p>
             <div class="field-group" style="margin-bottom:0;">
                 <label class="field-label" for="email">Email</label>
                 <input type="email" id="email" name="email" placeholder="you@wherever.com">
@@ -756,8 +947,8 @@
         </section>
 
         <section class="panel" style="text-align:center;">
-            <button type="submit" class="cta-btn" id="submit-btn">Submit and get the beta</button>
-            <p class="cta-note" id="submit-hint">You can leave anything blank. The download link appears right after this.</p>
+            <button type="submit" class="cta-btn" id="submit-btn">Send my answers</button>
+            <p class="cta-note" id="submit-hint">You can leave anything blank. Nothing here is required, including the email.</p>
         </section>
 
         <section class="panel" id="status-panel">
@@ -766,6 +957,24 @@
         </section>
 
     </form>
+
+    <section class="panel" id="get-beta">
+        <span class="step-label">The download</span>
+        <h2>Get the beta build</h2>
+        <p>This is the current beta of FableGear for macOS. It is the same build whether you answered the survey or scrolled straight past it.</p>
+
+        <div class="caveat"><strong>Read this before you run it.</strong> The beta is <strong>not code-signed or notarized</strong>, so macOS Gatekeeper will refuse it on first open — you will need to allow it explicitly in System Settings → Privacy &amp; Security. It writes to your files and to your rekordbox database. Every operation that changes something logs first and can be undone, and the destructive tools default to a preview run. <strong>Read the preview.</strong> Back up your library before pointing any tool at it.</div>
+
+        <div class="cta-wrap" style="text-align:center">
+            <a id="dl-btn"
+               href="https://github.com/fabledharbinger0993/FableGear/releases/latest/download/FableGear.zip"
+               class="cta-btn">Download the beta ↓</a>
+            <span id="dl-version" class="cta-version" style="display:none"></span>
+            <span class="cta-note">Beta · macOS 12 or later · unzip and open · free while in beta</span>
+        </div>
+
+        <p style="margin-top:22px;">There is no 1.0 build to buy yet, and there won't be one until this is signed and verified on more hardware. When there is, everything in <a href="#pricing">what it will cost</a> applies — including the part where testing it now means you never pay for it.</p>
+    </section>
 </main>
 
 <footer>
@@ -775,11 +984,12 @@
 
 <script>
 (function () {
-    // ── Live release info: used later to power the post-submit download
-    // link with the real current version/size instead of a hardcoded URL.
+    // ── Live release info. The download button below is a real static link, so
+    // this only ever decorates it with the current version and size. Every
+    // failure path leaves the static href exactly as the HTML shipped it.
     window.__releaseInfo = { url: null, label: null };
     fetch('/fablegear/release')
-        .then(function (r) { return r.json(); })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
         .then(function (data) {
             if (data.mac_url) window.__releaseInfo.url = data.mac_url;
             if (data.tag) {
@@ -787,8 +997,15 @@
                     ? data.tag + ' · ' + data.mac_size_mb + ' MB'
                     : data.tag;
             }
+            var btn = document.getElementById('dl-btn');
+            var versionTag = document.getElementById('dl-version');
+            if (btn && window.__releaseInfo.url) btn.href = window.__releaseInfo.url;
+            if (versionTag && window.__releaseInfo.label) {
+                versionTag.textContent = window.__releaseInfo.label;
+                versionTag.style.display = 'block';
+            }
         })
-        .catch(function () { /* fall back to the static URL at submit time */ });
+        .catch(function () { /* keep the static download link */ });
 
     // ── Splash gate. Every failure mode ends in reveal(). ──────────────
     var splash = document.getElementById('splash');
@@ -840,12 +1057,12 @@
 (function () {
     'use strict';
 
-    // TODO: point this at the Cloudflare Worker once it's built (Worker
-    // relays to a Google Apps Script Web App under FabledHarbinger@gmail.com,
-    // per the research plan doc). Left blank for now — submissions fall
-    // back to an on-page JSON preview + local save so nothing is lost
-    // while this is being wired up.
-    const SUBMIT_ENDPOINT = '';
+    // Same-origin on purpose. functions/api/survey.js relays to the Apps Script
+    // collector server-side, which sidesteps both browser-side blockers: the CSP
+    // `connect-src 'self'` already allows this, and there is no CORS preflight
+    // for Apps Script to fail to answer. It also keeps the collector URL out of
+    // this file, so it can be rotated without a site deploy.
+    const SUBMIT_ENDPOINT = '/api/survey';
     const BETA_DOWNLOAD_URL_FALLBACK = 'https://github.com/fabledharbinger0993/FableGear/releases/latest/download/FableGear.zip';
 
     const LIKERT_SCALE = [
@@ -1047,7 +1264,22 @@
     function countChecked(groupClass) { return document.querySelectorAll('.' + groupClass + ':checked').length; }
     function anyChecked(groupClass) { return countChecked(groupClass) > 0; }
 
+    /**
+     * Records which blocks were visible before a change so the ones that just
+     * appeared can be animated and pointed at. Without this the survey silently
+     * grows by several hundred pixels below the fold and nothing tells you.
+     */
+    function snapshotVisible() {
+        const seen = new Set();
+        document.querySelectorAll('.qblock').forEach(function (el) {
+            if (!el.hidden) seen.add(el);
+        });
+        return seen;
+    }
+
     function updateVisibility() {
+        const before = snapshotVisible();
+
         document.querySelectorAll('[data-requires]').forEach(function (el) {
             el.hidden = !isChecked(el.dataset.requires);
         });
@@ -1059,6 +1291,22 @@
         const notTriedFg = isChecked('fg-no');
         document.getElementById('fg-panel').hidden = !triedFg;
         document.getElementById('fg-nudge').hidden = !notTriedFg;
+
+        const revealed = [];
+        document.querySelectorAll('.qblock').forEach(function (el) {
+            if (!el.hidden && !before.has(el)) revealed.push(el);
+        });
+        revealed.forEach(function (el) {
+            el.setAttribute('data-revealed', '');
+            el.addEventListener('animationend', function handler() {
+                el.removeAttribute('data-revealed');
+                el.removeEventListener('animationend', handler);
+            });
+        });
+
+        if (revealed.length && window.__fgMascot) {
+            window.__fgMascot.pointAt(revealed[0], revealed.length);
+        }
 
         updateSignalChain();
     }
@@ -1135,22 +1383,16 @@
     const statusTitle = document.getElementById('status-title');
     const statusBody = document.getElementById('status-body');
 
-    function appendDownload() {
-        const url = (window.__releaseInfo && window.__releaseInfo.url) || BETA_DOWNLOAD_URL_FALLBACK;
-        const dl = document.createElement('a');
-        dl.className = 'cta-btn';
-        dl.style.marginTop = '18px';
-        dl.style.display = 'inline-block';
-        dl.href = url;
-        dl.textContent = 'Download the beta ↓';
-        statusPanel.appendChild(dl);
-
-        const dlNote = document.createElement('span');
-        dlNote.className = 'cta-note';
-        dlNote.textContent = (window.__releaseInfo && window.__releaseInfo.label)
-            ? window.__releaseInfo.label + ' · unzip and open'
-            : 'Free · macOS 12+ · unzip and open';
-        statusPanel.appendChild(dlNote);
+    /** Keeps a copy locally whenever the network path fails, so answers survive. */
+    function stashLocally(payload) {
+        try {
+            const drafts = JSON.parse(localStorage.getItem('fablegear-research-drafts') || '[]');
+            drafts.push(payload);
+            localStorage.setItem('fablegear-research-drafts', JSON.stringify(drafts));
+            return true;
+        } catch (err) {
+            return false;
+        }
     }
 
     function showSuccess(note) {
@@ -1159,7 +1401,17 @@
         statusTitle.textContent = 'Thanks — got it.';
         statusBody.textContent = note;
         statusPanel.classList.add('show');
-        appendDownload();
+
+        // The download lives in its own section and was never gated, so this is
+        // a shortcut to it rather than a reward for finishing.
+        const dl = document.createElement('a');
+        dl.className = 'cta-btn';
+        dl.style.marginTop = '18px';
+        dl.style.display = 'inline-block';
+        dl.href = '#get-beta';
+        dl.textContent = 'Take me to the download ↓';
+        statusPanel.appendChild(dl);
+
         statusPanel.scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -1171,37 +1423,141 @@
         submitBtn.disabled = true;
         submitBtn.textContent = 'Sending…';
 
-        if (!SUBMIT_ENDPOINT) {
-            try {
-                const drafts = JSON.parse(localStorage.getItem('fablegear-research-drafts') || '[]');
-                drafts.push(payload);
-                localStorage.setItem('fablegear-research-drafts', JSON.stringify(drafts));
-            } catch (err) { /* non-fatal */ }
-
-            showSuccess('This build isn’t wired to a live spreadsheet yet, so your answers were saved locally in this browser and are shown below for review.');
-            const pre = document.createElement('pre');
-            pre.textContent = JSON.stringify(payload, null, 2);
-            statusPanel.appendChild(pre);
-            return;
-        }
-
         fetch(SUBMIT_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         })
             .then(function (res) {
-                if (!res.ok) throw new Error('Bad response: ' + res.status);
-                showSuccess('Your answers went straight to a private spreadsheet. No account was created, nothing else was tracked.');
+                return res.json().catch(function () { return {}; })
+                    .then(function (body) { return { ok: res.ok && body.ok !== false, status: res.status }; });
+            })
+            .then(function (result) {
+                if (result.ok) {
+                    showSuccess('Your answers went to a private spreadsheet. No account was created, and nothing else was tracked.');
+                    return;
+                }
+                // 503 means the collector isn't configured yet. That's our problem,
+                // not the respondent's — keep their answers rather than lose them.
+                if (result.status === 503) {
+                    stashLocally(payload);
+                    showSuccess('The collector isn’t switched on at our end yet, so your answers were saved in this browser instead. Nothing was lost — thank you for taking the time.');
+                    return;
+                }
+                throw new Error('Bad response: ' + result.status);
             })
             .catch(function () {
+                stashLocally(payload);
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Submit and get the beta';
+                submitBtn.textContent = 'Send my answers';
                 statusTitle.textContent = 'Something went wrong sending that.';
-                statusBody.textContent = 'Your answers are still on this page — try again in a moment, or refresh only if you have to.';
+                statusBody.textContent = 'Your answers are still on this page and a copy was saved in this browser — try again in a moment, or refresh only if you have to.';
                 statusPanel.classList.add('show');
             });
     });
+})();
+
+/*
+ * ── Mascot ────────────────────────────────────────────────────────────────
+ * The logo rides alongside the survey and hops to whichever block just opened,
+ * alternating sides so it reads as travelling with you rather than sitting in a
+ * corner. It exists to solve a real usability problem: answers unlock new blocks
+ * further down the page, and without something pointing at them the survey
+ * silently grows below the fold.
+ *
+ * Entirely decorative and entirely optional — aria-hidden, pointer-events:none,
+ * and the whole module no-ops under prefers-reduced-motion or if the survey
+ * isn't on the page.
+ */
+(function () {
+    const form = document.getElementById('research-form');
+    if (!form) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const mascot = document.createElement('div');
+    mascot.className = 'mascot';
+    mascot.setAttribute('aria-hidden', 'true');
+
+    const tip = document.createElement('div');
+    tip.className = 'mascot-tip';
+    tip.setAttribute('aria-hidden', 'true');
+
+    document.body.appendChild(mascot);
+    document.body.appendChild(tip);
+
+    const NUDGES = [
+        'That opened a few more — they\'re just below.',
+        'Nice. Follow me down.',
+        'New questions, same deal: skip anything.',
+        'Only the tools you picked. Nothing else.',
+        'This bit is the useful part for us.',
+    ];
+
+    let side = 0;
+    let hideTimer = null;
+
+    function place(target, message) {
+        const rect = target.getBoundingClientRect();
+        const margin = 18;
+        const size = window.innerWidth <= 640 ? 52 : 74;
+
+        // Alternate sides each hop; on narrow viewports there is only room to
+        // tuck it against the right edge.
+        const narrow = window.innerWidth < 1180;
+        const onLeft = narrow ? false : side % 2 === 0;
+        const x = onLeft
+            ? Math.max(margin, rect.left - size - margin)
+            : Math.min(window.innerWidth - size - margin, rect.right + margin);
+        const y = Math.min(
+            window.innerHeight - size - margin,
+            Math.max(margin, rect.top + 10)
+        );
+
+        mascot.style.transform = 'translate3d(' + Math.round(x) + 'px, ' + Math.round(y) + 'px, 0) scale(1)';
+        mascot.classList.add('is-visible');
+
+        if (!reduceMotion) {
+            mascot.classList.remove('is-hopping');
+            // Reflow so the animation restarts on a repeat hop.
+            void mascot.offsetWidth;
+            mascot.classList.add('is-hopping');
+        }
+
+        if (message && window.innerWidth > 640) {
+            tip.textContent = message;
+            const tipY = Math.min(window.innerHeight - 70, y + size + 8);
+            tip.style.transform = 'translate3d(' + Math.round(Math.max(margin, x - 58)) + 'px, ' + Math.round(tipY) + 'px, 0)';
+            tip.classList.add('is-visible');
+        }
+
+        side += 1;
+
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(function () {
+            mascot.classList.remove('is-visible');
+            tip.classList.remove('is-visible');
+        }, 4200);
+    }
+
+    window.__fgMascot = {
+        pointAt: function (target, count) {
+            if (!target) return;
+            const message = count > 1
+                ? count + ' new blocks opened up.'
+                : NUDGES[Math.floor(Math.random() * NUDGES.length)];
+            // Wait for the reveal animation to settle before measuring, or the
+            // rect is read mid-transform and the mascot lands in the wrong place.
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () { place(target, message); });
+            });
+        },
+    };
+
+    window.addEventListener('resize', function () {
+        mascot.classList.remove('is-visible');
+        tip.classList.remove('is-visible');
+    }, { passive: true });
 })();
 </script>
 

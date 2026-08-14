@@ -340,6 +340,20 @@
             transform-origin: top left;
             transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        /* Flipped above the mascot when there is no room below — the tail has
+           to move to the other edge with it, or it points at nothing. */
+        .mascot-tip.is-above .mascot-tip-bubble {
+            border-radius: 14px 14px 4px 14px;
+            transform-origin: bottom left;
+        }
+        .mascot-tip.is-above .mascot-tip-bubble::before {
+            top: auto;
+            bottom: -7px;
+            border-left: none;
+            border-top: none;
+            border-right: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+        }
         .mascot-tip-bubble::before {
             content: '';
             position: absolute;
@@ -1125,7 +1139,21 @@
         { id: 'lib-mixxx', label: 'Mixxx' },
         { id: 'lib-denondj', label: 'Denon DJ software' },
         { id: 'lib-applemusic', label: 'Apple Music / iTunes' },
-        { id: 'lib-none', label: 'Just files in folders, no dedicated app' },
+        // Folders-only has no app to be satisfied *with*, so the shared
+        // statements below read as nonsense once {tool} is substituted
+        // ("reinstalling Just files in folders ... is painless"). It gets its
+        // own set instead of being dropped, because how this group copes is
+        // exactly the blind spot the survey is looking for.
+        {
+            id: 'lib-none',
+            label: 'Just files in folders, no dedicated app',
+            statements: [
+                { key: 'organize', text: 'My folder structure is organized enough that I can always find a track' },
+                { key: 'metadata', text: 'The tags on my files (genre, key, BPM, comments) are accurate and consistent' },
+                { key: 'trust', text: 'I could move my whole collection to a new drive without losing track of anything' },
+                { key: 'switching', text: 'I have deliberately avoided library apps rather than never having tried one' },
+            ],
+        },
         { id: 'lib-other', label: 'Other', other: true },
     ];
     const LIB_STATEMENTS = [
@@ -1256,7 +1284,8 @@
     const toolBlocksContainer = document.getElementById('tool-blocks');
 
     LIB_TOOLS.filter(function (t) { return !t.other; }).forEach(function (tool) {
-        toolBlocksContainer.appendChild(buildToolBlock(tool, LIB_STATEMENTS, 'lib'));
+        // A tool may carry its own statements when the generic ones don't fit it.
+        toolBlocksContainer.appendChild(buildToolBlock(tool, tool.statements || LIB_STATEMENTS, 'lib'));
     });
 
     META_TOOLS.filter(function (t) { return META_TOOLS_WITH_BLOCKS.indexOf(t.id) !== -1; })
@@ -1578,7 +1607,19 @@
 
         if (message && window.innerWidth > 640) {
             tipBubble.textContent = message;
-            const tipY = Math.min(window.innerHeight - 70, y + size + 8);
+
+            // The bubble normally hangs below the mascot, but y is clamped to
+            // the bottom of the viewport, so for any block low on the page
+            // "below" is off-screen and the bubble gets cut in half. Measure it
+            // and flip above when it won't fit.
+            tip.style.transform = 'translate3d(-9999px, -9999px, 0)';
+            const tipHeight = tipBubble.offsetHeight || 60;
+
+            const below = y + size + 8;
+            const fitsBelow = below + tipHeight <= window.innerHeight - margin;
+            const tipY = fitsBelow ? below : Math.max(margin, y - tipHeight - 8);
+
+            tip.classList.toggle('is-above', !fitsBelow);
             tip.style.transform = 'translate3d(' + Math.round(Math.max(margin, x - 58)) + 'px, ' + Math.round(tipY) + 'px, 0)';
             tip.classList.add('is-visible');
         }

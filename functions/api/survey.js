@@ -17,18 +17,29 @@
  *   1. Create the spreadsheet, add apps-script/Code.gs via Extensions > Apps
  *      Script, and deploy it as a Web app ("Execute as: Me",
  *      "Who has access: Anyone"). Copy the /exec URL.
- *   2. In the Cloudflare Pages dashboard for this site:
- *        Settings → Environment variables → Production
- *        Add:
- *          SURVEY_SHEET_URL = https://script.google.com/macros/s/AKfy.../exec
- *   3. Redeploy.
+ *   2. Provide that URL either way:
+ *        - paste it into COLLECTOR_URL_FALLBACK below and commit, or
+ *        - set SURVEY_SHEET_URL in Cloudflare Pages → Settings →
+ *          Environment variables (this wins, and can be rotated without a
+ *          deploy).
  *
- * Until SURVEY_SHEET_URL is set this returns 503 and the page keeps the
- * response in localStorage, so no answer is lost while the sheet is being set up.
+ * Until one of those is present this returns 503 and the page keeps the response
+ * in localStorage, so no answer is lost while the sheet is being set up.
  */
 
 const MAX_FIELD_LENGTH = 5000;
 const MAX_FIELDS = 200;
+
+/*
+ * Fallback collector URL, used when SURVEY_SHEET_URL is not set in the Pages
+ * environment. Committing it here is safe in a way it would not be in the page:
+ * this file runs on the server, so the value never reaches a browser.
+ *
+ * Setting SURVEY_SHEET_URL in the dashboard still wins, which is the better
+ * option long-term because it can be rotated without a deploy. This constant
+ * exists so the survey can go live without touching the dashboard at all.
+ */
+const COLLECTOR_URL_FALLBACK = '';
 
 export async function onRequestPost({ request, env }) {
   let data;
@@ -65,8 +76,9 @@ export async function onRequestPost({ request, env }) {
   data.received_at = new Date().toISOString();
   if (!data.submitted_at) data.submitted_at = data.received_at;
 
-  if (!env.SURVEY_SHEET_URL) {
-    console.error('SURVEY_SHEET_URL is not set; survey response not stored.');
+  const collectorUrl = env.SURVEY_SHEET_URL || COLLECTOR_URL_FALLBACK;
+  if (!collectorUrl) {
+    console.error('No collector configured; survey response not stored.');
     return json({ ok: false, error: 'Collector not configured yet.' }, 503);
   }
 
@@ -74,7 +86,7 @@ export async function onRequestPost({ request, env }) {
     // text/plain is deliberate: it keeps this a CORS-simple request, which
     // matters if this ever runs from a context that enforces preflight. Apps
     // Script reads e.postData.contents either way, so JSON.parse is unaffected.
-    const res = await fetch(env.SURVEY_SHEET_URL, {
+    const res = await fetch(collectorUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(data),

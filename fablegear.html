@@ -157,11 +157,17 @@
           box-shadow: 0 6px 18px rgba(0,0,0,0.35);
         }
         .start-survey:hover { box-shadow: 0 0 24px rgba(255,61,158,0.45); }
-        @media (max-width: 640px) {
-          .start-survey { bottom: auto; top: 12px; right: 12px; }
-        }
+        /* Once the bubble is open the button is redundant and, on a phone,
+           sits on top of the sheet — so it gets out of the way. */
+        body:has(#mascot.open) .start-survey { opacity: 0; pointer-events: none; }
 
-        /* Mascot layout */
+        /* ── Mascot + bubble ──────────────────────────────────────────────
+           Two layouts on purpose. Desktop: the bubble hangs above-left of
+           Spectre, anchored to his box, with a tail pointing at him. Phone:
+           that anchoring cannot fit — a 360px bubble hung off a mascot pinned
+           to the right edge lands mostly off-screen — so below 640px it
+           becomes a viewport-width bottom sheet and the tail is dropped,
+           since it would no longer be pointing at anything. */
         #mascot {
           position: fixed;
           bottom: 12vh;
@@ -170,36 +176,187 @@
           z-index: 12000;
           cursor: pointer;
           user-select: none;
-          transition: transform 220ms ease, right 220ms ease, left 220ms ease;
+          transition: transform 220ms ease;
         }
         #mascot img { width: 100%; height: auto; display: block; pointer-events: none; }
 
-        /* Thought bubble */
         .mascot-bubble {
           position: absolute;
-          bottom: 110%;
-          right: 110%;
+          bottom: calc(100% + 18px);
+          right: 0;
           width: 360px;
-          max-width: calc(100vw - 80px);
-          background: #fff;
-          color: #111;
+          max-width: calc(100vw - 2vw - 24px);
+          background: rgba(19,14,28,0.97);
+          border: 1px solid var(--line);
+          color: var(--ink);
           border-radius: 12px;
-          box-shadow: 0 12px 28px rgba(0,0,0,0.14);
-          padding: 12px;
+          box-shadow: 0 18px 44px rgba(0,0,0,0.55);
+          backdrop-filter: blur(10px);
+          padding: 18px;
           display: none;
-          font-size: 15px;
+          font-family: 'IBM Plex Sans', sans-serif;
+          font-size: 14px;
+          text-align: left;
         }
         .mascot.open .mascot-bubble { display: block; }
+        /* Tail: same fill + only the two outward edges bordered, so it reads
+           as part of the panel rather than a diamond sitting on top of it. */
         .mascot-bubble::after {
-          content:""; position:absolute; right:-14px; bottom:-6px; width:18px;height:18px;background:#fff;transform:rotate(45deg);
+          content: "";
+          position: absolute;
+          right: 38px;
+          bottom: -7px;
+          width: 12px;
+          height: 12px;
+          background: rgba(19,14,28,0.97);
+          border-right: 1px solid var(--line);
+          border-bottom: 1px solid var(--line);
+          transform: rotate(45deg);
         }
-        .mascot-bubble-text { font-weight:600; margin-bottom:8px; }
-        .mascot-bubble-content { max-height:38vh; overflow:auto; font-size:14px; }
+        .mascot-bubble-text {
+          font-family: 'Chakra Petch', sans-serif;
+          font-weight: 700;
+          font-size: 1.02rem;
+          line-height: 1.3;
+          color: var(--ink);
+          margin-bottom: 14px;
+        }
+        .mascot-bubble-content {
+          max-height: 44vh;
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
+        }
 
-        /* Mascot controls */
-        .mascot-controls { display:flex; gap:8px; align-items:center; margin-top:10px; flex-wrap:wrap; }
-        .mascot-btn { background:#222;color:#fff;border:none;padding:6px 10px;border-radius:6px; cursor:pointer; font-size:13px; }
-        .mascot-send { font-size:12px; color:#444; display:flex; align-items:center; gap:6px; }
+        /* Controls */
+        .mascot-controls {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          flex-wrap: wrap;
+          margin-top: 16px;
+          padding-top: 14px;
+          border-top: 1px solid var(--line);
+        }
+        .mascot-btn {
+          background: transparent;
+          color: var(--ink-dim);
+          border: 1px solid var(--line);
+          padding: 8px 13px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-family: 'Chakra Petch', sans-serif;
+          font-weight: 700;
+          font-size: 12px;
+          letter-spacing: 0.4px;
+          transition: border-color 0.15s ease, color 0.15s ease;
+        }
+        .mascot-btn:hover { border-color: var(--cyan); color: var(--ink); }
+        /* Next is the one forward action, so it carries the page's primary
+           gradient; everything else stays a quiet outline. */
+        #mascot-next {
+          background: linear-gradient(135deg, var(--magenta), var(--violet));
+          color: #0a0710;
+          border-color: transparent;
+        }
+        #mascot-next:hover { color: #0a0710; box-shadow: 0 0 18px rgba(255,61,158,0.4); }
+        #mascot-cancel:hover { border-color: var(--magenta); color: var(--ink); }
+        .mascot-send {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 10px;
+          letter-spacing: 0.6px;
+          text-transform: uppercase;
+          color: var(--ink-dim);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-left: auto;
+          white-space: nowrap;
+          cursor: pointer;
+        }
+        .mascot-send input { accent-color: var(--magenta); width: 14px; height: 14px; }
+
+        /* Compact forms inside the bubble */
+        .mascot-bubble-content .group-title {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 1.6px;
+          text-transform: uppercase;
+          color: var(--cyan);
+          margin: 16px 0 8px;
+        }
+        .mascot-bubble-content > *:first-child { margin-top: 0; }
+        .mascot-bubble-content .compact-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          margin-bottom: 12px;
+        }
+        .mascot-bubble-content .compact-grid > label {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding: 9px 11px;
+          border: 1px solid var(--line);
+          border-radius: 6px;
+          background: rgba(255,255,255,0.025);
+          color: var(--ink-dim);
+          font-size: 0.88rem;
+          line-height: 1.35;
+          cursor: pointer;
+          transition: border-color 0.15s ease, color 0.15s ease;
+        }
+        .mascot-bubble-content .compact-grid > label:hover { border-color: var(--violet); color: var(--ink); }
+        .mascot-bubble-content input[type="checkbox"],
+        .mascot-bubble-content input[type="radio"] {
+          accent-color: var(--magenta);
+          width: 15px;
+          height: 15px;
+          flex-shrink: 0;
+          margin: 0;
+        }
+        .mascot-bubble-content .likert-compact { margin-bottom: 15px; }
+        .mascot-bubble-content .likert-compact > label {
+          display: block;
+          font-size: 0.85rem;
+          line-height: 1.4;
+          color: var(--ink-dim);
+          margin-bottom: 8px;
+        }
+        /* The 1–5 row is built with inline styles in JS, so this styles the
+           option labels inside it rather than the flex container itself. */
+        .mascot-bubble-content .likert-compact > div > label {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 6px 10px;
+          border: 1px solid var(--line);
+          border-radius: 5px;
+          color: var(--ink-dim);
+          cursor: pointer;
+          transition: border-color 0.15s ease, color 0.15s ease;
+        }
+        .mascot-bubble-content .likert-compact > div > label:hover { border-color: var(--cyan); color: var(--ink); }
+        .mascot-bubble-content textarea,
+        .mascot-bubble-content input[type="text"],
+        .mascot-bubble-content input[type="email"] {
+          width: 100%;
+          min-height: 74px;
+          background: rgba(7,6,11,0.6);
+          border: 1px solid var(--line);
+          border-radius: 6px;
+          color: var(--ink);
+          font-family: 'IBM Plex Sans', sans-serif;
+          font-size: 0.9rem;
+          padding: 10px 12px;
+          resize: vertical;
+          margin-bottom: 12px;
+        }
+        .mascot-bubble-content input[type="text"],
+        .mascot-bubble-content input[type="email"] { min-height: 0; }
+        .mascot-bubble-content textarea:focus,
+        .mascot-bubble-content input:focus { border-color: var(--cyan); outline: none; }
 
         /* Idle meander */
         @keyframes meander { 0%{transform:translateY(0) rotate(0);}25%{transform:translateY(-6px) rotate(-2deg);}50%{transform:translateY(0);}75%{transform:translateY(-4px) rotate(1deg);}100%{transform:translateY(0);} }
@@ -211,13 +368,6 @@
           font-size: 11.5px !important; opacity: 0.55; transition: font-size .18s, opacity .18s;
         }
         .mascot-narrated input, .mascot-narrated textarea, .mascot-narrated .likert-options, .mascot-narrated .check-grid { opacity: 1; }
-
-        /* Compact forms inside bubble */
-        .mascot-bubble-content .group-title { font-weight:600; margin-bottom:6px; }
-        .mascot-bubble-content .compact-grid { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
-        .mascot-bubble-content .likert-compact { display:flex; gap:6px; align-items:center; margin-bottom:8px; }
-        .mascot-bubble-content .likert-compact label { font-size:13px; margin-right:8px; }
-        .mascot-bubble-content textarea { width:100%; min-height:80px; resize:vertical; }
 
         /* Small hint pulse */
         .mascot.hint { box-shadow: 0 0 0 6px rgba(255,160,0,0.12); transform:scale(1.02); transition: box-shadow .28s, transform .28s; }
@@ -374,17 +524,12 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
-            /* Click/keyboard handling and button semantics are only ever
-               added in JS when motion isn't reduced (see the mascot module),
-               so the pointer cursor needs to not imply an affordance that
-               isn't there for reduced-motion users. */
-            .mascot { cursor: default; }
-            .mascot, .mascot-tip-bubble { transition: opacity 0.2s linear; }
-            .mascot.is-hopping { animation: none; }
-            .mascot-figure,
-            .mascot-figure.is-spinning,
-            .mascot-figure.is-teleport-out,
-            .mascot-figure.is-teleport-in { animation: none; }
+            /* Spectre is genuinely clickable now (he opens/closes the bubble),
+               so unlike the old pointer-mascot he keeps his pointer cursor
+               here — the affordance is real regardless of motion settings.
+               What does need suppressing is his idle drift. */
+            .mascot.idle { animation: none; }
+            .mascot { transition: none; }
             .qblock[data-revealed] { animation: none; }
             details.panel.collapsible[open] > .details-body { animation: none; }
             details.panel.collapsible .summary-toggle { transition: none; }
@@ -760,9 +905,45 @@
             section.panel { padding: 32px 22px; }
             .hero { padding: 80px 0 60px; }
             #splash-skip { bottom: 18px; right: 18px; }
-            /* The rail has nowhere to go on a phone; the tip carries the copy. */
-            .mascot { width: 260px; height: 260px; }
-            .mascot-tip { display: none; }
+
+            /* Phone: Spectre shrinks and tucks into the corner, and the bubble
+               stops being anchored to him — at this width there is no room to
+               hang 360px off a right-pinned mascot, which is what pushed the
+               questions off the left edge. It becomes a bottom sheet instead. */
+            #mascot { width: 92px; bottom: 14px; right: 10px; }
+            .start-survey {
+                bottom: 22px;
+                right: auto;
+                left: 10px;
+                padding: 11px 18px;
+                font-size: 14px;
+            }
+            .mascot-bubble {
+                position: fixed;
+                left: 10px;
+                right: 10px;
+                /* Clears Spectre (92px tall + his 14px offset) so he stays
+                   visible under the sheet — he is nominally the one asking,
+                   which reads as nonsense if he is covered by his own bubble. */
+                bottom: 116px;
+                width: auto;
+                max-width: none;
+                max-height: 68vh;
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                padding: 16px;
+                border-radius: 14px;
+            }
+            /* Nothing left for it to point at once the sheet spans the screen. */
+            .mascot-bubble::after { display: none; }
+            .mascot-bubble-content { max-height: 44vh; }
+            /* Keep the actions reachable without scrolling back down a long step. */
+            .mascot-controls {
+                position: sticky;
+                bottom: 0;
+                margin-top: 14px;
+                background: rgba(19,14,28,0.97);
+            }
         }
 
     </style>

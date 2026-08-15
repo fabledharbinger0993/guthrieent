@@ -431,6 +431,11 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
+            /* Click/keyboard handling and button semantics are only ever
+               added in JS when motion isn't reduced (see the mascot module),
+               so the pointer cursor needs to not imply an affordance that
+               isn't there for reduced-motion users. */
+            .mascot { cursor: default; }
             .mascot, .mascot-tip-bubble { transition: opacity 0.2s linear; }
             .mascot.is-hopping { animation: none; }
             .mascot-figure,

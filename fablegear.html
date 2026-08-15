@@ -1383,7 +1383,12 @@
         });
 
         if (revealed.length && window.__fgMascot) {
-            window.__fgMascot.pointAt(revealed[0], revealed.length);
+            // Tool satisfaction blocks carry the tool id in data-requires (see
+            // buildToolBlock); hw-panel/fg-panel are .qblock too but aren't
+            // tool reveals, so they just get the canned message, same as ever.
+            const revealedTool = revealed[0].dataset.requires;
+            const aiOpts = revealedTool ? { section: 'satisfaction-section', tools: [revealedTool] } : null;
+            window.__fgMascot.pointAt(revealed[0], revealed.length, aiOpts);
         }
 
         updateSignalChain();
@@ -1583,6 +1588,34 @@
 
     let side = 0;
     let hideTimer = null;
+    let requestToken = 0;
+
+    // Fire-and-forget: fetches an AI-generated line and swaps it into the
+    // bubble ONLY if it wins the race against MASCOT_AI_TIMEOUT and the
+    // bubble is still the one this call was meant for (token match) and
+    // still on screen. The canned line from place() has already been shown
+    // instantly, so there is nothing to wait on and nothing that can go
+    // visibly wrong here — worst case, the line never upgrades.
+    const MASCOT_AI_TIMEOUT = 1000;
+    function fetchAiLine(section, tools, token) {
+        if (typeof fetch !== 'function' || typeof AbortController !== 'function') return;
+        const controller = new AbortController();
+        const timer = setTimeout(function () { controller.abort(); }, MASCOT_AI_TIMEOUT);
+        fetch('/api/mascot-line', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ section: section, tools: tools || [] }),
+            signal: controller.signal,
+        })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) {
+                clearTimeout(timer);
+                if (!data || !data.ok || !data.line) return;
+                if (token !== requestToken || !tip.classList.contains('is-visible')) return;
+                tipBubble.textContent = data.line;
+            })
+            .catch(function () { clearTimeout(timer); });
+    }
 
     function place(target, message) {
         const rect = target.getBoundingClientRect();
@@ -1644,18 +1677,29 @@
         // logic further up the file) or a literal line to speak (string, from
         // the step-greeter below). Keeping both on one entry point means there
         // is only ever one place deciding where the mascot stands.
-        pointAt: function (target, arg) {
+        //
+        // `aiOpts` (optional): { section, tools } — when present, an AI line
+        // is fetched in the background and swaps in over the canned message
+        // if it arrives quickly enough. section/tools are matched against
+        // fixed server-side allow-lists (functions/api/mascot-line.js) —
+        // nothing here is ever free text, by design.
+        pointAt: function (target, arg, aiOpts) {
             if (!target) return;
             const message = typeof arg === 'string'
                 ? arg
                 : (arg > 1
                     ? arg + ' new blocks just opened up — I’ll wait.'
                     : NUDGES[Math.floor(Math.random() * NUDGES.length)]);
+            requestToken += 1;
+            const token = requestToken;
             // Wait for the reveal animation to settle before measuring, or the
             // rect is read mid-transform and the mascot lands in the wrong place.
             requestAnimationFrame(function () {
                 requestAnimationFrame(function () { place(target, message); });
             });
+            if (aiOpts && aiOpts.section && !reduceMotion) {
+                fetchAiLine(aiOpts.section, aiOpts.tools, token);
+            }
         },
     };
 
@@ -1683,7 +1727,7 @@
                 if (!entry.isIntersecting || seen.has(entry.target.id)) return;
                 seen.add(entry.target.id);
                 const hit = GREETINGS.find(function (g) { return g[0] === entry.target.id; });
-                if (hit) window.__fgMascot.pointAt(entry.target, hit[1]);
+                if (hit) window.__fgMascot.pointAt(entry.target, hit[1], { section: hit[0] });
             });
         }, { threshold: 0.35 });
 

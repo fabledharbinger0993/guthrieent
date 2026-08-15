@@ -13,7 +13,18 @@
  *
  * Reminder: like the D1 binding above, DASHBOARD_KEY is deployment-scoped —
  * saving it alone doesn't rebuild an already-live deployment.
+ *
+ * AI SUMMARY
+ *   If a Workers AI binding named `AI` is present, this also returns a short
+ *   "what people are saying" paragraph generated from recent open-text
+ *   answers — cached in dashboard_summaries and only regenerated when both
+ *   stale (SUMMARY_MAX_AGE_MS) and new responses exist since the last one,
+ *   so a dashboard view doesn't pay for a fresh AI call every time. No AI
+ *   binding just means no summary field in the response — the rest of the
+ *   dashboard is unaffected.
  */
+
+const SUMMARY_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
 export async function onRequestGet({ request, env }) {
   if (!env.DASHBOARD_KEY) {
@@ -35,6 +46,8 @@ export async function onRequestGet({ request, env }) {
       toolCounts,
       likertStats,
       recentText,
+      sentimentCounts,
+      topicCounts,
     ] = await Promise.all([
       env.DB.prepare(
         `SELECT
@@ -60,14 +73,24 @@ export async function onRequestGet({ request, env }) {
       ).all(),
       env.DB.prepare(
         `SELECT submitted_at, pain_point, blind_spot, suggestions,
-                hw_open, fg_open_different, fg_open_missing
+                hw_open, fg_open_different, fg_open_missing, sentiment
          FROM responses
          WHERE pain_point != '' OR blind_spot != '' OR suggestions != ''
             OR hw_open != '' OR fg_open_different != '' OR fg_open_missing != ''
          ORDER BY submitted_at DESC
          LIMIT 100`
       ).all(),
+      env.DB.prepare(
+        `SELECT sentiment, COUNT(*) AS n FROM responses
+         WHERE sentiment IS NOT NULL GROUP BY sentiment`
+      ).all(),
+      env.DB.prepare(
+        `SELECT topic, COUNT(*) AS n FROM response_topics
+         GROUP BY topic ORDER BY n DESC LIMIT 20`
+      ).all(),
     ]);
+
+    const summary = env.AI ? await getOrRefreshSummary(env, totals.total) : null;
 
     return json({
       ok: true,
@@ -75,10 +98,73 @@ export async function onRequestGet({ request, env }) {
       tool_counts: toolCounts.results,
       likert_stats: likertStats.results,
       recent_text: recentText.results,
+      sentiment_counts: sentimentCounts.results,
+      topic_counts: topicCounts.results,
+      summary,
     });
   } catch (err) {
     console.error('Dashboard query failed:', err);
     return json({ ok: false, error: 'Query failed.' }, 500);
+  }
+}
+
+// Returns the cached summary unless it's both stale and there are new
+// responses to summarize, in which case it regenerates first. A failed AI
+// call here just falls back to whatever's cached (possibly null) — the rest
+// of the dashboard renders regardless.
+async function getOrRefreshSummary(env, currentTotal) {
+  const cached = await env.DB.prepare(
+    'SELECT generated_at, response_count, summary FROM dashboard_summaries ORDER BY id DESC LIMIT 1'
+  ).first();
+
+  const stale = !cached || (Date.now() - new Date(cached.generated_at).getTime()) > SUMMARY_MAX_AGE_MS;
+  const hasNewData = !cached || currentTotal > cached.response_count;
+
+  if (!stale || !hasNewData || currentTotal === 0) {
+    return cached ? { text: cached.summary, generated_at: cached.generated_at } : null;
+  }
+
+  try {
+    const rows = await env.DB.prepare(
+      `SELECT pain_point, blind_spot, suggestions, hw_open,
+              fg_open_different, fg_open_missing
+       FROM responses
+       WHERE pain_point != '' OR blind_spot != '' OR suggestions != ''
+          OR hw_open != '' OR fg_open_different != '' OR fg_open_missing != ''
+       ORDER BY submitted_at DESC LIMIT 40`
+    ).all();
+
+    const corpus = rows.results
+      .map(function (r) {
+        return Object.values(r).filter(Boolean).join(' — ');
+      })
+      .join('\n')
+      .slice(0, 6000);
+
+    if (!corpus) return cached ? { text: cached.summary, generated_at: cached.generated_at } : null;
+
+    const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+      messages: [{
+        role: 'user',
+        content:
+          'Read these free-text survey answers from DJs about their music library ' +
+          'tools and write a plain, factual 2-3 sentence summary of the recurring ' +
+          'themes for an internal dashboard. No preamble, no bullet points, no ' +
+          'markdown, just the summary sentences.\n\n' + corpus,
+      }],
+    });
+    const text = ((result && (result.response || result)) + '').trim().slice(0, 1200);
+    if (!text) return cached ? { text: cached.summary, generated_at: cached.generated_at } : null;
+
+    const generatedAt = new Date().toISOString();
+    await env.DB.prepare(
+      'INSERT INTO dashboard_summaries (generated_at, response_count, summary) VALUES (?, ?, ?)'
+    ).bind(generatedAt, currentTotal, text).run();
+
+    return { text, generated_at: generatedAt };
+  } catch (err) {
+    console.error('Summary generation failed, using cached:', err);
+    return cached ? { text: cached.summary, generated_at: cached.generated_at } : null;
   }
 }
 

@@ -968,9 +968,13 @@
                     <label class="field-label" for="fg-open-different">What did FableGear do that your usual tool doesn't?</label>
                     <textarea id="fg-open-different" name="fg-open-different"></textarea>
                 </div>
-                <div class="field-group" style="margin-bottom:0;">
+                <div class="field-group">
                     <label class="field-label" for="fg-open-missing">What's missing that would stop you from using it regularly?</label>
                     <textarea id="fg-open-missing" name="fg-open-missing"></textarea>
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                    <label class="field-label" for="fg-suggestions">Anything else? A longer review, what surprised you, what you'd tell a friend — as much or as little as you want.</label>
+                    <textarea id="fg-suggestions" name="fg-suggestions" style="min-height:140px"></textarea>
                 </div>
             </div>
             <div class="fg-nudge" id="fg-nudge" hidden>
@@ -1036,6 +1040,7 @@
 <footer>
     Built by Guthrie Entertainment LLC in Philadelphia.<br>
     <a href="https://github.com/fabledharbinger0993/FableGear">Source code and issue tracker on GitHub</a>
+    <span style="opacity:0.35"> · <a href="dashboard.html" style="color:inherit;border-color:transparent;">dashboard</a></span>
 </footer>
 
 <script>
@@ -1440,6 +1445,7 @@
         if (!document.getElementById('fg-panel').hidden) {
             data.fg_open_different = document.getElementById('fg-open-different').value.trim();
             data.fg_open_missing = document.getElementById('fg-open-missing').value.trim();
+            data.suggestions = document.getElementById('fg-suggestions').value.trim();
         }
         data.fg_tried = isChecked('fg-yes') ? 'yes' : (isChecked('fg-no') ? 'no' : null);
         data.hw_used = isChecked('hw-yes') ? 'yes' : (isChecked('hw-no') ? 'no' : null);

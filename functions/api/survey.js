@@ -1,45 +1,60 @@
 /*
- * Cloudflare Pages Function — receives the FableGear survey POST and forwards it
- * to the Google Apps Script collector, which appends a row to the spreadsheet.
+ * Cloudflare Pages Function — receives the FableGear survey POST and writes it
+ * straight into D1 (binding name: DB). Previously this relayed to a Google
+ * Apps Script / Sheets collector; that path is gone. See apps-script/ removal
+ * in the commit that introduced this file for why.
  *
- * WHY THE PAGE DOES NOT POST TO APPS SCRIPT DIRECTLY
- *   Two browser-side problems disappear by going through this Function:
- *     1. CSP. `_headers` sets `connect-src 'self' https://api.resend.com`, so a
- *        fetch() straight to script.google.com is refused before it leaves the
- *        page. /api/survey is same-origin, which 'self' already allows.
- *     2. CORS. Apps Script exposes doGet/doPost but has no doOptions, so a
- *        JSON content-type triggers a preflight it cannot answer and the POST
- *        never runs. Server-to-server has no preflight at all.
- *   It also keeps the collector URL out of the public HTML, so the endpoint
- *   can be rotated without a site deploy.
+ * WHY THE PAGE POSTS HERE INSTEAD OF DIRECTLY TO A DATABASE
+ *   The browser has no business holding D1 credentials. Same-origin also
+ *   sidesteps CSP (`connect-src 'self'`) with no extra config.
  *
- * Setup (one-time):
- *   1. Create the spreadsheet, add apps-script/Code.gs via Extensions > Apps
- *      Script, and deploy it as a Web app ("Execute as: Me",
- *      "Who has access: Anyone"). Copy the /exec URL.
- *   2. Provide that URL either way:
- *        - paste it into COLLECTOR_URL_FALLBACK below and commit, or
- *        - set SURVEY_SHEET_URL in Cloudflare Pages → Settings →
- *          Environment variables (this wins, and can be rotated without a
- *          deploy).
+ * Setup (one-time, Cloudflare dashboard):
+ *   Pages project → Settings → Functions → D1 database bindings →
+ *   variable name `DB`, database `guthrieent-fablegear-survey`.
  *
- * Until one of those is present this returns 503 and the page keeps the response
- * in localStorage, so no answer is lost while the sheet is being set up.
+ * Until DB is bound this returns 503 and the page keeps the response in
+ * localStorage, so no answer is lost while that's being set up.
+ *
+ * SCHEMA
+ *   responses        — one row per submission; known scalar fields as real
+ *                       columns, plus raw_json as the full payload (source of
+ *                       truth if a column and the JSON ever disagree).
+ *   response_tools    — one row per checked box (category, tool_id), e.g.
+ *                       ('library', 'lib-rekordbox'). Powers "how many people
+ *                       use X" counts without unpacking JSON per query.
+ *   response_likert    — one row per 1–5 answer (question_key, value).
+ *                       question_key is either a fixed name (fg-trust-primary)
+ *                       or `${toolId}__${statementKey}` for per-tool blocks —
+ *                       whatever the page sent, taken as-is, no hardcoded list
+ *                       here so new tools/statements need no migration.
  */
 
 const MAX_FIELD_LENGTH = 5000;
 const MAX_FIELDS = 200;
 
-/*
- * Fallback collector URL, used when SURVEY_SHEET_URL is not set in the Pages
- * environment. Committing it here is safe in a way it would not be in the page:
- * this file runs on the server, so the value never reaches a browser.
- *
- * Setting SURVEY_SHEET_URL in the dashboard still wins, which is the better
- * option long-term because it can be rotated without a deploy. This constant
- * exists so the survey can go live without touching the dashboard at all.
- */
-const COLLECTOR_URL_FALLBACK = '';
+const TOOL_ARRAY_FIELDS = {
+  tools_library: 'library',
+  tools_metadata: 'metadata',
+  tools_backup: 'backup',
+  tools_acquisition: 'acquisition',
+  hardware: 'hardware',
+};
+
+const SCALAR_COLUMNS = [
+  'email', 'fg_tried', 'hw_used', 'pain_point', 'blind_spot', 'suggestions',
+  'hw_open', 'fg_open_different', 'fg_open_missing', 'multi_tool_friction',
+];
+
+// Everything collectAnswers() can put on the payload that is NOT a 1–5 Likert
+// answer. Object.keys(data) minus this set, filtered to /^[1-5]$/ values, is
+// the full set of Likert rows — see the loop in onRequestPost.
+const NON_LIKERT_KEYS = new Set([
+  ...Object.keys(TOOL_ARRAY_FIELDS),
+  ...SCALAR_COLUMNS,
+  'submitted_at', 'received_at', 'hp_website',
+  'lib-other-text', 'meta-other-text', 'backup-other-text', 'acq-other-text',
+  'hardware_other',
+]);
 
 export async function onRequestPost({ request, env }) {
   let data;
@@ -72,54 +87,76 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
-  // Stamped here rather than trusted from the client, which has an arbitrary clock.
-  data.received_at = new Date().toISOString();
-  if (!data.submitted_at) data.submitted_at = data.received_at;
+  const receivedAt = new Date().toISOString();
+  data.received_at = receivedAt;
+  if (!data.submitted_at) data.submitted_at = receivedAt;
 
-  const collectorUrl = env.SURVEY_SHEET_URL || COLLECTOR_URL_FALLBACK;
-  if (!collectorUrl) {
-    console.error('No collector configured; survey response not stored.');
+  if (!env.DB) {
+    console.error('D1 binding "DB" missing; survey response not stored.');
     return json({ ok: false, error: 'Collector not configured yet.' }, 503);
   }
 
   try {
-    // text/plain is deliberate: it keeps this a CORS-simple request, which
-    // matters if this ever runs from a context that enforces preflight. Apps
-    // Script reads e.postData.contents either way, so JSON.parse is unaffected.
-    const res = await fetch(collectorUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(data),
-      redirect: 'follow',
-    });
+    const insertResponse = env.DB.prepare(
+      `INSERT INTO responses
+         (submitted_at, received_at, email, fg_tried, hw_used, pain_point,
+          blind_spot, suggestions, hw_open, fg_open_different,
+          fg_open_missing, multi_tool_friction, raw_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      data.submitted_at,
+      data.received_at,
+      nullableString(data.email),
+      nullableString(data.fg_tried),
+      nullableString(data.hw_used),
+      nullableString(data.pain_point),
+      nullableString(data.blind_spot),
+      nullableString(data.suggestions),
+      nullableString(data.hw_open),
+      nullableString(data.fg_open_different),
+      nullableString(data.fg_open_missing),
+      nullableString(data.multi_tool_friction),
+      JSON.stringify(data)
+    );
 
-    if (!res.ok) {
-      console.error('Collector returned', res.status);
-      return json({ ok: false, error: 'Collector rejected the response.' }, 502);
+    const inserted = await insertResponse.run();
+    const responseId = inserted.meta.last_row_id;
+
+    const batch = [];
+
+    for (const [field, category] of Object.entries(TOOL_ARRAY_FIELDS)) {
+      const ids = Array.isArray(data[field]) ? data[field] : [];
+      for (const toolId of ids) {
+        if (typeof toolId !== 'string' || !toolId) continue;
+        batch.push(
+          env.DB.prepare(
+            'INSERT INTO response_tools (response_id, category, tool_id) VALUES (?, ?, ?)'
+          ).bind(responseId, category, toolId)
+        );
+      }
     }
 
-    // Apps Script returns 200 with {status:'error'} for its own failures, so a
-    // 200 alone is not proof the row landed.
-    const body = await res.text();
-    let parsed;
-    try {
-      parsed = JSON.parse(body);
-    } catch {
-      // A login page or an HTML error means the deployment is not public.
-      console.error('Collector returned non-JSON; check "Who has access: Anyone".');
-      return json({ ok: false, error: 'Collector misconfigured.' }, 502);
+    for (const [key, value] of Object.entries(data)) {
+      if (NON_LIKERT_KEYS.has(key)) continue;
+      if (typeof value !== 'string' || !/^[1-5]$/.test(value)) continue;
+      batch.push(
+        env.DB.prepare(
+          'INSERT INTO response_likert (response_id, question_key, value) VALUES (?, ?, ?)'
+        ).bind(responseId, key, Number(value))
+      );
     }
 
-    if (parsed.status !== 'success') {
-      console.error('Collector error:', parsed.message);
-      return json({ ok: false, error: 'Collector could not store the response.' }, 502);
-    }
+    if (batch.length) await env.DB.batch(batch);
 
     return json({ ok: true });
   } catch (err) {
-    console.error('Collector unreachable:', err);
-    return json({ ok: false, error: 'Could not reach the collector.' }, 502);
+    console.error('D1 write failed:', err);
+    return json({ ok: false, error: 'Could not store the response.' }, 502);
   }
+}
+
+function nullableString(value) {
+  return typeof value === 'string' && value.trim() ? value : null;
 }
 
 function json(body, status = 200) {

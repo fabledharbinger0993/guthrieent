@@ -270,11 +270,17 @@
 
         /* ── Mascot. Rides a rail beside the survey and hops to whichever block
               is active, alternating sides so it reads as travelling with you.
-              Purely decorative: aria-hidden, and it never blocks a click.
-              Two layers on purpose: the outer .mascot is positioned in page
-              coordinates by JS (translate3d), the inner .mascot-figure runs its
-              own continuous bob/rotate loop — nested transforms compose, so the
-              character floats *while* travelling instead of only at rest. */
+              It stays on screen permanently once first shown (only the speech
+              bubble fades between things it's said) and is clickable — a
+              small, deliberately non-essential easter egg, never required to
+              use the survey. Two position layers on purpose: the outer
+              .mascot is positioned in page coordinates by JS (translate3d),
+              the inner .mascot-figure runs its own continuous bob/rotate
+              loop — nested transforms compose, so the character floats
+              *while* travelling instead of only at rest. A third state lives
+              on .mascot-figure only via classes (is-spinning / is-teleport-*)
+              since those temporarily replace the float animation outright;
+              JS removes the class on animationend so float resumes on its own. */
         .mascot {
             position: fixed;
             width: 74px;
@@ -282,16 +288,22 @@
             left: 0;
             top: 0;
             z-index: 6;
-            pointer-events: none;
+            cursor: pointer;
             opacity: 0;
             transform: translate3d(0, 0, 0) scale(0.7);
             filter: drop-shadow(0 0 16px rgba(141,92,246,0.55));
             transition:
                 transform 0.72s cubic-bezier(0.34, 1.26, 0.44, 1),
-                opacity 0.4s ease;
+                opacity 0.4s ease,
+                filter 0.35s ease;
         }
         .mascot.is-visible { opacity: 0.97; }
         .mascot.is-hopping { animation: mascot-bob 0.72s ease-in-out; }
+        .mascot.is-warping {
+            filter:
+                drop-shadow(0 0 34px rgba(61,219,255,0.95))
+                drop-shadow(0 0 60px rgba(255,61,158,0.65));
+        }
         @keyframes mascot-bob {
             0%   { filter: drop-shadow(0 0 16px rgba(141,92,246,0.55)); }
             45%  { filter: drop-shadow(0 0 30px rgba(61,219,255,0.85)); }
@@ -311,6 +323,38 @@
             0%   { transform: translateY(0) rotate(-3deg); }
             50%  { transform: translateY(-10px) rotate(3deg); }
             100% { transform: translateY(0) rotate(-3deg); }
+        }
+        /* Click: a playful one-shot spin. More specific than the base
+           .mascot-figure rule, so it fully overrides mascot-float for its
+           duration; removing the class on animationend lets float resume. */
+        .mascot-figure.is-spinning {
+            animation: mascot-spin 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes mascot-spin {
+            0%   { transform: rotate(0deg) scale(1); }
+            50%  { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        /* Teleport: an alternate travel style used sometimes instead of the
+           smooth hop — shrinks/spins/flashes out in place, JS repositions the
+           (invisible) outer wrapper instantly, then it reverses in at the new
+           spot. filter here is the "flash"; .mascot.is-warping (above) adds a
+           bigger halo on the outer element for the same duration. */
+        .mascot-figure.is-teleport-out {
+            animation: mascot-teleport-out 0.32s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+        }
+        .mascot-figure.is-teleport-in {
+            animation: mascot-teleport-in 0.38s cubic-bezier(0, 0.55, 0.45, 1) forwards;
+        }
+        @keyframes mascot-teleport-out {
+            0%   { transform: scale(1) rotate(0deg); filter: brightness(1) saturate(1); opacity: 1; }
+            55%  { transform: scale(1.25) rotate(220deg); filter: brightness(2.6) saturate(2.2); opacity: 1; }
+            100% { transform: scale(0) rotate(420deg); filter: brightness(4) saturate(3); opacity: 0; }
+        }
+        @keyframes mascot-teleport-in {
+            0%   { transform: scale(0) rotate(-420deg); filter: brightness(4) saturate(3); opacity: 0; }
+            45%  { transform: scale(1.25) rotate(-200deg); filter: brightness(2.6) saturate(2.2); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); filter: brightness(1) saturate(1); opacity: 1; }
         }
         /* Positioning wrapper only — JS sets its transform inline (translate3d)
            on every call, which would stomp any CSS transform declared directly
@@ -369,23 +413,37 @@
         .mascot-tip.is-visible .mascot-tip-bubble { opacity: 1; transform: scale(1) translateY(0); }
 
         /* Blocks that unlock mid-survey glide in rather than snapping. */
+        /* Newly-unlocked blocks animate in from wherever the mascot currently
+           is (--emerge-x/--emerge-y, set in JS right before reveal) rather
+           than a generic glide — reads as the mascot generating the question,
+           not a hidden div fading in on its own. Falls back to a plain
+           downward glide (the old default values) if JS never set the vars,
+           e.g. before the mascot has appeared at all yet. */
         .qblock[data-revealed] {
-            animation: block-glide 0.45s cubic-bezier(0.22, 0.9, 0.3, 1);
+            animation: block-emerge 0.5s cubic-bezier(0.22, 0.9, 0.3, 1);
         }
-        @keyframes block-glide {
-            from { opacity: 0; transform: translateY(14px); }
-            to   { opacity: 1; transform: none; }
+        @keyframes block-emerge {
+            from {
+                opacity: 0;
+                transform: translate(var(--emerge-x, 0px), var(--emerge-y, 14px)) scale(0.82);
+            }
+            to { opacity: 1; transform: none; }
         }
 
         @media (prefers-reduced-motion: reduce) {
             .mascot, .mascot-tip-bubble { transition: opacity 0.2s linear; }
             .mascot.is-hopping { animation: none; }
-            .mascot-figure { animation: none; }
+            .mascot-figure,
+            .mascot-figure.is-spinning,
+            .mascot-figure.is-teleport-out,
+            .mascot-figure.is-teleport-in { animation: none; }
             .qblock[data-revealed] { animation: none; }
+            details.panel.collapsible[open] > .details-body { animation: none; }
+            details.panel.collapsible .summary-toggle { transition: none; }
             .path-card:hover { transform: none; }
         }
 
-        section.panel {
+        section.panel, details.panel {
             padding: 48px;
             background: var(--panel);
             border-radius: 14px;
@@ -393,8 +451,54 @@
             border: 1px solid var(--line);
             backdrop-filter: blur(6px);
         }
-        section.panel p { margin-bottom: 16px; }
-        section.panel p:last-child { margin-bottom: 0; }
+        section.panel p, details.panel p { margin-bottom: 16px; }
+        section.panel p:last-child, details.panel p:last-child { margin-bottom: 0; }
+
+        /* ── Collapsible panels ──────────────────────────────────────────
+           Used for the detail-heavy sections (methodology, comparisons,
+           dependencies) so the page reads short by default without losing
+           any of the content — native <details>, so it's keyboard- and
+           screen-reader-operable with zero extra JS. */
+        details.panel.collapsible { padding: 0; }
+        details.panel.collapsible > summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 40px 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        details.panel.collapsible > summary::-webkit-details-marker { display: none; }
+        details.panel.collapsible > summary:hover .summary-text h2 { color: var(--cyan); }
+        details.panel.collapsible .summary-text h2 { margin: 0 0 6px; }
+        details.panel.collapsible .summary-teaser { font-size: 0.88rem; color: var(--ink-dim); margin: 0; }
+        details.panel.collapsible .summary-toggle {
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--line);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 18px;
+            line-height: 1;
+            color: var(--cyan);
+            transition: transform 0.3s ease, border-color 0.2s ease;
+        }
+        details.panel.collapsible > summary:hover .summary-toggle { border-color: var(--cyan); }
+        details.panel.collapsible[open] .summary-toggle { transform: rotate(45deg); }
+        details.panel.collapsible .summary-toggle::before { content: '+'; }
+        details.panel.collapsible .details-body { padding: 0 48px 44px; }
+        details.panel.collapsible[open] > .details-body {
+            animation: details-fade-in 0.3s ease;
+        }
+        @keyframes details-fade-in {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: none; }
+        }
 
         h2 {
             font-family: 'Chakra Petch', sans-serif;
@@ -760,8 +864,15 @@
         </ul>
     </section>
 
-    <section class="panel">
-        <h2>Numbers, and how we got them</h2>
+    <details class="panel collapsible">
+        <summary>
+            <div class="summary-text">
+                <h2>Numbers, and how we got them</h2>
+                <p class="summary-teaser">The benchmark methodology and the 91.4% exact-match number behind the tempo-detection claim.</p>
+            </div>
+            <span class="summary-toggle" aria-hidden="true"></span>
+        </summary>
+        <div class="details-body">
         <p>Claims about analysis quality are easy to make and hard to check, so here is ours with the method attached. Rekordbox writes its own beat grid for every track it analyzes. We read 12,687 of those grids out of one working DJ library and used them as the answer key, then ran a random 300-track sample through FableGear and compared.</p>
         <table class="data">
             <thead><tr><th>Beat detection</th><th>Within 4%</th><th>Within 1%</th><th>Exact</th></tr></thead>
@@ -773,10 +884,18 @@
         <p>The last column is the one that matters. A tempo that is 4% off drifts a full beat within about 25 bars, which is useless for a beat grid even though it looks fine as a percentage. Exact agreement with rekordbox on 91.4% of tracks is what makes a grid worth putting on a USB stick.</p>
         <p>We also found and fixed a real bug in our own loudness tool while measuring this. It was raising volume to hit a target without checking how close the audio already was to maximum, which clipped the file and deleted the original. On the tracks we tested it damaged 39 out of 39. It now refuses to raise volume past the point where clipping starts, and tells you when it cannot reach the target instead of ruining the file to get there.</p>
         <div class="caveat"><strong>What that measurement does not prove:</strong> it is one library, with one person's taste in music, and 300 tracks. A collection of drum and bass or hip hop would score differently. We publish the method so you can disagree with it.</div>
-    </section>
+        </div>
+    </details>
 
-    <section class="panel">
-        <h2>How it compares to DJ software</h2>
+    <details class="panel collapsible">
+        <summary>
+            <div class="summary-text">
+                <h2>How it compares to DJ software</h2>
+                <p class="summary-teaser">Where FableGear overlaps with Mixed In Key, Platinum Notes, Lexicon, and Rekord Cloud — and where it doesn't try to.</p>
+            </div>
+            <span class="summary-toggle" aria-hidden="true"></span>
+        </summary>
+        <div class="details-body">
         <p>FableGear does not try to beat the specialists at their own specialty. It does the library maintenance parts in one free local app instead of four paid ones.</p>
         <ul class="feature-list">
             <li class="feature-item"><span class="feature-tag">REKORDBOX</span><strong>Still required for some things</strong>Rekordbox is a player and a performance tool, and it is good at that. It is not built to keep a large archive readable through years of drive changes. FableGear does the archive work and leaves performance to rekordbox. You can run both.</li>
@@ -785,10 +904,18 @@
             <li class="feature-item"><span class="feature-tag">LEXICON</span><strong>Library management across apps</strong>Lexicon is a polished paid app that syncs libraries between rekordbox, Serato, Traktor, and others. It is more finished than FableGear and supports more platforms. FableGear is free, open source, macOS only, and focused on rekordbox specifically, including reading and writing the Pioneer USB format directly.</li>
             <li class="feature-item"><span class="feature-tag">REKORDCLOUD</span><strong>Cloud library tools</strong>Rekord Cloud does library conversion and cleanup through a browser, on a subscription. FableGear does its work on your machine with no account and no upload. If you prefer a hosted service with support, that is a fair reason to pick theirs.</li>
         </ul>
-    </section>
+        </div>
+    </details>
 
-    <section class="panel">
-        <h2>How it compares to general file tools</h2>
+    <details class="panel collapsible">
+        <summary>
+            <div class="summary-text">
+                <h2>How it compares to general file tools</h2>
+                <p class="summary-teaser">Against Picard, Mp3tag, dupeGuru, and Finder itself — and why none of them know what a cue point is.</p>
+            </div>
+            <span class="summary-toggle" aria-hidden="true"></span>
+        </summary>
+        <div class="details-body">
         <p>Plenty of people already clean music folders with tools that were not written for DJs. Those tools are often excellent, and they do not know what a cue point is.</p>
         <ul class="feature-list">
             <li class="feature-item"><span class="feature-tag">MUSICBRAINZ PICARD</span><strong>Fingerprint tagging</strong>Picard is free, cross platform, and better than FableGear at filling in correct release metadata from MusicBrainz. It also happily reorganizes files in ways that leave rekordbox unable to find them. FableGear uses the same fingerprinting service but updates the rekordbox database alongside the files, so tagging does not break your library.</li>
@@ -796,10 +923,18 @@
             <li class="feature-item"><span class="feature-tag">DUPEGURU / GEMINI</span><strong>Duplicate finders</strong>General duplicate finders match on filename, size, or hash. That misses the case DJs actually have, where the same song exists as a raw rip and again after processing, so the bytes differ completely. FableGear matches on audio fingerprint and duration, and shows you which playlists each copy is in before you delete anything.</li>
             <li class="feature-item"><span class="feature-tag">FINDER, FOOBAR2000, VLC</span><strong>Moving files and auditioning them</strong>Moving files in Finder is exactly what breaks a rekordbox library, because Finder does not update the database. FableGear moves files and updates the references in the same operation. It also has preview decks built in, so you do not need a second player open to hear what you are about to change.</li>
         </ul>
-    </section>
+        </div>
+    </details>
 
-    <section class="panel">
-        <h2>What it is built on</h2>
+    <details class="panel collapsible">
+        <summary>
+            <div class="summary-text">
+                <h2>What it is built on</h2>
+                <p class="summary-teaser">The open source dependencies FableGear runs on, and their licenses.</p>
+            </div>
+            <span class="summary-toggle" aria-hidden="true"></span>
+        </summary>
+        <div class="details-body">
         <p>FableGear is Python. It leans on open source projects that are better at their jobs than anything we would write, and it is worth knowing what they are, because they determine what the app can and cannot do. Our own code is MIT licensed. These are installed from the Python package index on your machine when you first run the app rather than shipped inside the download.</p>
 
         <h3>Audio analysis</h3>
@@ -819,7 +954,8 @@
         <div class="dep"><span class="dep-name">Model Context Protocol SDK</span><span class="dep-lic">MIT</span><span class="dep-why">Lets an AI assistant drive FableGear's tools directly, with a required order so it cannot deduplicate a library it has not audited yet.</span></div>
 
         <p style="margin-top:24px">Two projects deserve credit without being dependencies. The reverse engineering of Pioneer's USB formats by Deep Symmetry (crate-digger and dysentery) and by Jan Holthuis (rekordcrate) is what made the export work possible. We did not figure that format out; we read their documentation.</p>
-    </section>
+        </div>
+    </details>
 
     <section class="panel">
         <h2>What we are not going to pretend about</h2>
@@ -1341,6 +1477,7 @@
     }
     function countChecked(groupClass) { return document.querySelectorAll('.' + groupClass + ':checked').length; }
     function anyChecked(groupClass) { return countChecked(groupClass) > 0; }
+    function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
 
     /**
      * Records which blocks were visible before a change so the ones that just
@@ -1374,11 +1511,31 @@
         document.querySelectorAll('.qblock').forEach(function (el) {
             if (!el.hidden && !before.has(el)) revealed.push(el);
         });
+        // Wherever the mascot currently stands is where each new block
+        // visually "comes from" — see block-emerge above. Read this before
+        // pointAt() below moves him toward the new block, so it's his
+        // position at the moment the block appears, not where he's headed.
+        const mascotPos = window.__fgMascot && window.__fgMascot.getPosition();
         revealed.forEach(function (el) {
+            if (mascotPos) {
+                // Clamped so this reads as "materializes near the mascot,"
+                // not a fly-in from wherever he happens to be on the page —
+                // he's often still up in the inventory step while a block
+                // reveals much further down, and an uncapped offset there
+                // would travel most of the page's height.
+                const EMERGE_CAP = 220;
+                const rect = el.getBoundingClientRect();
+                const dx = clamp(mascotPos.x - rect.left - rect.width / 2, -EMERGE_CAP, EMERGE_CAP);
+                const dy = clamp(mascotPos.y - rect.top, -EMERGE_CAP, EMERGE_CAP);
+                el.style.setProperty('--emerge-x', Math.round(dx) + 'px');
+                el.style.setProperty('--emerge-y', Math.round(dy) + 'px');
+            }
             el.setAttribute('data-revealed', '');
             el.addEventListener('animationend', function handler() {
                 el.removeAttribute('data-revealed');
                 el.removeEventListener('animationend', handler);
+                el.style.removeProperty('--emerge-x');
+                el.style.removeProperty('--emerge-y');
             });
         });
 
@@ -1549,9 +1706,14 @@
  * further down the page, and without something pointing at them the survey
  * silently grows below the fold.
  *
- * Entirely decorative and entirely optional — aria-hidden, pointer-events:none,
- * and the whole module no-ops under prefers-reduced-motion or if the survey
- * isn't on the page.
+ * Stays on screen permanently once first shown (only the bubble times out),
+ * and is click/tap-able for a one-shot spin — a small easter egg, never
+ * required to use the survey. Sometimes travels by an instant teleport
+ * (shrink/spin/flash out, reposition, reverse in) instead of the smooth hop,
+ * picked at random per move. Entirely optional either way: the whole module
+ * no-ops if the survey isn't on the page, and under prefers-reduced-motion it
+ * falls back to a plain instant reposition with no animation, no teleport,
+ * and no click interaction offered (there'd be nothing to see happen).
  */
 (function () {
     const form = document.getElementById('research-form');
@@ -1617,6 +1779,53 @@
             .catch(function () { clearTimeout(timer); });
     }
 
+    let hasPlacedOnce = false;
+    const TELEPORT_CHANCE = 0.35;
+    let lastX = null;
+    let lastY = null;
+
+    // Moves the outer wrapper to (x, y). `instant`, used mid-teleport, kills
+    // the CSS transition for one frame so the jump is a true cut rather than
+    // a slide that would be visible as soon as the figure scales back in.
+    function applyPosition(x, y, instant) {
+        if (instant) {
+            const prevTransition = mascot.style.transition;
+            mascot.style.transition = 'none';
+            mascot.style.transform = 'translate3d(' + Math.round(x) + 'px, ' + Math.round(y) + 'px, 0) scale(1)';
+            void mascot.offsetWidth;
+            mascot.style.transition = prevTransition;
+        } else {
+            mascot.style.transform = 'translate3d(' + Math.round(x) + 'px, ' + Math.round(y) + 'px, 0) scale(1)';
+        }
+        mascot.classList.add('is-visible');
+        lastX = x;
+        lastY = y;
+    }
+
+    function placeBubble(x, y, size, message) {
+        if (!(message && window.innerWidth > 640)) return;
+        tipBubble.textContent = message;
+
+        // The bubble normally hangs below the mascot, but y is clamped to
+        // the bottom of the viewport, so for any block low on the page
+        // "below" is off-screen and the bubble gets cut in half. Measure it
+        // and flip above when it won't fit.
+        const margin = 18;
+        tip.style.transform = 'translate3d(-9999px, -9999px, 0)';
+        const tipHeight = tipBubble.offsetHeight || 60;
+
+        const below = y + size + 8;
+        const fitsBelow = below + tipHeight <= window.innerHeight - margin;
+        const tipY = fitsBelow ? below : Math.max(margin, y - tipHeight - 8);
+
+        tip.classList.toggle('is-above', !fitsBelow);
+        tip.style.transform = 'translate3d(' + Math.round(Math.max(margin, x - 58)) + 'px, ' + Math.round(tipY) + 'px, 0)';
+        tip.classList.add('is-visible');
+
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(function () { tip.classList.remove('is-visible'); }, 5400);
+    }
+
     function place(target, message) {
         const rect = target.getBoundingClientRect();
         const margin = 18;
@@ -1633,46 +1842,76 @@
             window.innerHeight - size - margin,
             Math.max(margin, rect.top + 10)
         );
-
-        mascot.style.transform = 'translate3d(' + Math.round(x) + 'px, ' + Math.round(y) + 'px, 0) scale(1)';
-        mascot.classList.add('is-visible');
-
-        if (!reduceMotion) {
-            mascot.classList.remove('is-hopping');
-            // Reflow so the animation restarts on a repeat hop.
-            void mascot.offsetWidth;
-            mascot.classList.add('is-hopping');
-        }
-
-        if (message && window.innerWidth > 640) {
-            tipBubble.textContent = message;
-
-            // The bubble normally hangs below the mascot, but y is clamped to
-            // the bottom of the viewport, so for any block low on the page
-            // "below" is off-screen and the bubble gets cut in half. Measure it
-            // and flip above when it won't fit.
-            tip.style.transform = 'translate3d(-9999px, -9999px, 0)';
-            const tipHeight = tipBubble.offsetHeight || 60;
-
-            const below = y + size + 8;
-            const fitsBelow = below + tipHeight <= window.innerHeight - margin;
-            const tipY = fitsBelow ? below : Math.max(margin, y - tipHeight - 8);
-
-            tip.classList.toggle('is-above', !fitsBelow);
-            tip.style.transform = 'translate3d(' + Math.round(Math.max(margin, x - 58)) + 'px, ' + Math.round(tipY) + 'px, 0)';
-            tip.classList.add('is-visible');
-        }
-
         side += 1;
 
-        clearTimeout(hideTimer);
-        hideTimer = setTimeout(function () {
-            mascot.classList.remove('is-visible');
-            tip.classList.remove('is-visible');
-        }, 5400);
+        // Teleport only between two real positions — the very first
+        // appearance has nothing to warp out of — and never for reduced
+        // motion, where it'd just be a jump-cut with an invisible reason.
+        const doTeleport = hasPlacedOnce && !reduceMotion && Math.random() < TELEPORT_CHANCE;
+        hasPlacedOnce = true;
+
+        if (doTeleport) {
+            mascot.classList.add('is-warping');
+            figure.classList.remove('is-spinning');
+            figure.classList.add('is-teleport-out');
+            const onOutEnd = function (e) {
+                if (e.target !== figure || e.animationName !== 'mascot-teleport-out') return;
+                figure.removeEventListener('animationend', onOutEnd);
+                figure.classList.remove('is-teleport-out');
+                applyPosition(x, y, true);
+                figure.classList.add('is-teleport-in');
+                figure.addEventListener('animationend', function onInEnd(e2) {
+                    if (e2.target !== figure || e2.animationName !== 'mascot-teleport-in') return;
+                    figure.removeEventListener('animationend', onInEnd);
+                    figure.classList.remove('is-teleport-in');
+                    mascot.classList.remove('is-warping');
+                });
+                placeBubble(x, y, size, message);
+            };
+            figure.addEventListener('animationend', onOutEnd);
+        } else {
+            applyPosition(x, y, false);
+            if (!reduceMotion) {
+                mascot.classList.remove('is-hopping');
+                // Reflow so the animation restarts on a repeat hop.
+                void mascot.offsetWidth;
+                mascot.classList.add('is-hopping');
+            }
+            placeBubble(x, y, size, message);
+        }
+    }
+
+    // Click/tap: a one-shot spin, purely decorative — never required to use
+    // the survey, so it's fine that it's mouse/keyboard-only and skipped
+    // outright under reduced motion rather than offered without the motion.
+    if (!reduceMotion) {
+        mascot.addEventListener('click', function () {
+            figure.classList.remove('is-teleport-out', 'is-teleport-in', 'is-spinning');
+            void figure.offsetWidth;
+            figure.classList.add('is-spinning');
+        });
+        mascot.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            e.preventDefault();
+            mascot.dispatchEvent(new MouseEvent('click'));
+        });
+        figure.addEventListener('animationend', function (e) {
+            if (e.animationName === 'mascot-spin') figure.classList.remove('is-spinning');
+        });
+        mascot.setAttribute('role', 'button');
+        mascot.setAttribute('tabindex', '0');
+        mascot.setAttribute('aria-label', 'FableGear mascot — click for a spin');
+        mascot.removeAttribute('aria-hidden');
     }
 
     window.__fgMascot = {
+        // Viewport-relative coordinates of wherever the mascot currently is,
+        // or null before it's appeared even once. Used to make newly-revealed
+        // blocks animate in from his position — see block-emerge above and
+        // its caller in updateVisibility().
+        getPosition: function () {
+            return lastX === null ? null : { x: lastX, y: lastY };
+        },
         // `arg` is either a count (number, from the tool-satisfaction reveal
         // logic further up the file) or a literal line to speak (string, from
         // the step-greeter below). Keeping both on one entry point means there

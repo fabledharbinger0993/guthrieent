@@ -134,7 +134,70 @@
             margin-top: 10px;
             text-transform: uppercase;
         }
+        /* Hide the original long panels so the page stays short */
+        .survey-removed { display: none !important; }
 
+        /* Mascot layout */
+        #mascot {
+          position: fixed;
+          bottom: 12vh;
+          right: 2vw;
+          width: 140px;
+          z-index: 12000;
+          cursor: pointer;
+          user-select: none;
+          transition: transform 220ms ease, right 220ms ease, left 220ms ease;
+        }
+        #mascot img { width: 100%; height: auto; display: block; pointer-events: none; }
+
+        /* Thought bubble */
+        .mascot-bubble {
+          position: absolute;
+          bottom: 110%;
+          right: 110%;
+          width: 360px;
+          max-width: calc(100vw - 80px);
+          background: #fff;
+          color: #111;
+          border-radius: 12px;
+          box-shadow: 0 12px 28px rgba(0,0,0,0.14);
+          padding: 12px;
+          display: none;
+          font-size: 15px;
+        }
+        .mascot.open .mascot-bubble { display: block; }
+        .mascot-bubble::after {
+          content:""; position:absolute; right:-14px; bottom:-6px; width:18px;height:18px;background:#fff;transform:rotate(45deg);
+        }
+        .mascot-bubble-text { font-weight:600; margin-bottom:8px; }
+        .mascot-bubble-content { max-height:38vh; overflow:auto; font-size:14px; }
+
+        /* Mascot controls */
+        .mascot-controls { display:flex; gap:8px; align-items:center; margin-top:10px; flex-wrap:wrap; }
+        .mascot-btn { background:#222;color:#fff;border:none;padding:6px 10px;border-radius:6px; cursor:pointer; font-size:13px; }
+        .mascot-send { font-size:12px; color:#444; display:flex; align-items:center; gap:6px; }
+
+        /* Idle meander */
+        @keyframes meander { 0%{transform:translateY(0) rotate(0);}25%{transform:translateY(-6px) rotate(-2deg);}50%{transform:translateY(0);}75%{transform:translateY(-4px) rotate(1deg);}100%{transform:translateY(0);} }
+        .mascot.idle { animation: meander 6s ease-in-out infinite; }
+        .mascot.open.idle { animation: none; }
+
+        /* .mascot-narrated quieting (non-destructive) */
+        .mascot-narrated .likert-text, .mascot-narrated .field-label, .mascot-narrated legend, .mascot-narrated p, .mascot-narrated .qblock-title, .mascot-narrated .step-label {
+          font-size: 11.5px !important; opacity: 0.55; transition: font-size .18s, opacity .18s;
+        }
+        .mascot-narrated input, .mascot-narrated textarea, .mascot-narrated .likert-options, .mascot-narrated .check-grid { opacity: 1; }
+
+        /* Compact forms inside bubble */
+        .mascot-bubble-content .group-title { font-weight:600; margin-bottom:6px; }
+        .mascot-bubble-content .compact-grid { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+        .mascot-bubble-content .likert-compact { display:flex; gap:6px; align-items:center; margin-bottom:8px; }
+        .mascot-bubble-content .likert-compact label { font-size:13px; margin-right:8px; }
+        .mascot-bubble-content textarea { width:100%; min-height:80px; resize:vertical; }
+
+        /* Small hint pulse */
+        .mascot.hint { box-shadow: 0 0 0 6px rgba(255,160,0,0.12); transform:scale(1.02); transition: box-shadow .28s, transform .28s; }
+       
         .hero {
             text-align: center;
             padding: 110px 0 90px;
@@ -540,7 +603,324 @@
             display: block;
             margin-bottom: 10px;
         }
+        /* Mascot-driven inline survey (renders questions inside the bubble).
+   Uses existing DOM when possible: group-lib, group-meta, group-backup, group-acq,
+   #hw-section, #fg-tried-section, #open-section. Hides originals from page.
+*/
 
+const FLOW = [
+  { id: 'inventory', title: "What's in your setup?", type: 'inventory', sources: ['#group-lib','#group-meta','#group-backup','#group-acq'] },
+  { id: 'hardware', title: 'Hardware', type: 'section', selector:'#hw-section' },
+  { id: 'fablegear', title: 'FableGear feedback', type: 'section', selector:'#fg-tried-section' },
+  { id: 'open', title: "Anything we haven't asked?", type: 'section', selector:'#open-section' }
+];
+
+const STORAGE_KEY = 'fg_mascot_inline_v1';
+const mascot = document.getElementById('mascot');
+const bubble = document.getElementById('mascot-bubble');
+const bubbleText = document.getElementById('mascot-bubble-text');
+const bubbleContent = document.getElementById('mascot-bubble-content');
+const startBtn = document.getElementById('start-survey-btn');
+const nextBtn = document.getElementById('mascot-next');
+const prevBtn = document.getElementById('mascot-prev');
+const finishBtn = document.getElementById('mascot-finish');
+const cancelBtn = document.getElementById('mascot-cancel');
+const sendToggle = document.getElementById('mascot-send-toggle');
+
+let state = { index: 0, answers: {}, active: false, lastActiveAt: Date.now() };
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) state = JSON.parse(raw);
+  } catch(e){ console.warn('load state', e); }
+}
+function saveState() { state.lastActiveAt = Date.now(); localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+/* Hide original long survey nodes (so page stays short) */
+function removeInlineSurveyPanels() {
+  const toHide = ['#inventory', '#satisfaction-section', '#hw-section', '#fg-tried-section', '#open-section', '#tool-blocks', '#fg-nudge'];
+  toHide.forEach(sel => {
+    const el = document.querySelector(sel);
+    if (el) el.classList.add('survey-removed');
+  });
+}
+
+/* Utility: shallow clone options from a grid node into a vertical list of checkboxes */
+function cloneGridAsCheckboxes(gridSelector, namePrefix) {
+  const grid = document.querySelector(gridSelector);
+  if (!grid) return null;
+  // If grid already contains inputs, clone them; otherwise attempt to extract textual choices (children)
+  const wrapper = document.createElement('div');
+  wrapper.className = 'compact-grid';
+  const inputs = grid.querySelectorAll('input[type="checkbox"], input[type="radio"]');
+  if (inputs.length) {
+    inputs.forEach((inp, i) => {
+      const id = `${namePrefix}_${i}`;
+      const labelText = inp.nextElementSibling?.textContent?.trim() || inp.getAttribute('value') || 'Option';
+      const cb = document.createElement('label');
+      cb.innerHTML = `<input type="checkbox" name="${namePrefix}" value="${inp.value || labelText}" /> ${labelText}`;
+      wrapper.appendChild(cb);
+    });
+  } else {
+    // fall back to transcribing child text nodes into checkboxes
+    const children = Array.from(grid.children).filter(c => c.textContent && c.textContent.trim().length > 0);
+    if (children.length) {
+      children.forEach((ch, i) => {
+        const text = ch.textContent.trim();
+        const cb = document.createElement('label');
+        cb.innerHTML = `<input type="checkbox" name="${namePrefix}" value="${text}" /> ${text}`;
+        wrapper.appendChild(cb);
+      });
+    } else {
+      // no options found
+      return null;
+    }
+  }
+  return wrapper;
+}
+
+/* Build likert compact: reads .likert items inside a selector and builds 1-5 radios */
+function cloneLikertsFrom(selector) {
+  const container = document.createElement('div');
+  container.className = 'likert-list';
+  const scope = document.querySelector(selector);
+  if (!scope) return null;
+  const likerts = scope.querySelectorAll('.likert');
+  if (!likerts.length) return null;
+  likerts.forEach((l,i) => {
+    const textEl = l.querySelector('.likert-text');
+    const name = l.dataset.name || `likert_${i}`;
+    const label = document.createElement('div');
+    label.className = 'likert-compact';
+    const title = document.createElement('label');
+    title.textContent = textEl ? textEl.textContent.trim() : 'Rate:';
+    label.appendChild(title);
+    const options = document.createElement('div');
+    options.style.display = 'inline-flex';
+    options.style.gap = '6px';
+    for (let v=1; v<=5; v++) {
+      const id = `likert_${name}_${v}`;
+      options.innerHTML += `<label style="font-size:13px;"><input type="radio" name="${name}" value="${v}" /> ${v}</label>`;
+    }
+    label.appendChild(options);
+    container.appendChild(label);
+  });
+  return container;
+}
+
+/* Copy textareas/fields from a section (pain-point, blind-spot etc) */
+function cloneTextareasFrom(selector) {
+  const scope = document.querySelector(selector);
+  if (!scope) return null;
+  const fields = scope.querySelectorAll('textarea, input[type="text"], input[type="email"]');
+  if (!fields.length) return null;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'compact-grid';
+  fields.forEach(f => {
+    const label = scope.querySelector(`label[for="${f.id}"]`);
+    const lab = document.createElement('label');
+    lab.innerHTML = `<div class="group-title">${label ? label.textContent.trim() : (f.placeholder || f.name || 'Open response')}</div><textarea name="${f.name || f.id}" placeholder="${label ? '' : 'Your answer'}"></textarea>`;
+    wrapper.appendChild(lab);
+  });
+  return wrapper;
+}
+
+/* Render the current step into bubbleContent */
+function renderCurrentStep() {
+  bubbleContent.innerHTML = '';
+  const step = FLOW[state.index];
+  bubbleText.textContent = step.title || 'Question';
+  if (step.type === 'inventory') {
+    // for each source attempt to clone checkboxes
+    FLOW[0].sources.forEach((sel, idx) => {
+      const title = document.createElement('div'); title.className='group-title';
+      // make a friendlier title if possible
+      const mapTitle = { '#group-lib': 'Library / performance software', '#group-meta':'Metadata / tagging / analysis', '#group-backup':'File management / backup', '#group-acq':'Music acquisition' };
+      title.textContent = mapTitle[sel] || sel;
+      bubbleContent.appendChild(title);
+      const box = cloneGridAsCheckboxes(sel, `inventory_${idx}`);
+      if (box) bubbleContent.appendChild(box);
+      else {
+        const empty = document.createElement('div'); empty.textContent = 'No options found for this group.';
+        bubbleContent.appendChild(empty);
+      }
+    });
+  } else if (step.type === 'section') {
+    // For known sections, try to extract likerts and textareas if present
+    const lik = cloneLikertsFrom(step.selector);
+    if (lik) bubbleContent.appendChild(lik);
+    const txt = cloneTextareasFrom(step.selector);
+    if (txt) bubbleContent.appendChild(txt);
+    // if nothing found, fall back to cloning header/description
+    if (!lik && !txt) {
+      const orig = document.querySelector(step.selector);
+      if (orig) {
+        const clone = orig.cloneNode(true);
+        // remove IDs to avoid duplicates
+        clone.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+        // strip hidden attributes so clone is usable
+        clone.querySelectorAll('[hidden]').forEach(n => n.removeAttribute('hidden'));
+        bubbleContent.appendChild(clone);
+      } else {
+        bubbleContent.innerHTML = '<p>Question content not found.</p>';
+      }
+    }
+  } else {
+    bubbleContent.innerHTML = '<p>Unsupported step type.</p>';
+  }
+
+  // restore previously saved answers into inputs if present
+  const saved = state.answers[FLOW[state.index].id];
+  if (saved) {
+    // populate checkboxes/radios/textareas by name
+    Object.keys(saved).forEach(k => {
+      const val = saved[k];
+      const els = bubbleContent.querySelectorAll(`[name="${k}"]`);
+      if (!els.length) return;
+      els.forEach(el => {
+        if (el.type === 'checkbox') {
+          if (Array.isArray(val)) el.checked = val.includes(el.value);
+          else el.checked = !!val;
+        } else if (el.type === 'radio') {
+          el.checked = (el.value == val);
+        } else {
+          el.value = val;
+        }
+      });
+    });
+  }
+
+  bubble.setAttribute('aria-hidden', 'false');
+  bubbleText.focus?.();
+  saveState();
+}
+
+/* Collect answers from current bubble content */
+function collectAnswersFromBubble() {
+  const data = {};
+  const inputs = bubbleContent.querySelectorAll('input, textarea, select');
+  inputs.forEach(inp => {
+    const name = inp.name || inp.id;
+    if (!name) return;
+    if (inp.type === 'checkbox') {
+      if (!data[name]) data[name] = [];
+      if (inp.checked) data[name].push(inp.value || true);
+    } else if (inp.type === 'radio') {
+      if (inp.checked) data[name] = inp.value;
+    } else {
+      data[name] = inp.value;
+    }
+  });
+  state.answers[FLOW[state.index].id] = data;
+  saveState();
+  return data;
+}
+
+/* Navigation handlers */
+function nextStep() {
+  collectAnswersFromBubble();
+  if (state.index < FLOW.length - 1) {
+    state.index++;
+    renderCurrentStep();
+  } else finishSurvey();
+}
+function prevStep() {
+  collectAnswersFromBubble();
+  if (state.index > 0) {
+    state.index--;
+    renderCurrentStep();
+  }
+}
+
+/* Finish */
+async function finishSurvey() {
+  collectAnswersFromBubble();
+  state.active = false;
+  saveState();
+  bubbleText.textContent = 'Saving…';
+  const payload = { answers: state.answers, timestamp: Date.now() };
+  if (sendToggle && sendToggle.checked) {
+    try {
+      const r = await fetch('/api/sendSurvey', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      bubbleText.textContent = r.ok ? 'Thanks — survey sent.' : 'Saved locally (send failed).';
+    } catch (e) {
+      console.warn(e);
+      bubbleText.textContent = 'Saved locally (send failed).';
+    }
+  } else {
+    bubbleText.textContent = 'Saved locally. Click Spectre to resume.';
+  }
+  setTimeout(() => { mascot.classList.remove('open'); bubble.setAttribute('aria-hidden','true'); }, 900);
+  saveState();
+}
+
+/* Cancel (reset) */
+function cancelSurvey() {
+  if (!confirm('Cancel survey and reset progress?')) return;
+  state = { index: 0, answers: {}, active: false, lastActiveAt: Date.now() };
+  saveState();
+  // un-narrate any original elements just in case
+  document.querySelectorAll('.mascot-narrated').forEach(n => n.classList.remove('mascot-narrated'));
+  bubbleText.textContent = 'Cancelled. Click Start to begin again.';
+  mascot.classList.remove('open');
+}
+
+/* Enforce visible bounds -> keep at least ~60% of mascot visible */
+function enforceVisibilityBounds() {
+  const rect = mascot.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const visible = Math.max(0, Math.min(1, (Math.min(rect.right, vw) - Math.max(rect.left, 0)) / rect.width));
+  if (visible < 0.6) {
+    if (rect.left < 0) { mascot.style.right = (window.innerWidth - (rect.width * 0.65)) + 'px'; mascot.style.left = 'auto'; }
+    else if (rect.right > vw) { mascot.style.right = '2vw'; mascot.style.left = 'auto'; }
+  }
+}
+
+/* Wiring */
+function wireEvents() {
+  startBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    state.active = true;
+    mascot.classList.add('open'); mascot.classList.remove('idle');
+    renderCurrentStep();
+    saveState();
+  });
+
+  mascot?.addEventListener('click', (e) => {
+    if (e.target.closest('.mascot-bubble')) return;
+    if (mascot.classList.contains('open')) {
+      mascot.classList.remove('open'); bubble.setAttribute('aria-hidden','true'); state.active = false; saveState();
+      setTimeout(()=>mascot.classList.add('idle'), 800);
+    } else {
+      mascot.classList.add('open'); bubble.setAttribute('aria-hidden','false'); state.active = true; renderCurrentStep(); mascot.classList.remove('idle'); saveState();
+    }
+  });
+
+  nextBtn?.addEventListener('click', nextStep);
+  prevBtn?.addEventListener('click', prevStep);
+  finishBtn?.addEventListener('click', finishSurvey);
+  cancelBtn?.addEventListener('click', cancelSurvey);
+
+  window.addEventListener('resize', enforceVisibilityBounds);
+  window.addEventListener('beforeunload', saveState);
+}
+
+/* Init */
+document.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  removeInlineSurveyPanels();
+  wireEvents();
+  // friendly hint if partial progress
+  if (state.index && state.index > 0 && state.index < FLOW.length) {
+    bubbleText.textContent = 'Resume your survey by clicking Spectre.';
+    mascot.classList.add('hint');
+    setTimeout(()=>mascot.classList.remove('hint'), 3000);
+  } else {
+    bubbleText.textContent = 'Click "Start the survey" to call Spectre.';
+  }
+  enforceVisibilityBounds();
+});
         .feature-list { display: grid; gap: 18px; list-style: none; padding: 0; margin: 0; }
         .feature-item {
             padding: 22px 24px;

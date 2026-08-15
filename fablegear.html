@@ -309,6 +309,31 @@
             45%  { filter: drop-shadow(0 0 30px rgba(61,219,255,0.85)); }
             100% { filter: drop-shadow(0 0 16px rgba(141,92,246,0.55)); }
         }
+        /* Thruster FX: a short looping alpha-channel clip anchored under the
+           figure, inside the same fixed-position wrapper so it travels in
+           lockstep with zero extra positioning math. "Cold" (dim, desaturated,
+           paused) is the resting state; "hot" (full color, playing) is
+           toggled on briefly for an actual hop or teleport-in — see the
+           mascot module below. Hidden outright on error (e.g. a browser
+           that can't decode alpha WebM) rather than showing a white box. */
+        .mascot-thrusters {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            width: 62px;
+            transform: translate(-50%, -13px);
+            pointer-events: none;
+            filter: grayscale(1) brightness(0.4) saturate(0.5);
+            opacity: 0.75;
+            transition: filter 0.3s ease, opacity 0.3s ease;
+        }
+        .mascot-thrusters.is-hot {
+            filter: none;
+            opacity: 1;
+        }
+        @media (max-width: 640px) {
+            .mascot-thrusters { width: 44px; transform: translate(-50%, -9px); }
+        }
         .mascot-figure {
             width: 100%;
             height: 100%;
@@ -436,6 +461,7 @@
                so the pointer cursor needs to not imply an affordance that
                isn't there for reduced-motion users. */
             .mascot { cursor: default; }
+            .mascot-thrusters { display: none; }
             .mascot, .mascot-tip-bubble { transition: opacity 0.2s linear; }
             .mascot.is-hopping { animation: none; }
             .mascot-figure,
@@ -1734,6 +1760,37 @@
     figure.className = 'mascot-figure';
     mascot.appendChild(figure);
 
+    // Thruster FX: starts paused/dim ("cold"); toggled to playing/full-color
+    // ("hot") briefly during an actual hop or teleport-in, see place() below.
+    // Hidden permanently on error rather than leaving a broken/white box —
+    // e.g. a browser that can't decode an alpha-channel WebM.
+    let thrusters = null;
+    if (!reduceMotion) {
+        thrusters = document.createElement('video');
+        thrusters.className = 'mascot-thrusters';
+        thrusters.src = 'mascot-thrusters.webm';
+        thrusters.muted = true;
+        thrusters.loop = true;
+        thrusters.playsInline = true;
+        thrusters.setAttribute('aria-hidden', 'true');
+        thrusters.addEventListener('error', function () {
+            if (thrusters) { thrusters.remove(); thrusters = null; }
+        });
+        mascot.appendChild(thrusters);
+    }
+    let thrusterCooldown = null;
+    function fireThrusters(durationMs) {
+        if (!thrusters) return;
+        thrusters.classList.add('is-hot');
+        const playAttempt = thrusters.play();
+        if (playAttempt && typeof playAttempt.catch === 'function') playAttempt.catch(function () {});
+        clearTimeout(thrusterCooldown);
+        thrusterCooldown = setTimeout(function () {
+            thrusters.classList.remove('is-hot');
+            thrusters.pause();
+        }, durationMs);
+    }
+
     const tip = document.createElement('div');
     tip.className = 'mascot-tip';
     tip.setAttribute('aria-hidden', 'true');
@@ -1865,6 +1922,7 @@
                 figure.classList.remove('is-teleport-out');
                 applyPosition(x, y, true);
                 figure.classList.add('is-teleport-in');
+                fireThrusters(500);
                 figure.addEventListener('animationend', function onInEnd(e2) {
                     if (e2.target !== figure || e2.animationName !== 'mascot-teleport-in') return;
                     figure.removeEventListener('animationend', onInEnd);
@@ -1881,6 +1939,7 @@
                 // Reflow so the animation restarts on a repeat hop.
                 void mascot.offsetWidth;
                 mascot.classList.add('is-hopping');
+                fireThrusters(750);
             }
             placeBubble(x, y, size, message);
         }

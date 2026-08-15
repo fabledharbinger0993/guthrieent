@@ -11,6 +11,9 @@
  * Setup (one-time, Cloudflare dashboard):
  *   Pages project → Settings → Functions → D1 database bindings →
  *   variable name `DB`, database `guthrieent-fablegear-survey`.
+ *   Bindings are deployment-scoped — a settings save alone does not
+ *   necessarily rebuild the currently-live deployment, so confirm a new
+ *   deployment actually ran after adding a binding, not just that it saved.
  *
  * Until DB is bound this returns 503 and the page keeps the response in
  * localStorage, so no answer is lost while that's being set up.

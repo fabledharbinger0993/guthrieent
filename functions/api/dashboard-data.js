@@ -10,6 +10,9 @@
  * Auth is a single shared key compared against the X-Dashboard-Key header,
  * intentionally simple for a single-operator internal page. Rotate
  * DASHBOARD_KEY in the dashboard if it ever leaks.
+ *
+ * Reminder: like the D1 binding above, DASHBOARD_KEY is deployment-scoped —
+ * saving it alone doesn't rebuild an already-live deployment.
  */
 
 export async function onRequestGet({ request, env }) {

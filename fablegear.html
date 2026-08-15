@@ -11,12 +11,12 @@
     <meta property="og:url" content="https://guthrieent.com/fablegear" />
     <meta property="og:title" content="FableGear · Library repair for rekordbox" />
     <meta property="og:description" content="An open source macOS app that repairs broken file paths, finds duplicate tracks, and detects tempo and key. Runs on your machine. No account, no cloud. Free while in beta." />
-    <meta property="og:image" content="https://guthrieent.com/Spectre.png" />
+    <meta property="og:image" content="https://guthrieent.com/mascot-fablegear.png" />
     <meta property="og:image:alt" content="FableGear logo" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="FableGear · Library repair for rekordbox" />
     <meta name="twitter:description" content="Open source, runs locally. Repairs broken paths, finds duplicates, detects tempo and key. Free while in beta." />
-    <meta name="twitter:image" content="https://guthrieent.com/Spectre.png" />
+    <meta name="twitter:image" content="https://guthrieent.com/mascot-fablegear.png" />
 
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -46,7 +46,7 @@
             content: '';
             position: fixed;
             inset: 0;
-            background-image: url('Spectre.png');
+            background-image: url('mascot-fablegear.png');
             background-size: 680px;
             background-position: center 60px;
             background-repeat: no-repeat;
@@ -697,7 +697,27 @@
         .qblock[data-kind="system"] { border-left-color: var(--magenta); }
         @keyframes patch-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
         @media (prefers-reduced-motion: reduce) { .qblock { animation: none; } }
-        .qblock-title { font-family: 'Chakra Petch', sans-serif; color: var(--ink); font-weight: 700; font-size: 1rem; margin-bottom: 14px; }
+        .qblock-title {
+            font-family: 'Chakra Petch', sans-serif;
+            color: var(--ink);
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 14px;
+            transition: font-size 0.4s ease, opacity 0.4s ease, color 0.4s ease, margin 0.4s ease;
+        }
+        /* Same treatment as h2.mascot-narrated: the mascot just spoke this
+           question's title in its bubble, so the on-page module collapses
+           its own heading to a small label instead of repeating it. */
+        .qblock-title.mascot-narrated {
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--ink-dim);
+            opacity: 0.65;
+            margin-bottom: 10px;
+        }
 
         .likert { margin-bottom: 16px; }
         .likert:last-child { margin-bottom: 0; }
@@ -1560,10 +1580,17 @@
         if (revealed.length && window.__fgMascot) {
             // Tool satisfaction blocks carry the tool id in data-requires (see
             // buildToolBlock); hw-panel/fg-panel are .qblock too but aren't
-            // tool reveals, so they just get the canned message, same as ever.
+            // tool reveals, so they still get the same title-based message.
             const revealedTool = revealed[0].dataset.requires;
             const aiOpts = revealedTool ? { section: 'satisfaction-section', tools: [revealedTool] } : null;
-            window.__fgMascot.pointAt(revealed[0], revealed.length, aiOpts);
+            // Speak the block's own question instead of a generic "N new
+            // blocks" filler, so it reads as the mascot actually asking it —
+            // same idea as the step-greeter below, just for blocks that
+            // appear dynamically as you check boxes rather than on scroll.
+            const titleEl = revealed.length === 1 ? revealed[0].querySelector('.qblock-title') : null;
+            const message = titleEl ? titleEl.textContent.trim() : revealed.length;
+            window.__fgMascot.pointAt(revealed[0], message, aiOpts);
+            if (titleEl && window.innerWidth > 640) titleEl.classList.add('mascot-narrated');
         }
 
         updateSignalChain();
@@ -1843,7 +1870,11 @@
         const tipY = fitsBelow ? below : Math.max(margin, y - tipHeight - 8);
 
         tip.classList.toggle('is-above', !fitsBelow);
-        tip.style.transform = 'translate3d(' + Math.round(Math.max(margin, x + size / 2 - 95)) + 'px, ' + Math.round(tipY) + 'px, 0)';
+        // The mascot itself may now sit partly off-screen (see place()), but
+        // the bubble — capped at 210px via .mascot-tip's max-width — always
+        // needs to stay fully on-screen and readable regardless.
+        const tipX = Math.min(window.innerWidth - 210 - margin, Math.max(margin, x + size / 2 - 95));
+        tip.style.transform = 'translate3d(' + Math.round(tipX) + 'px, ' + Math.round(tipY) + 'px, 0)';
         tip.classList.add('is-visible');
 
         clearTimeout(hideTimer);
@@ -1859,9 +1890,21 @@
         // tuck it against the right edge.
         const narrow = window.innerWidth < 1180;
         const onLeft = narrow ? false : side % 2 === 0;
-        const x = onLeft
-            ? Math.max(margin, rect.left - size - margin)
-            : Math.min(window.innerWidth - size - margin, rect.right + margin);
+        // At this size the side margin next to the content column is usually
+        // narrower than the mascot itself — on narrow/mobile there's no way
+        // around overlapping, but on desktop clamping to the viewport edge
+        // used to shove the mascot back onto the content, covering
+        // checkboxes. Let it clear the content column's edge unconditionally
+        // instead, even if that pushes part of it past the browser's edge
+        // (clipped, invisible) rather than onto a form control. Measured off
+        // .wrap rather than the target's own rect — the target may still be
+        // mid-flight through its reveal animation when this runs, but .wrap
+        // itself never moves.
+        const wrapEl = document.querySelector('.wrap');
+        const wrapRect = wrapEl ? wrapEl.getBoundingClientRect() : rect;
+        const x = narrow
+            ? Math.min(window.innerWidth - size - margin, rect.right + margin)
+            : (onLeft ? wrapRect.left - size - margin : wrapRect.right + margin);
         // The fixed "return to Osos Discos" badge lives in the top-left
         // corner; at this size the mascot can land right on top of it, so
         // give the top-left corner a wider berth than other spots.

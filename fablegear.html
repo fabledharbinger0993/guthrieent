@@ -821,6 +821,26 @@
             .mascot { width: 260px; height: 260px; }
             .mascot-tip { display: none; }
         }
+        <!-- Start survey control -->
+<button id="start-survey-btn" class="start-survey" type="button" aria-haspopup="dialog">Start the survey</button>
+
+<!-- Mascot container -->
+<div id="mascot" class="mascot idle" aria-hidden="false" role="button" aria-label="Spectre mascot">
+  <img id="mascot-img" src="/assets/Spectre.png" alt="Spectre mascot" />
+  <div id="mascot-bubble" class="mascot-bubble" role="dialog" aria-live="polite" aria-hidden="true">
+    <div id="mascot-bubble-text" class="mascot-bubble-text" tabindex="-1"></div>
+    <div id="mascot-bubble-content" class="mascot-bubble-content"></div>
+    <div class="mascot-controls">
+      <button id="mascot-prev" class="mascot-btn" aria-label="Previous question">◀ Prev</button>
+      <button id="mascot-next" class="mascot-btn" aria-label="Next question">Next ▶</button>
+      <button id="mascot-finish" class="mascot-btn" aria-label="Finish survey">Finish</button>
+      <button id="mascot-cancel" class="mascot-btn" aria-label="Cancel survey">Cancel</button>
+      <label class="mascot-send">
+        <input type="checkbox" id="mascot-send-toggle" /> Send to dashboard
+      </label>
+    </div>
+  </div>
+</div>
     </style>
 </head>
 <body class="splash-open">

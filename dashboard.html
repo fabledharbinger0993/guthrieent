@@ -149,6 +149,29 @@
         .bar-n { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-dim); text-align: right; }
         .empty-note { font-size: 0.85rem; font-style: italic; }
 
+        /* ── AI summary section ──────────────────────────────────────────── */
+        #summary-section .step-label { display: flex; align-items: center; gap: 8px; }
+        #summary-age { font-size: 10px; color: var(--ink-dim); text-transform: none; letter-spacing: 0; opacity: 0.7; }
+        #summary-text { color: var(--ink); font-size: 0.95rem; margin: 0 0 16px; }
+
+        #sentiment-row { display: flex; gap: 18px; margin-bottom: 14px; flex-wrap: wrap; }
+        .sentiment-pill { display: flex; align-items: center; gap: 7px; font-size: 0.85rem; color: var(--ink-dim); }
+        .sentiment-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+        .sentiment-dot.positive { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+        .sentiment-dot.neutral { background: var(--ink-dim); }
+        .sentiment-dot.negative { background: var(--magenta); box-shadow: 0 0 6px var(--magenta); }
+
+        #topic-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+        .topic-chip {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            padding: 5px 11px;
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            color: var(--ink-dim);
+            background: rgba(255,255,255,0.025);
+        }
+
         /* ── Open-text feed ──────────────────────────────────────────────── */
         .feed-card {
             padding: 16px 18px;
@@ -231,6 +254,13 @@
         <section class="panel">
             <span class="step-label">Overview</span>
             <div class="tile-row" id="tiles"></div>
+        </section>
+
+        <section class="panel" id="summary-section" hidden>
+            <span class="step-label">AI summary <span id="summary-age"></span></span>
+            <p id="summary-text"></p>
+            <div id="sentiment-row"></div>
+            <div id="topic-cloud"></div>
         </section>
 
         <section class="panel">
@@ -360,6 +390,8 @@
                    '<div class="tile-label">' + esc(tile[1]) + '</div></div>';
         }).join('');
 
+        renderSummarySection(data);
+
         const byCategory = {};
         (data.tool_counts || []).forEach(function (row) {
             (byCategory[row.category] = byCategory[row.category] || []).push(row);
@@ -393,6 +425,42 @@
             document.getElementById('likert-group').innerHTML = '<p class="empty-note">No satisfaction answers yet.</p>';
         }
 
+        function renderSummarySection(d) {
+            const section = document.getElementById('summary-section');
+            const hasSummary = d.summary && d.summary.text;
+            const sentimentRows = d.sentiment_counts || [];
+            const topicRows = d.topic_counts || [];
+
+            if (!hasSummary && !sentimentRows.length && !topicRows.length) {
+                section.hidden = true;
+                return;
+            }
+            section.hidden = false;
+
+            document.getElementById('summary-text').textContent = hasSummary
+                ? d.summary.text
+                : 'No AI summary yet — needs a Workers AI binding and a few responses with written answers.';
+            document.getElementById('summary-age').textContent = hasSummary
+                ? '(generated ' + new Date(d.summary.generated_at).toLocaleString() + ')'
+                : '';
+
+            const bySentiment = {};
+            sentimentRows.forEach(function (r) { bySentiment[r.sentiment] = r.n; });
+            document.getElementById('sentiment-row').innerHTML = ['positive', 'neutral', 'negative']
+                .filter(function (s) { return bySentiment[s]; })
+                .map(function (s) {
+                    return '<span class="sentiment-pill"><span class="sentiment-dot ' + s + '"></span>' +
+                        esc(s.charAt(0).toUpperCase() + s.slice(1)) + ': ' + bySentiment[s] + '</span>';
+                }).join('');
+
+            const maxTopic = topicRows.length ? Math.max.apply(null, topicRows.map(function (r) { return r.n; })) : 0;
+            document.getElementById('topic-cloud').innerHTML = topicRows.map(function (r) {
+                const weight = maxTopic ? r.n / maxTopic : 0;
+                const opacity = (0.55 + weight * 0.45).toFixed(2);
+                return '<span class="topic-chip" style="opacity:' + opacity + '">' + esc(r.topic) + ' · ' + r.n + '</span>';
+            }).join('');
+        }
+
         const FEED_FIELDS = [
             ['pain_point', 'Most annoying part'], ['blind_spot', 'Blind spot / wish'],
             ['suggestions', 'Suggestions / review'], ['hw_open', 'Hardware friction'],
@@ -414,7 +482,10 @@
                         '<span class="feed-text" data-full="' + escAttr(text) + '" data-truncated="' + (truncated ? shown.length : '') + '">' + esc(shown) + '</span>' +
                         (truncated ? '<button type="button" class="feed-more">Show more</button>' : '') + '</div>';
                 }).join('');
-            return '<div class="feed-card"><span class="feed-date">' + esc(new Date(row.submitted_at).toLocaleString()) + '</span>' + fields + '</div>';
+            const sentimentTag = row.sentiment
+                ? ' <span class="sentiment-pill" style="display:inline-flex;font-size:inherit"><span class="sentiment-dot ' + esc(row.sentiment) + '"></span>' + esc(row.sentiment) + '</span>'
+                : '';
+            return '<div class="feed-card"><span class="feed-date">' + esc(new Date(row.submitted_at).toLocaleString()) + sentimentTag + '</span>' + fields + '</div>';
         }
     }
 

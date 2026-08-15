@@ -21,7 +21,8 @@
  * SCHEMA
  *   responses        — one row per submission; known scalar fields as real
  *                       columns, plus raw_json as the full payload (source of
- *                       truth if a column and the JSON ever disagree).
+ *                       truth if a column and the JSON ever disagree). Also
+ *                       carries `sentiment`, filled in after the fact.
  *   response_tools    — one row per checked box (category, tool_id), e.g.
  *                       ('library', 'lib-rekordbox'). Powers "how many people
  *                       use X" counts without unpacking JSON per query.
@@ -30,6 +31,17 @@
  *                       or `${toolId}__${statementKey}` for per-tool blocks —
  *                       whatever the page sent, taken as-is, no hardcoded list
  *                       here so new tools/statements need no migration.
+ *   response_topics   — one row per AI-assigned topic tag (response_id, topic).
+ *
+ * AI TAGGING (optional, additive)
+ *   If a Workers AI binding named `AI` is present, open-text answers get a
+ *   sentiment + topic pass after the response is already saved and the
+ *   request has returned — via context.waitUntil, so a slow or failed AI
+ *   call never delays or breaks the actual submission. No AI binding, no
+ *   open text, or a failed/malformed AI call all just leave sentiment/topics
+ *   null; nothing about storing the response depends on this working.
+ *   Setup: Pages project → Settings → Functions → Bindings → Add →
+ *   Workers AI → variable name `AI` (same deployment-scoping caveat as DB).
  */
 
 const MAX_FIELD_LENGTH = 5000;
@@ -59,7 +71,7 @@ const NON_LIKERT_KEYS = new Set([
   'hardware_other',
 ]);
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost({ request, env, waitUntil }) {
   let data;
   try {
     data = await request.json();
@@ -151,11 +163,83 @@ export async function onRequestPost({ request, env }) {
 
     if (batch.length) await env.DB.batch(batch);
 
+    if (env.AI) {
+      waitUntil(tagResponse(env, responseId, data).catch(function (err) {
+        console.error('AI tagging failed (response already stored):', err);
+      }));
+    }
+
     return json({ ok: true });
   } catch (err) {
     console.error('D1 write failed:', err);
     return json({ ok: false, error: 'Could not store the response.' }, 502);
   }
+}
+
+const OPEN_TEXT_FIELDS = [
+  'pain_point', 'blind_spot', 'suggestions', 'hw_open',
+  'fg_open_different', 'fg_open_missing',
+];
+const VALID_SENTIMENTS = new Set(['positive', 'neutral', 'negative']);
+const MAX_TOPICS = 5;
+const MAX_TOPIC_LENGTH = 40;
+
+// Runs after the response is already committed and the request has
+// returned. Reads the open-text fields, asks Workers AI for a strict-JSON
+// sentiment + topic list, and writes it back. Anything that goes wrong here
+// — bad JSON, an out-of-vocabulary sentiment, a network error — just leaves
+// the response untagged; it never touches the row that was already saved.
+async function tagResponse(env, responseId, data) {
+  const text = OPEN_TEXT_FIELDS
+    .map(function (field) { return nullableString(data[field]); })
+    .filter(Boolean)
+    .join('\n');
+  if (!text) return;
+
+  const prompt =
+    'Read these free-text answers from a DJ software survey and respond with ' +
+    'ONLY a JSON object, no other text, in exactly this shape: ' +
+    '{"sentiment":"positive|neutral|negative","topics":["short topic",...]}. ' +
+    'sentiment is the respondent\'s overall tone toward their current tools. ' +
+    'topics is up to 5 short (2-4 word) noun phrases naming what they talked ' +
+    'about (e.g. "beat grid accuracy", "USB export", "pricing"). ' +
+    'Answers:\n' + text;
+
+  const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  const raw = (result && (result.response || result)) + '';
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (!match) return;
+
+  let parsed;
+  try {
+    parsed = JSON.parse(match[0]);
+  } catch {
+    return;
+  }
+
+  const sentiment = VALID_SENTIMENTS.has(parsed.sentiment) ? parsed.sentiment : null;
+  const topics = Array.isArray(parsed.topics)
+    ? parsed.topics
+        .filter(function (t) { return typeof t === 'string' && t.trim(); })
+        .map(function (t) { return t.trim().slice(0, MAX_TOPIC_LENGTH); })
+        .slice(0, MAX_TOPICS)
+    : [];
+
+  if (!sentiment && !topics.length) return;
+
+  const batch = [];
+  if (sentiment) {
+    batch.push(env.DB.prepare('UPDATE responses SET sentiment = ? WHERE id = ?').bind(sentiment, responseId));
+  }
+  for (const topic of topics) {
+    batch.push(
+      env.DB.prepare('INSERT INTO response_topics (response_id, topic) VALUES (?, ?)').bind(responseId, topic)
+    );
+  }
+  if (batch.length) await env.DB.batch(batch);
 }
 
 function nullableString(value) {

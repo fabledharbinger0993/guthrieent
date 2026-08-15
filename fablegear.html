@@ -603,7 +603,315 @@
             display: block;
             margin-bottom: 10px;
         }
-        /* Mascot-driven inline survey (renders questions inside the bubble).
+
+        .feature-list { display: grid; gap: 18px; list-style: none; padding: 0; margin: 0; }
+        .feature-item {
+            padding: 22px 24px;
+            border-left: 3px solid var(--magenta);
+            background: rgba(255,255,255,0.025);
+            border-radius: 4px;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        .feature-item:hover { background: rgba(255,255,255,0.05); border-color: var(--cyan); }
+        .feature-tag {
+            display: block;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--cyan);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+        .feature-item strong {
+            color: var(--ink);
+            font-family: 'Chakra Petch', sans-serif;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 1.05rem;
+        }
+
+        table.data {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+            margin: 8px 0 4px;
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        table.data th, table.data td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); }
+        table.data th {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        table.data td.num { font-family: 'IBM Plex Mono', monospace; color: var(--ink); }
+        table.data tr.highlight td { color: var(--ink); font-weight: 600; }
+
+        .dep { padding: 14px 0; border-bottom: 1px solid var(--line); }
+        .dep:last-child { border-bottom: none; }
+        .dep-name { font-family: 'IBM Plex Mono', monospace; color: var(--ink); font-size: 0.95rem; font-weight: 600; }
+        .dep-lic {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: var(--ink-dim);
+            border: 1px solid var(--line);
+            padding: 2px 7px;
+            border-radius: 3px;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+        .dep-why { display: block; margin-top: 5px; }
+
+        .caveat {
+            border-left: 3px solid var(--cyan);
+            background: rgba(61,219,255,0.05);
+            padding: 18px 22px;
+            border-radius: 4px;
+            margin-top: 22px;
+            font-size: 0.95rem;
+        }
+        .caveat strong { color: var(--ink); }
+
+        footer {
+            text-align: center;
+            padding: 48px 24px 56px;
+            font-size: 13px;
+            font-family: 'IBM Plex Mono', monospace;
+            letter-spacing: 0.3px;
+        }
+        footer a {
+            color: var(--magenta);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,61,158,0.4);
+            transition: color 0.2s ease, border-color 0.2s ease;
+        }
+        footer a:hover { color: var(--cyan); border-color: var(--cyan); }
+
+        /* ── Survey-specific additions ──────────────────────────────────
+           Everything below is new for the research/beta flow. Nothing
+           above this line redefines a selector that already existed —
+           the survey reuses .panel, h2, h3, .cta-btn, .cta-note,
+           .caveat, .feature-list etc. as-is. */
+
+        .signal-chain {
+            position: sticky;
+            top: 12px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(7,6,11,0.92);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            color: var(--ink-dim);
+            margin: 24px 0;
+            backdrop-filter: blur(8px);
+        }
+        .signal-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--line);
+            flex-shrink: 0;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+        .signal-dot.live { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+        .signal-chain strong { color: var(--ink); }
+
+        fieldset { border: none; margin: 0 0 26px; padding: 0; }
+        legend { padding: 0; margin: 0 0 12px; width: 100%; }
+
+        .check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+        .check-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: rgba(255,255,255,0.025);
+            cursor: pointer;
+            transition: border-color 0.15s ease, background 0.15s ease;
+            font-size: 0.9rem;
+        }
+        .check-row:hover { border-color: var(--violet); }
+        .check-row input[type="checkbox"] { accent-color: var(--magenta); width: 15px; height: 15px; flex-shrink: 0; }
+        .check-row input:checked ~ span { color: var(--ink); }
+
+        .other-text { margin-top: 8px; display: block; }
+        .other-text input[type="text"] { width: 100%; }
+
+        .qblock {
+            border-left: 3px solid var(--violet);
+            background: rgba(255,255,255,0.025);
+            border-radius: 4px;
+            padding: 20px 22px;
+            margin-bottom: 16px;
+            animation: patch-in 0.35s ease;
+        }
+        .qblock[data-kind="meta"] { border-left-color: var(--cyan); }
+        .qblock[data-kind="system"] { border-left-color: var(--magenta); }
+        @keyframes patch-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+        @media (prefers-reduced-motion: reduce) { .qblock { animation: none; } }
+        .qblock-title {
+            font-family: 'Chakra Petch', sans-serif;
+            color: var(--ink);
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 14px;
+            transition: font-size 0.4s ease, opacity 0.4s ease, color 0.4s ease, margin 0.4s ease;
+        }
+        /* Same treatment as h2.mascot-narrated: the mascot just spoke this
+           block's question in its bubble, so the whole module quiets down —
+           title AND every statement/label inside it — instead of repeating
+           the question at full size right below where it was just said. The
+           actual inputs (checkboxes, likert buttons, textareas) are
+           untouched; only the restated question text shrinks. */
+        .qblock.mascot-narrated .qblock-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--ink-dim);
+            opacity: 0.65;
+            margin-bottom: 10px;
+        }
+        .qblock.mascot-narrated .likert-text,
+        .qblock.mascot-narrated .field-label,
+        section.panel.mascot-narrated > .field-group > .field-label {
+            font-size: 11.5px;
+            opacity: 0.6;
+        }
+
+        .likert { margin-bottom: 16px; }
+        .likert:last-child { margin-bottom: 0; }
+        .likert-text {
+            font-size: 0.92rem;
+            margin-bottom: 8px;
+            color: var(--ink-dim);
+            transition: font-size 0.4s ease, opacity 0.4s ease;
+        }
+        .likert-options { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        .likert-opt {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            text-align: center;
+            cursor: pointer;
+            padding: 7px 4px 4px;
+            border: 1px solid var(--line);
+            border-radius: 5px;
+            transition: border-color 0.15s ease;
+        }
+        .likert-opt:hover { border-color: var(--cyan); }
+        .likert-opt input { accent-color: var(--violet); }
+        .likert-opt input:checked ~ span { color: var(--ink); font-weight: 600; }
+        .likert-opt span { font-size: 10px; line-height: 1.25; color: var(--ink-dim); }
+        @media (max-width: 560px) {
+            .likert-options { grid-template-columns: 1fr; }
+            .likert-opt { flex-direction: row; justify-content: flex-start; text-align: left; padding: 8px 10px; }
+        }
+
+        .toggle-row { display: flex; gap: 10px; margin-bottom: 4px; }
+        .toggle-opt {
+            position: relative;
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Chakra Petch', sans-serif;
+            font-weight: 700;
+            color: var(--ink-dim);
+            transition: border-color 0.15s ease, color 0.15s ease;
+        }
+        .toggle-opt:hover { border-color: var(--violet); }
+        .toggle-opt input { position: absolute; opacity: 0; pointer-events: none; }
+        .toggle-opt input:checked ~ span { color: var(--ink); }
+        .toggle-opt:has(input:checked) { border-color: var(--magenta); background: rgba(255,61,158,0.06); }
+
+        textarea, input[type="text"], input[type="email"], select {
+            width: 100%;
+            background: rgba(7,6,11,0.6);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            color: var(--ink);
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.92rem;
+            padding: 11px 13px;
+            resize: vertical;
+        }
+        textarea:focus, input:focus, select:focus { border-color: var(--cyan); }
+        textarea { min-height: 90px; }
+        label.field-label { display: block; font-size: 0.92rem; color: var(--ink-dim); margin-bottom: 8px; transition: font-size 0.4s ease, opacity 0.4s ease; }
+        .field-group { margin-bottom: 20px; }
+
+        .fg-nudge { border: 1px dashed var(--line); border-radius: 6px; padding: 16px 18px; font-size: 0.9rem; margin-top: 4px; }
+
+        .hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+        #status-panel { display: none; }
+        #status-panel.show { display: block; }
+        #status-panel pre {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 14px;
+            font-size: 11px;
+            overflow-x: auto;
+            color: var(--ink-dim);
+            max-height: 260px;
+        }
+
+        @media (max-width: 900px) {
+            .path-grid, .promise-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            section.panel { padding: 32px 22px; }
+            .hero { padding: 80px 0 60px; }
+            #splash-skip { bottom: 18px; right: 18px; }
+            /* The rail has nowhere to go on a phone; the tip carries the copy. */
+            .mascot { width: 260px; height: 260px; }
+            .mascot-tip { display: none; }
+        }
+
+    </style>
+</head>
+<body class="splash-open">
+
+<!-- Start survey control -->
+<button id="start-survey-btn" class="start-survey" type="button" aria-haspopup="dialog">Start the survey</button>
+
+<!-- Mascot container -->
+<div id="mascot" class="mascot idle" aria-hidden="false" role="button" aria-label="Spectre mascot">
+  <img id="mascot-img" src="/assets/Spectre.png" alt="Spectre mascot" />
+  <div id="mascot-bubble" class="mascot-bubble" role="dialog" aria-live="polite" aria-hidden="true">
+    <div id="mascot-bubble-text" class="mascot-bubble-text" tabindex="-1"></div>
+    <div id="mascot-bubble-content" class="mascot-bubble-content"></div>
+    <div class="mascot-controls">
+      <button id="mascot-prev" class="mascot-btn" aria-label="Previous question">◀ Prev</button>
+      <button id="mascot-next" class="mascot-btn" aria-label="Next question">Next ▶</button>
+      <button id="mascot-finish" class="mascot-btn" aria-label="Finish survey">Finish</button>
+      <button id="mascot-cancel" class="mascot-btn" aria-label="Cancel survey">Cancel</button>
+      <label class="mascot-send">
+        <input type="checkbox" id="mascot-send-toggle" /> Send to dashboard
+      </label>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Mascot-driven inline survey (renders questions inside the bubble).
    Uses existing DOM when possible: group-lib, group-meta, group-backup, group-acq,
    #hw-section, #fg-tried-section, #open-section. Hides originals from page.
 */
@@ -921,309 +1229,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   enforceVisibilityBounds();
 });
-        .feature-list { display: grid; gap: 18px; list-style: none; padding: 0; margin: 0; }
-        .feature-item {
-            padding: 22px 24px;
-            border-left: 3px solid var(--magenta);
-            background: rgba(255,255,255,0.025);
-            border-radius: 4px;
-            transition: background 0.2s ease, border-color 0.2s ease;
-        }
-        .feature-item:hover { background: rgba(255,255,255,0.05); border-color: var(--cyan); }
-        .feature-tag {
-            display: block;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
-            color: var(--cyan);
-            letter-spacing: 2px;
-            margin-bottom: 8px;
-        }
-        .feature-item strong {
-            color: var(--ink);
-            font-family: 'Chakra Petch', sans-serif;
-            font-weight: 700;
-            display: block;
-            margin-bottom: 6px;
-            font-size: 1.05rem;
-        }
 
-        table.data {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.92rem;
-            margin: 8px 0 4px;
-            display: block;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-        table.data th, table.data td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); }
-        table.data th {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
-            letter-spacing: 1.5px;
-            color: var(--cyan);
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-        table.data td.num { font-family: 'IBM Plex Mono', monospace; color: var(--ink); }
-        table.data tr.highlight td { color: var(--ink); font-weight: 600; }
-
-        .dep { padding: 14px 0; border-bottom: 1px solid var(--line); }
-        .dep:last-child { border-bottom: none; }
-        .dep-name { font-family: 'IBM Plex Mono', monospace; color: var(--ink); font-size: 0.95rem; font-weight: 600; }
-        .dep-lic {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10px;
-            letter-spacing: 1px;
-            color: var(--ink-dim);
-            border: 1px solid var(--line);
-            padding: 2px 7px;
-            border-radius: 3px;
-            margin-left: 8px;
-            white-space: nowrap;
-        }
-        .dep-why { display: block; margin-top: 5px; }
-
-        .caveat {
-            border-left: 3px solid var(--cyan);
-            background: rgba(61,219,255,0.05);
-            padding: 18px 22px;
-            border-radius: 4px;
-            margin-top: 22px;
-            font-size: 0.95rem;
-        }
-        .caveat strong { color: var(--ink); }
-
-        footer {
-            text-align: center;
-            padding: 48px 24px 56px;
-            font-size: 13px;
-            font-family: 'IBM Plex Mono', monospace;
-            letter-spacing: 0.3px;
-        }
-        footer a {
-            color: var(--magenta);
-            text-decoration: none;
-            border-bottom: 1px solid rgba(255,61,158,0.4);
-            transition: color 0.2s ease, border-color 0.2s ease;
-        }
-        footer a:hover { color: var(--cyan); border-color: var(--cyan); }
-
-        /* ── Survey-specific additions ──────────────────────────────────
-           Everything below is new for the research/beta flow. Nothing
-           above this line redefines a selector that already existed —
-           the survey reuses .panel, h2, h3, .cta-btn, .cta-note,
-           .caveat, .feature-list etc. as-is. */
-
-        .signal-chain {
-            position: sticky;
-            top: 12px;
-            z-index: 20;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(7,6,11,0.92);
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 12px;
-            letter-spacing: 0.5px;
-            color: var(--ink-dim);
-            margin: 24px 0;
-            backdrop-filter: blur(8px);
-        }
-        .signal-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: var(--line);
-            flex-shrink: 0;
-            transition: background 0.3s ease, box-shadow 0.3s ease;
-        }
-        .signal-dot.live { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
-        .signal-chain strong { color: var(--ink); }
-
-        fieldset { border: none; margin: 0 0 26px; padding: 0; }
-        legend { padding: 0; margin: 0 0 12px; width: 100%; }
-
-        .check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
-        .check-row {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            padding: 9px 12px;
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            background: rgba(255,255,255,0.025);
-            cursor: pointer;
-            transition: border-color 0.15s ease, background 0.15s ease;
-            font-size: 0.9rem;
-        }
-        .check-row:hover { border-color: var(--violet); }
-        .check-row input[type="checkbox"] { accent-color: var(--magenta); width: 15px; height: 15px; flex-shrink: 0; }
-        .check-row input:checked ~ span { color: var(--ink); }
-
-        .other-text { margin-top: 8px; display: block; }
-        .other-text input[type="text"] { width: 100%; }
-
-        .qblock {
-            border-left: 3px solid var(--violet);
-            background: rgba(255,255,255,0.025);
-            border-radius: 4px;
-            padding: 20px 22px;
-            margin-bottom: 16px;
-            animation: patch-in 0.35s ease;
-        }
-        .qblock[data-kind="meta"] { border-left-color: var(--cyan); }
-        .qblock[data-kind="system"] { border-left-color: var(--magenta); }
-        @keyframes patch-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-        @media (prefers-reduced-motion: reduce) { .qblock { animation: none; } }
-        .qblock-title {
-            font-family: 'Chakra Petch', sans-serif;
-            color: var(--ink);
-            font-weight: 700;
-            font-size: 1rem;
-            margin-bottom: 14px;
-            transition: font-size 0.4s ease, opacity 0.4s ease, color 0.4s ease, margin 0.4s ease;
-        }
-        /* Same treatment as h2.mascot-narrated: the mascot just spoke this
-           block's question in its bubble, so the whole module quiets down —
-           title AND every statement/label inside it — instead of repeating
-           the question at full size right below where it was just said. The
-           actual inputs (checkboxes, likert buttons, textareas) are
-           untouched; only the restated question text shrinks. */
-        .qblock.mascot-narrated .qblock-title {
-            font-family: 'IBM Plex Mono', monospace;
-            font-weight: 600;
-            font-size: 12px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--ink-dim);
-            opacity: 0.65;
-            margin-bottom: 10px;
-        }
-        .qblock.mascot-narrated .likert-text,
-        .qblock.mascot-narrated .field-label,
-        section.panel.mascot-narrated > .field-group > .field-label {
-            font-size: 11.5px;
-            opacity: 0.6;
-        }
-
-        .likert { margin-bottom: 16px; }
-        .likert:last-child { margin-bottom: 0; }
-        .likert-text {
-            font-size: 0.92rem;
-            margin-bottom: 8px;
-            color: var(--ink-dim);
-            transition: font-size 0.4s ease, opacity 0.4s ease;
-        }
-        .likert-options { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-        .likert-opt {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            text-align: center;
-            cursor: pointer;
-            padding: 7px 4px 4px;
-            border: 1px solid var(--line);
-            border-radius: 5px;
-            transition: border-color 0.15s ease;
-        }
-        .likert-opt:hover { border-color: var(--cyan); }
-        .likert-opt input { accent-color: var(--violet); }
-        .likert-opt input:checked ~ span { color: var(--ink); font-weight: 600; }
-        .likert-opt span { font-size: 10px; line-height: 1.25; color: var(--ink-dim); }
-        @media (max-width: 560px) {
-            .likert-options { grid-template-columns: 1fr; }
-            .likert-opt { flex-direction: row; justify-content: flex-start; text-align: left; padding: 8px 10px; }
-        }
-
-        .toggle-row { display: flex; gap: 10px; margin-bottom: 4px; }
-        .toggle-opt {
-            position: relative;
-            flex: 1;
-            text-align: center;
-            padding: 12px;
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: 'Chakra Petch', sans-serif;
-            font-weight: 700;
-            color: var(--ink-dim);
-            transition: border-color 0.15s ease, color 0.15s ease;
-        }
-        .toggle-opt:hover { border-color: var(--violet); }
-        .toggle-opt input { position: absolute; opacity: 0; pointer-events: none; }
-        .toggle-opt input:checked ~ span { color: var(--ink); }
-        .toggle-opt:has(input:checked) { border-color: var(--magenta); background: rgba(255,61,158,0.06); }
-
-        textarea, input[type="text"], input[type="email"], select {
-            width: 100%;
-            background: rgba(7,6,11,0.6);
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            color: var(--ink);
-            font-family: 'IBM Plex Sans', sans-serif;
-            font-size: 0.92rem;
-            padding: 11px 13px;
-            resize: vertical;
-        }
-        textarea:focus, input:focus, select:focus { border-color: var(--cyan); }
-        textarea { min-height: 90px; }
-        label.field-label { display: block; font-size: 0.92rem; color: var(--ink-dim); margin-bottom: 8px; transition: font-size 0.4s ease, opacity 0.4s ease; }
-        .field-group { margin-bottom: 20px; }
-
-        .fg-nudge { border: 1px dashed var(--line); border-radius: 6px; padding: 16px 18px; font-size: 0.9rem; margin-top: 4px; }
-
-        .hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-
-        #status-panel { display: none; }
-        #status-panel.show { display: block; }
-        #status-panel pre {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            padding: 14px;
-            font-size: 11px;
-            overflow-x: auto;
-            color: var(--ink-dim);
-            max-height: 260px;
-        }
-
-        @media (max-width: 900px) {
-            .path-grid, .promise-grid { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 640px) {
-            section.panel { padding: 32px 22px; }
-            .hero { padding: 80px 0 60px; }
-            #splash-skip { bottom: 18px; right: 18px; }
-            /* The rail has nowhere to go on a phone; the tip carries the copy. */
-            .mascot { width: 260px; height: 260px; }
-            .mascot-tip { display: none; }
-        }
-        <!-- Start survey control -->
-<button id="start-survey-btn" class="start-survey" type="button" aria-haspopup="dialog">Start the survey</button>
-
-<!-- Mascot container -->
-<div id="mascot" class="mascot idle" aria-hidden="false" role="button" aria-label="Spectre mascot">
-  <img id="mascot-img" src="/assets/Spectre.png" alt="Spectre mascot" />
-  <div id="mascot-bubble" class="mascot-bubble" role="dialog" aria-live="polite" aria-hidden="true">
-    <div id="mascot-bubble-text" class="mascot-bubble-text" tabindex="-1"></div>
-    <div id="mascot-bubble-content" class="mascot-bubble-content"></div>
-    <div class="mascot-controls">
-      <button id="mascot-prev" class="mascot-btn" aria-label="Previous question">◀ Prev</button>
-      <button id="mascot-next" class="mascot-btn" aria-label="Next question">Next ▶</button>
-      <button id="mascot-finish" class="mascot-btn" aria-label="Finish survey">Finish</button>
-      <button id="mascot-cancel" class="mascot-btn" aria-label="Cancel survey">Cancel</button>
-      <label class="mascot-send">
-        <input type="checkbox" id="mascot-send-toggle" /> Send to dashboard
-      </label>
-    </div>
-  </div>
-</div>
-    </style>
-</head>
-<body class="splash-open">
+</script>
 
 <div id="splash">
     <video id="splash-video" muted playsinline autoplay preload="auto">

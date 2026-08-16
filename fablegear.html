@@ -139,24 +139,74 @@
 
         /* Floats with the mascot rather than sitting inline at the very top of
            <body>, where it rendered as an unstyled button above the header. */
+        /* ── "Click here" sign ────────────────────────────────────────────
+           A hovering neon sign above Spectre with an arrow pointing down at
+           him, rather than a standalone button off on its own — the point is
+           to say *he* is the thing you interact with.
+
+           The plate hugs the right edge and the arrow is nudged inward to sit
+           over his centre (--arrow-nudge), instead of centring the whole sign
+           on him. Centring would push a ~190px plate off the right of the
+           viewport once 2vw gets small, which is a real case on a ~1000px
+           window, not just on phones. */
         .start-survey {
           position: fixed;
-          bottom: calc(12vh + 150px);
+          bottom: calc(12vh + 154px);   /* mascot is 140px and square */
           right: 2vw;
+          --arrow-nudge: 59px;          /* arrow centre → mascot centre */
           z-index: 12001;
-          background: linear-gradient(135deg, var(--magenta), var(--violet));
-          color: #0a0710;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 2px;
+          background: none;
           border: none;
-          border-radius: 6px;
-          padding: 9px 16px;
+          padding: 0;
+          cursor: pointer;
+          animation: sign-bob 3.4s ease-in-out infinite;
+          transition: opacity 0.25s ease;
+        }
+        .sign-plate {
+          background: rgba(19,14,28,0.94);
+          border: 1px solid var(--magenta);
+          border-radius: 8px;
+          padding: 9px 15px;
           font-family: 'Chakra Petch', sans-serif;
           font-weight: 700;
-          font-size: 13px;
-          letter-spacing: 0.5px;
-          cursor: pointer;
-          box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+          font-size: 12.5px;
+          letter-spacing: 0.6px;
+          color: var(--ink);
+          white-space: nowrap;
+          text-shadow: 0 0 9px rgba(255,61,158,0.75);
+          box-shadow:
+            0 0 14px rgba(255,61,158,0.45),
+            inset 0 0 14px rgba(255,61,158,0.12);
+          transition: box-shadow 0.2s ease, border-color 0.2s ease;
         }
-        .start-survey:hover { box-shadow: 0 0 24px rgba(255,61,158,0.45); }
+        .sign-arrow {
+          margin-right: var(--arrow-nudge);
+          color: var(--cyan);
+          fill: none;
+          stroke: currentColor;
+          stroke-width: 3;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+          filter: drop-shadow(0 0 5px var(--cyan)) drop-shadow(0 0 13px rgba(61,219,255,0.5));
+        }
+        /* Settle once you're going for it — a target that never stops moving
+           is needlessly fiddly to hit, and worse with a tremor or a trackpad. */
+        .start-survey:hover,
+        .start-survey:focus-visible { animation-play-state: paused; }
+        .start-survey:hover .sign-plate {
+          border-color: var(--cyan);
+          box-shadow:
+            0 0 22px rgba(255,61,158,0.6),
+            inset 0 0 16px rgba(61,219,255,0.16);
+        }
+        @keyframes sign-bob {
+          0%, 100% { transform: translateY(0); }
+          50%      { transform: translateY(-7px); }
+        }
         /* Once the bubble is open the button is redundant and, on a phone,
            sits on top of the sheet — so it gets out of the way. */
         body:has(#mascot.open) .start-survey { opacity: 0; pointer-events: none; }
@@ -530,6 +580,7 @@
                What does need suppressing is his idle drift. */
             .mascot.idle { animation: none; }
             .mascot { transition: none; }
+            .start-survey { animation: none; }
             .qblock[data-revealed] { animation: none; }
             details.panel.collapsible[open] > .details-body { animation: none; }
             details.panel.collapsible .summary-toggle { transition: none; }
@@ -911,13 +962,14 @@
                hang 360px off a right-pinned mascot, which is what pushed the
                questions off the left edge. It becomes a bottom sheet instead. */
             #mascot { width: 92px; bottom: 14px; right: 10px; }
+            /* Sign rides above the smaller mascot; the arrow nudge shrinks to
+               match his new centre (10px edge + 46px half-width). */
             .start-survey {
-                bottom: 22px;
-                right: auto;
-                left: 10px;
-                padding: 11px 18px;
-                font-size: 14px;
+                bottom: 118px;          /* 14px offset + 92px mascot + gap */
+                right: 10px;
+                --arrow-nudge: 35px;
             }
+            .sign-plate { font-size: 12px; padding: 8px 13px; }
             .mascot-bubble {
                 position: fixed;
                 left: 10px;
@@ -951,7 +1003,13 @@
 <body class="splash-open">
 
 <!-- Start survey control -->
-<button id="start-survey-btn" class="start-survey" type="button" aria-haspopup="dialog">Start the survey</button>
+<button id="start-survey-btn" class="start-survey" type="button" aria-haspopup="dialog">
+  <span class="sign-plate">Click here to start the survey</span>
+  <svg class="sign-arrow" viewBox="0 0 24 34" width="22" height="32" aria-hidden="true" focusable="false">
+    <path d="M12 2 V23" />
+    <path d="M4 16 L12 25 L20 16" />
+  </svg>
+</button>
 
 <!-- Mascot container -->
 <div id="mascot" class="mascot idle" aria-hidden="false" role="button" aria-label="Spectre mascot">

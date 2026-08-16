@@ -307,6 +307,110 @@
     .date-panel { display: none; }
     .date-panel.active { display: block; }
 
+    /* ── MULTI-EVENT / RUN OF SHOW ──────────────────────── */
+    .event-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      background: var(--surface);
+    }
+
+    .event-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .event-card-fields { flex: 1; }
+
+    .event-title-input {
+      font-family: var(--font-mono) !important;
+      font-size: 13px !important;
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
+    }
+
+    .btn-remove-mini {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .btn-remove-mini:hover { color: var(--error); border-color: var(--error); }
+
+    .ros-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-top: 14px;
+      margin-bottom: 8px;
+    }
+
+    .ros-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .ros-row input[type="time"] {
+      width: 110px;
+      flex-shrink: 0;
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    .ros-row input[type="text"] {
+      flex: 1;
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    .btn-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: transparent;
+      border: 1px dashed var(--gold-dim);
+      border-radius: var(--radius);
+      padding: 9px 14px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .btn-add:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
+
+    .btn-add-seg {
+      margin-top: 8px;
+      padding: 7px 12px;
+      font-size: 10px;
+    }
+
+    .empty-events-note {
+      font-size: 13px;
+      color: var(--muted);
+      font-style: italic;
+      margin-bottom: 12px;
+    }
+
     /* ── SERVICE CHECKBOXES ─────────────────────────────── */
     .check-group {
       display: flex;
@@ -844,6 +948,7 @@
           <button type="button" class="date-tab active" data-tab="single" role="tab" aria-selected="true">Single Date</button>
           <button type="button" class="date-tab" data-tab="range"  role="tab" aria-selected="false">Date Range</button>
           <button type="button" class="date-tab" data-tab="tbd"    role="tab" aria-selected="false">TBD</button>
+          <button type="button" class="date-tab" data-tab="multi"  role="tab" aria-selected="false">Multiple Events</button>
         </div>
 
         <div class="date-panel active" id="panel-single">
@@ -868,6 +973,13 @@
             <label for="date-tbd-note">Timeframe or Notes</label>
             <input type="text" id="date-tbd-note" name="date_tbd_note" placeholder="e.g. Late summer 2025, holiday weekend…" />
           </div>
+        </div>
+
+        <div class="date-panel" id="panel-multi">
+          <p class="hint" style="margin-bottom:12px">Booking more than one date? Add each event, and optionally a run-of-show timeline for each.</p>
+          <div id="eventsEmptyNote" class="empty-events-note">No events added yet.</div>
+          <div id="eventsList"></div>
+          <button type="button" class="btn-add" id="addEventBtn">+ Add Event</button>
         </div>
 
         <span class="error-msg" id="date-err">Please provide an event date or timeframe.</span>
@@ -1134,6 +1246,142 @@
     });
   });
 
+  /* ── MULTIPLE EVENTS / RUN OF SHOW ─────────────────────
+     Each event and each run-of-show segment is a plain object in `multiEvents`.
+     Inputs write straight back into that model on `input`, and the model is
+     read directly at submit time — nothing here re-renders the list from
+     state, so typing never wipes what's already been entered. */
+  const multiEvents = [];
+  const eventsList = document.getElementById('eventsList');
+  const eventsEmptyNote = document.getElementById('eventsEmptyNote');
+  let eventSeq = 0;
+
+  function updateEmptyNote() {
+    eventsEmptyNote.style.display = multiEvents.length ? 'none' : 'block';
+  }
+
+  function todayLocal() {
+    const d = new Date();
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    return new Date(d - tzOffset).toISOString().slice(0, 16);
+  }
+
+  function renderSegmentRow(ev, seg, rosList) {
+    const row = document.createElement('div');
+    row.className = 'ros-row';
+
+    const time = document.createElement('input');
+    time.type = 'time';
+    time.value = seg.time || '';
+    time.addEventListener('input', () => { seg.time = time.value; });
+
+    const desc = document.createElement('input');
+    desc.type = 'text';
+    desc.placeholder = 'What happens at this time';
+    desc.value = seg.desc || '';
+    desc.addEventListener('input', () => { seg.desc = desc.value; });
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'btn-remove-mini';
+    remove.textContent = '✕';
+    remove.addEventListener('click', () => {
+      const idx = ev.runOfShow.indexOf(seg);
+      if (idx > -1) ev.runOfShow.splice(idx, 1);
+      row.remove();
+    });
+
+    row.append(time, desc, remove);
+    rosList.appendChild(row);
+  }
+
+  function renderEventCard(ev) {
+    const card = document.createElement('div');
+    card.className = 'event-card';
+
+    const top = document.createElement('div');
+    top.className = 'event-card-top';
+
+    const fields = document.createElement('div');
+    fields.className = 'event-card-fields';
+
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.className = 'event-title-input';
+    titleInput.placeholder = 'Event title (e.g. Friday — Gala Night)';
+    titleInput.value = ev.title;
+    titleInput.addEventListener('input', () => { ev.title = titleInput.value; });
+
+    const row = document.createElement('div');
+    row.className = 'field-row';
+
+    const startGroup = document.createElement('div');
+    startGroup.className = 'field-group';
+    const startLabel = document.createElement('label');
+    startLabel.textContent = 'Starts';
+    const startInput = document.createElement('input');
+    startInput.type = 'datetime-local';
+    startInput.value = ev.start;
+    startInput.addEventListener('input', () => { ev.start = startInput.value; });
+    startGroup.append(startLabel, startInput);
+
+    const endGroup = document.createElement('div');
+    endGroup.className = 'field-group';
+    const endLabel = document.createElement('label');
+    endLabel.textContent = 'Ends';
+    const endInput = document.createElement('input');
+    endInput.type = 'datetime-local';
+    endInput.value = ev.end;
+    endInput.addEventListener('input', () => { ev.end = endInput.value; });
+    endGroup.append(endLabel, endInput);
+
+    row.append(startGroup, endGroup);
+    fields.append(titleInput, row);
+
+    const removeEventBtn = document.createElement('button');
+    removeEventBtn.type = 'button';
+    removeEventBtn.className = 'btn-remove-mini';
+    removeEventBtn.textContent = 'Remove Event';
+    removeEventBtn.addEventListener('click', () => {
+      const idx = multiEvents.indexOf(ev);
+      if (idx > -1) multiEvents.splice(idx, 1);
+      card.remove();
+      updateEmptyNote();
+    });
+
+    top.append(fields, removeEventBtn);
+    card.appendChild(top);
+
+    const rosTitle = document.createElement('div');
+    rosTitle.className = 'ros-title';
+    rosTitle.textContent = 'Run of Show';
+    card.appendChild(rosTitle);
+
+    const rosList = document.createElement('div');
+    card.appendChild(rosList);
+    ev.runOfShow.forEach(seg => renderSegmentRow(ev, seg, rosList));
+
+    const addSegBtn = document.createElement('button');
+    addSegBtn.type = 'button';
+    addSegBtn.className = 'btn-add btn-add-seg';
+    addSegBtn.textContent = '+ Add Segment';
+    addSegBtn.addEventListener('click', () => {
+      const seg = { time: '', desc: '' };
+      ev.runOfShow.push(seg);
+      renderSegmentRow(ev, seg, rosList);
+    });
+    card.appendChild(addSegBtn);
+
+    eventsList.appendChild(card);
+  }
+
+  document.getElementById('addEventBtn').addEventListener('click', () => {
+    const ev = { id: ++eventSeq, title: '', start: todayLocal(), end: todayLocal(), runOfShow: [] };
+    multiEvents.push(ev);
+    renderEventCard(ev);
+    updateEmptyNote();
+  });
+
   /* ── CHECKBOX STYLING ──────────────────────────────── */
   document.querySelectorAll('.check-item input[type="checkbox"]').forEach(cb => {
     cb.addEventListener('change', () => {
@@ -1185,6 +1433,8 @@
       dateOk = !!(document.getElementById('date-start').value || document.getElementById('date-end').value);
     } else if (dateMode === 'tbd') {
       dateOk = !!document.getElementById('date-tbd-note').value.trim();
+    } else if (dateMode === 'multi') {
+      dateOk = multiEvents.length > 0 && multiEvents.every(ev => ev.title.trim() && ev.start);
     }
     showErr('date-err', !dateOk);
     if (!dateOk) valid = false;
@@ -1227,8 +1477,17 @@
       const s = document.getElementById('date-start').value;
       const en = document.getElementById('date-end').value;
       dateStr = [s, en].filter(Boolean).join(' → ') || 'Not specified';
-    } else {
+    } else if (dateMode === 'tbd') {
       dateStr = document.getElementById('date-tbd-note').value.trim() || 'TBD';
+    } else {
+      dateStr = multiEvents.map(ev => {
+        const segLines = ev.runOfShow
+          .filter(s => s.time || s.desc)
+          .map(s => `    ${s.time || '?'} — ${s.desc || 'Untitled segment'}`)
+          .join('\n');
+        const header = `${ev.title.trim() || 'Untitled event'}: ${ev.start || '?'} → ${ev.end || '?'}`;
+        return segLines ? `${header}\n  Run of show:\n${segLines}` : header;
+      }).join('\n\n');
     }
 
     // Readable gear list — reuse the shared CATALOG mapping built above.

@@ -1,528 +1,262 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FableGear research dashboard</title>
-    <meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Admin Dashboard — Guthrie Submissions</title>
+<style>
+  :root{
+    --bg:#f5f7fb; --card:#fff; --text:#0f1722; --muted:#6b7280;
+    --accent:#0b84ff; --accent-2:#0a66d3; --danger:#ef4444;
+    --radius:12px; --border:#e6e9ef;
+    --font:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);padding:24px}
+  .wrap{max-width:1100px;margin:0 auto}
+  .header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px}
+  h1{font-size:24px;margin:0}
+  .muted{color:var(--muted);font-size:14px}
 
-    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #07060b;
-            --panel: rgba(19, 14, 28, 0.86);
-            --line: rgba(255, 255, 255, 0.09);
-            --magenta: #ff3d9e;
-            --violet: #8d5cf6;
-            --cyan: #3ddbff;
-            --ink: #f4eff9;
-            --ink-dim: #ab9dc5;
-        }
-        * { box-sizing: border-box; }
-        body {
-            background-color: var(--bg);
-            color: var(--ink-dim);
-            font-family: 'IBM Plex Sans', sans-serif;
-            margin: 0;
-            line-height: 1.6;
-        }
-        a { color: var(--cyan); }
-        :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
-        .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px 64px; }
+  /* Login gate */
+  .gate{max-width:400px;margin:80px auto;background:var(--card);padding:32px;border-radius:var(--radius);box-shadow:0 4px 24px rgba(2,6,23,.08)}
+  .gate h2{margin:0 0 8px}
+  .gate input{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-top:12px}
+  .gate button{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-top:16px}
+  .gate .err{color:var(--danger);font-size:13px;margin-top:8px;display:none}
 
-        header { padding: 36px 0 8px; text-align: center; }
-        .brand {
-            font-family: 'Chakra Petch', sans-serif;
-            color: var(--ink);
-            font-size: 28px;
-            font-weight: 700;
-            text-decoration: none;
-            letter-spacing: 2px;
-        }
-        .brand:hover { color: var(--magenta); }
-        .kicker {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
-            letter-spacing: 2.5px;
-            color: var(--ink-dim);
-            margin-top: 10px;
-            text-transform: uppercase;
-        }
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px}
+  .stat{background:var(--card);padding:20px;border-radius:var(--radius);box-shadow:0 2px 8px rgba(2,6,23,.04)}
+  .stat .label{font-size:13px;color:var(--muted);font-weight:600}
+  .stat .value{font-size:32px;font-weight:700;margin-top:4px}
 
-        section.panel {
-            padding: 32px;
-            background: var(--panel);
-            border-radius: 14px;
-            margin-bottom: 22px;
-            border: 1px solid var(--line);
-            backdrop-filter: blur(6px);
-        }
-        h2 {
-            font-family: 'Chakra Petch', sans-serif;
-            color: var(--ink);
-            font-size: 20px;
-            margin: 0 0 18px;
-        }
-        .step-label {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
-            letter-spacing: 2px;
-            color: var(--cyan);
-            text-transform: uppercase;
-            display: block;
-            margin-bottom: 8px;
-        }
+  /* Table */
+  .table-card{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:0 2px 8px rgba(2,6,23,.04)}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;padding:14px 16px;background:#f8fafc;font-size:13px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border)}
+  td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  tr:hover{background:#f8fafc}
+  .email{color:var(--accent-2);text-decoration:none}
+  .email:hover{text-decoration:underline}
+  .opt-list{margin:0;padding-left:18px;font-size:13px;color:var(--muted)}
+  .date{font-size:12px;color:var(--muted);white-space:nowrap}
+  .del{background:transparent;border:none;color:var(--danger);cursor:pointer;font-size:13px;padding:4px 8px;border-radius:6px}
+  .del:hover{background:#fef2f2}
+  .empty{text-align:center;padding:48px;color:var(--muted)}
 
-        /* ── Key gate ─────────────────────────────────────────────────── */
-        #gate { max-width: 420px; margin: 60px auto; text-align: center; }
-        #gate input {
-            width: 100%;
-            background: rgba(7,6,11,0.6);
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            color: var(--ink);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.95rem;
-            padding: 11px 13px;
-            margin: 14px 0;
-        }
-        #gate input:focus { border-color: var(--cyan); }
-        .cta-btn {
-            display: inline-block;
-            background: linear-gradient(135deg, var(--magenta), var(--violet));
-            color: #0a0710;
-            padding: 11px 28px;
-            border-radius: 6px;
-            font-family: 'Chakra Petch', sans-serif;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .cta-btn:hover { box-shadow: 0 0 24px rgba(255,61,158,0.4); }
-        .cta-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        #gate-error { color: var(--magenta); font-size: 0.85rem; margin-top: 10px; min-height: 1.2em; }
+  /* Pagination */
+  .pager{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px}
+  .pager button{padding:8px 14px;border:1px solid var(--border);background:#fff;border-radius:8px;cursor:pointer;font-size:14px}
+  .pager button:disabled{opacity:.4;cursor:not-allowed}
+  .pager button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 
-        /* ── Stat tiles ───────────────────────────────────────────────── */
-        .tile-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-        .tile {
-            padding: 18px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            background: rgba(0,0,0,0.22);
-            text-align: center;
-        }
-        .tile-value {
-            font-family: 'Chakra Petch', sans-serif;
-            font-size: 30px;
-            font-weight: 700;
-            color: var(--ink);
-        }
-        .tile-label {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10.5px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-top: 6px;
-        }
+  .actions-top{display:flex;gap:8px;align-items:center}
+  .btn-sm{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:14px;font-weight:600}
+  .btn-sm.danger{color:var(--danger);border-color:#fecaca}
 
-        /* ── Bar lists (tool counts, satisfaction) ──────────────────────── */
-        .bar-group { margin-bottom: 22px; }
-        .bar-group:last-child { margin-bottom: 0; }
-        .bar-group h3 {
-            font-family: 'Chakra Petch', sans-serif;
-            color: var(--ink);
-            font-size: 14px;
-            margin: 0 0 10px;
-        }
-        .bar-row { display: grid; grid-template-columns: minmax(140px, 260px) 1fr 70px; align-items: center; gap: 10px; margin-bottom: 7px; font-size: 0.85rem; }
-        .bar-row .bar-label { color: var(--ink-dim); }
-        @media (max-width: 640px) {
-            .bar-row { grid-template-columns: 1fr; gap: 3px; }
-            .bar-row .bar-n { text-align: left; }
-        }
-        .bar-track { height: 10px; border-radius: 5px; background: rgba(255,255,255,0.06); overflow: hidden; }
-        .bar-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--violet), var(--cyan)); }
-        .bar-fill.satisfaction { background: linear-gradient(90deg, var(--magenta), var(--violet)); }
-        .bar-n { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-dim); text-align: right; }
-        .empty-note { font-size: 0.85rem; font-style: italic; }
+  .toast{position:fixed;bottom:24px;right:24px;background:#065f46;color:#fff;padding:12px 18px;border-radius:8px;font-weight:600;opacity:0;transform:translateY(10px);transition:all .2s}
+  .toast.show{opacity:1;transform:none}
 
-        /* ── AI summary section ──────────────────────────────────────────── */
-        #summary-section .step-label { display: flex; align-items: center; gap: 8px; }
-        #summary-age { font-size: 10px; color: var(--ink-dim); text-transform: none; letter-spacing: 0; opacity: 0.7; }
-        #summary-text { color: var(--ink); font-size: 0.95rem; margin: 0 0 16px; }
-
-        #sentiment-row { display: flex; gap: 18px; margin-bottom: 14px; flex-wrap: wrap; }
-        .sentiment-pill { display: flex; align-items: center; gap: 7px; font-size: 0.85rem; color: var(--ink-dim); }
-        .sentiment-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-        .sentiment-dot.positive { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
-        .sentiment-dot.neutral { background: var(--ink-dim); }
-        .sentiment-dot.negative { background: var(--magenta); box-shadow: 0 0 6px var(--magenta); }
-
-        #topic-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
-        .topic-chip {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
-            padding: 5px 11px;
-            border-radius: 20px;
-            border: 1px solid var(--line);
-            color: var(--ink-dim);
-            background: rgba(255,255,255,0.025);
-        }
-
-        /* ── Open-text feed ──────────────────────────────────────────────── */
-        .feed-card {
-            padding: 16px 18px;
-            border-left: 3px solid var(--violet);
-            background: rgba(255,255,255,0.025);
-            border-radius: 4px;
-            margin-bottom: 12px;
-        }
-        .feed-card:last-child { margin-bottom: 0; }
-        .feed-date {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10.5px;
-            color: var(--cyan);
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-            display: block;
-        }
-        .feed-field { margin-bottom: 10px; }
-        .feed-field:last-child { margin-bottom: 0; }
-        .feed-field-label {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: var(--ink-dim);
-            display: block;
-            margin-bottom: 3px;
-        }
-        .feed-text { color: var(--ink); font-size: 0.92rem; white-space: pre-wrap; }
-        .feed-more {
-            background: none;
-            border: none;
-            color: var(--cyan);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
-            cursor: pointer;
-            padding: 4px 0 0;
-        }
-
-        #refresh-row { display: flex; justify-content: space-between; align-items: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
-        #refresh-btn {
-            background: none;
-            border: 1px solid var(--line);
-            color: var(--ink-dim);
-            border-radius: 5px;
-            padding: 6px 12px;
-            cursor: pointer;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
-        }
-        #refresh-btn:hover { border-color: var(--cyan); color: var(--ink); }
-
-        #dashboard { display: none; }
-        #dashboard.show { display: block; }
-    </style>
+  @media(max-width:700px){
+    table{font-size:13px}
+    th:nth-child(4),td:nth-child(4){display:none}
+  }
+</style>
 </head>
 <body>
+<div class="wrap">
 
-<header class="wrap">
-    <a href="fablegear.html" class="brand">FABLEGEAR</a>
-    <div class="kicker">Research dashboard · internal, not linked publicly</div>
-</header>
+  <!-- LOGIN GATE -->
+  <div class="gate" id="gate">
+    <h2>Admin Access</h2>
+    <p class="muted">Enter your dashboard key to view submissions.</p>
+    <input type="password" id="keyInput" placeholder="Dashboard key" autocomplete="current-password" />
+    <button id="loginBtn">Unlock Dashboard</button>
+    <div class="err" id="loginErr">Invalid key. Please try again.</div>
+  </div>
 
-<main class="wrap">
-
-    <div id="gate">
-        <span class="step-label">Access</span>
-        <p>This reads aggregate survey data only — no emails, no raw answers, just counts and open-text notes.</p>
-        <input type="password" id="key-input" placeholder="Dashboard key" autocomplete="off">
-        <div><button type="button" class="cta-btn" id="unlock-btn">Unlock</button></div>
-        <div id="gate-error"></div>
+  <!-- DASHBOARD (hidden until authed) -->
+  <div id="dashboard" style="display:none">
+    <div class="header">
+      <div>
+        <h1>Submissions</h1>
+        <div class="muted" id="lastUpdated"></div>
+      </div>
+      <div class="actions-top">
+        <button class="btn-sm" id="refreshBtn">↻ Refresh</button>
+        <button class="btn-sm danger" id="logoutBtn">Log out</button>
+      </div>
     </div>
 
-    <div id="dashboard">
-        <section class="panel" id="refresh-row">
-            <span id="last-updated"></span>
-            <button type="button" id="refresh-btn">Refresh</button>
-        </section>
+    <div class="stats" id="stats"></div>
 
-        <section class="panel">
-            <span class="step-label">Overview</span>
-            <div class="tile-row" id="tiles"></div>
-        </section>
-
-        <section class="panel" id="summary-section" hidden>
-            <span class="step-label">AI summary <span id="summary-age"></span></span>
-            <p id="summary-text"></p>
-            <div id="sentiment-row"></div>
-            <div id="topic-cloud"></div>
-        </section>
-
-        <section class="panel">
-            <span class="step-label">Inventory</span>
-            <h2>What people actually use</h2>
-            <div id="tool-groups"></div>
-        </section>
-
-        <section class="panel">
-            <span class="step-label">Satisfaction</span>
-            <h2>How they feel about it (1–5 average)</h2>
-            <div id="likert-group"></div>
-        </section>
-
-        <section class="panel">
-            <span class="step-label">In their words</span>
-            <h2>Open-ended responses</h2>
-            <div id="feed"></div>
-        </section>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Purpose</th>
+            <th>Options</th>
+            <th>Submitted</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
     </div>
-</main>
+
+    <div class="pager" id="pager"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
 
 <script>
-(function () {
-    'use strict';
+const API = '/api/submissions';
+let dashboardKey = sessionStorage.getItem('dashboardKey') || '';
+let currentPage = 1;
+let totalPages = 1;
 
-    const STORAGE_KEY = 'fablegear-dashboard-key';
-    const TRUNCATE_AT = 220;
+// --- Auth ---
+document.getElementById('loginBtn').addEventListener('click', login);
+document.getElementById('keyInput').addEventListener('keydown', e => { if(e.key==='Enter') login(); });
+document.getElementById('logoutBtn').addEventListener('click', logout);
+document.getElementById('refreshBtn').addEventListener('click', () => loadSubmissions(currentPage));
 
-    // Same ids/labels as fablegear.html's survey — kept here as a plain lookup
-    // table (no shared module system on this static site) purely to turn raw
-    // ids like "lib-rekordbox" into readable labels. An id with no match here
-    // just renders as-is, so a new survey option never breaks the dashboard.
-    const TOOL_LABELS = {
-        'lib-rekordbox': 'Rekordbox', 'lib-serato': 'Serato DJ', 'lib-traktor': 'Traktor Pro',
-        'lib-virtualdj': 'VirtualDJ', 'lib-djay': 'djay', 'lib-enginedj': 'Engine DJ',
-        'lib-mixxx': 'Mixxx', 'lib-denondj': 'Denon DJ software', 'lib-applemusic': 'Apple Music / iTunes',
-        'lib-none': 'Just files in folders', 'lib-other': 'Other',
-        'meta-mik': 'Mixed In Key', 'meta-tunebat': 'Tunebat', 'meta-builtin': 'Built-in analysis only',
-        'meta-manual': 'Manual tagging', 'meta-other': 'Other',
-        'backup-dedicated': 'Dedicated backup tool', 'backup-manual': 'Manual folder copies',
-        'backup-cloud': 'Cloud sync', 'backup-none': 'No regular backup', 'backup-other': 'Other',
-        'acq-beatport': 'Beatport', 'acq-beatsource': 'Beatsource', 'acq-bandcamp': 'Bandcamp',
-        'acq-traxsource': 'Traxsource', 'acq-collection': 'Ripped / personal collection', 'acq-other': 'Other',
-    };
-    const CATEGORY_TITLES = {
-        library: 'Library / performance software',
-        metadata: 'Metadata / tagging',
-        backup: 'File management / backup',
-        acquisition: 'Music acquisition',
-        hardware: 'Hardware',
-    };
-    const STATEMENT_LABELS = {
-        organize: 'organizing the library', metadata: 'handling metadata', trust: 'not losing data',
-        switching: 'switching computers', accurate: 'tagging/key accuracy', manualfix: 'needed manual fixes',
-    };
-    const FIXED_LIKERT_LABELS = {
-        'hw-export-satisfaction': 'Satisfied with USB/hardware export',
-        'hw-sync-issues': 'Had export/sync issues in the past year',
-        'fg-install-easy': 'FableGear was easy to install',
-        'fg-clear-purpose': 'Understood what FableGear does differently',
-        'fg-trust-primary': 'Would trust FableGear as primary tool',
-        'fg-trust-secondary': 'Would trust FableGear as secondary tool',
-    };
+async function login(){
+  const key = document.getElementById('keyInput').value.trim();
+  if(!key) return;
+  dashboardKey = key;
+  const ok = await loadSubmissions(1);
+  if(ok){
+    sessionStorage.setItem('dashboardKey', key);
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+    dashboardKey = '';
+  }
+}
 
-    function likertLabel(key) {
-        if (FIXED_LIKERT_LABELS[key]) return FIXED_LIKERT_LABELS[key];
-        const parts = key.split('__');
-        if (parts.length === 2) {
-            const tool = TOOL_LABELS[parts[0]] || parts[0];
-            const stmt = STATEMENT_LABELS[parts[1]] || parts[1];
-            return tool + ' — ' + stmt;
-        }
-        return key;
-    }
+function logout(){
+  sessionStorage.removeItem('dashboardKey');
+  dashboardKey = '';
+  location.reload();
+}
 
-    const gate = document.getElementById('gate');
-    const gateError = document.getElementById('gate-error');
-    const keyInput = document.getElementById('key-input');
-    const unlockBtn = document.getElementById('unlock-btn');
-    const dash = document.getElementById('dashboard');
-    const lastUpdated = document.getElementById('last-updated');
-
-    async function load(key) {
-        gateError.textContent = '';
-        unlockBtn.disabled = true;
-        unlockBtn.textContent = 'Checking…';
-        try {
-            const res = await fetch('/api/dashboard-data', {
-                headers: { 'X-Dashboard-Key': key },
-                cache: 'no-store',
-            });
-            const body = await res.json().catch(function () { return null; });
-            if (res.status === 401) {
-                gateError.textContent = 'Wrong key.';
-                try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-                return;
-            }
-            if (!res.ok || !body || !body.ok) {
-                gateError.textContent = (body && body.error) || 'Something went wrong.';
-                return;
-            }
-            try { localStorage.setItem(STORAGE_KEY, key); } catch (e) {}
-            render(body);
-            gate.style.display = 'none';
-            dash.classList.add('show');
-        } catch (err) {
-            gateError.textContent = 'Could not reach the dashboard endpoint.';
-        } finally {
-            unlockBtn.disabled = false;
-            unlockBtn.textContent = 'Unlock';
-        }
-    }
-
-    function render(data) {
-        lastUpdated.textContent = 'Updated ' + new Date().toLocaleString();
-
-        const t = data.totals || {};
-        const tiles = [
-            [t.total || 0, 'Total responses'],
-            [(t.fg_tried_yes || 0) + ' / ' + (t.fg_tried_no || 0), 'Tried FableGear (yes / no)'],
-            [(t.hw_used_yes || 0) + ' / ' + (t.hw_used_no || 0), 'Uses hardware (yes / no)'],
-            [t.with_email || 0, 'Left an email'],
-        ];
-        document.getElementById('tiles').innerHTML = tiles.map(function (tile) {
-            return '<div class="tile"><div class="tile-value">' + esc(tile[0]) + '</div>' +
-                   '<div class="tile-label">' + esc(tile[1]) + '</div></div>';
-        }).join('');
-
-        renderSummarySection(data);
-
-        const byCategory = {};
-        (data.tool_counts || []).forEach(function (row) {
-            (byCategory[row.category] = byCategory[row.category] || []).push(row);
-        });
-        const catOrder = ['library', 'metadata', 'backup', 'acquisition', 'hardware'];
-        document.getElementById('tool-groups').innerHTML = catOrder.map(function (cat) {
-            const rows = byCategory[cat] || [];
-            if (!rows.length) return '';
-            const max = Math.max.apply(null, rows.map(function (r) { return r.n; }));
-            return '<div class="bar-group"><h3>' + esc(CATEGORY_TITLES[cat] || cat) + '</h3>' +
-                rows.map(function (r) {
-                    const pct = max ? Math.round((r.n / max) * 100) : 0;
-                    return '<div class="bar-row">' +
-                        '<span class="bar-label">' + esc(TOOL_LABELS[r.tool_id] || r.tool_id) + '</span>' +
-                        '<span class="bar-track"><span class="bar-fill" style="width:' + pct + '%"></span></span>' +
-                        '<span class="bar-n">' + r.n + '</span></div>';
-                }).join('') + '</div>';
-        }).join('') || '<p class="empty-note">No responses yet.</p>';
-
-        const likert = data.likert_stats || [];
-        if (likert.length) {
-            document.getElementById('likert-group').innerHTML =
-                '<div class="bar-group">' + likert.map(function (r) {
-                    const pct = Math.round((r.avg_value / 5) * 100);
-                    return '<div class="bar-row">' +
-                        '<span class="bar-label" title="' + esc(likertLabel(r.question_key)) + '">' + esc(likertLabel(r.question_key)) + '</span>' +
-                        '<span class="bar-track"><span class="bar-fill satisfaction" style="width:' + pct + '%"></span></span>' +
-                        '<span class="bar-n">' + r.avg_value.toFixed(1) + ' (' + r.n + ')</span></div>';
-                }).join('') + '</div>';
-        } else {
-            document.getElementById('likert-group').innerHTML = '<p class="empty-note">No satisfaction answers yet.</p>';
-        }
-
-        function renderSummarySection(d) {
-            const section = document.getElementById('summary-section');
-            const hasSummary = d.summary && d.summary.text;
-            const sentimentRows = d.sentiment_counts || [];
-            const topicRows = d.topic_counts || [];
-
-            if (!hasSummary && !sentimentRows.length && !topicRows.length) {
-                section.hidden = true;
-                return;
-            }
-            section.hidden = false;
-
-            document.getElementById('summary-text').textContent = hasSummary
-                ? d.summary.text
-                : 'No AI summary yet — needs a Workers AI binding and a few responses with written answers.';
-            document.getElementById('summary-age').textContent = hasSummary
-                ? '(generated ' + new Date(d.summary.generated_at).toLocaleString() + ')'
-                : '';
-
-            const bySentiment = {};
-            sentimentRows.forEach(function (r) { bySentiment[r.sentiment] = r.n; });
-            document.getElementById('sentiment-row').innerHTML = ['positive', 'neutral', 'negative']
-                .filter(function (s) { return bySentiment[s]; })
-                .map(function (s) {
-                    return '<span class="sentiment-pill"><span class="sentiment-dot ' + s + '"></span>' +
-                        esc(s.charAt(0).toUpperCase() + s.slice(1)) + ': ' + bySentiment[s] + '</span>';
-                }).join('');
-
-            const maxTopic = topicRows.length ? Math.max.apply(null, topicRows.map(function (r) { return r.n; })) : 0;
-            document.getElementById('topic-cloud').innerHTML = topicRows.map(function (r) {
-                const weight = maxTopic ? r.n / maxTopic : 0;
-                const opacity = (0.55 + weight * 0.45).toFixed(2);
-                return '<span class="topic-chip" style="opacity:' + opacity + '">' + esc(r.topic) + ' · ' + r.n + '</span>';
-            }).join('');
-        }
-
-        const FEED_FIELDS = [
-            ['pain_point', 'Most annoying part'], ['blind_spot', 'Blind spot / wish'],
-            ['suggestions', 'Suggestions / review'], ['hw_open', 'Hardware friction'],
-            ['fg_open_different', 'What FableGear did differently'], ['fg_open_missing', "What's missing"],
-        ];
-        const feedRows = data.recent_text || [];
-        document.getElementById('feed').innerHTML = feedRows.length
-            ? feedRows.map(feedCard).join('')
-            : '<p class="empty-note">Nothing written in yet.</p>';
-
-        function feedCard(row) {
-            const fields = FEED_FIELDS
-                .filter(function (f) { return row[f[0]] && row[f[0]].trim(); })
-                .map(function (f) {
-                    const text = row[f[0]].trim();
-                    const truncated = text.length > TRUNCATE_AT;
-                    const shown = truncated ? text.slice(0, TRUNCATE_AT) + '…' : text;
-                    return '<div class="feed-field"><span class="feed-field-label">' + esc(f[1]) + '</span>' +
-                        '<span class="feed-text" data-full="' + escAttr(text) + '" data-truncated="' + (truncated ? shown.length : '') + '">' + esc(shown) + '</span>' +
-                        (truncated ? '<button type="button" class="feed-more">Show more</button>' : '') + '</div>';
-                }).join('');
-            const sentimentTag = row.sentiment
-                ? ' <span class="sentiment-pill" style="display:inline-flex;font-size:inherit"><span class="sentiment-dot ' + esc(row.sentiment) + '"></span>' + esc(row.sentiment) + '</span>'
-                : '';
-            return '<div class="feed-card"><span class="feed-date">' + esc(new Date(row.submitted_at).toLocaleString()) + sentimentTag + '</span>' + fields + '</div>';
-        }
-    }
-
-    document.addEventListener('click', function (e) {
-        if (!e.target.classList.contains('feed-more')) return;
-        const textEl = e.target.previousElementSibling;
-        textEl.textContent = textEl.dataset.full;
-        e.target.remove();
+// --- Load submissions ---
+async function loadSubmissions(page=1){
+  currentPage = page;
+  try {
+    const res = await fetch(`${API}?page=${page}&per_page=25`, {
+      headers: { 'X-Dashboard-Key': dashboardKey }
     });
+    if(res.status === 401){ return false; }
+    if(!res.ok) throw new Error('Fetch failed');
+    const data = await res.json();
 
-    function esc(s) {
-        return String(s).replace(/[&<>"']/g, function (c) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-        });
-    }
-    function escAttr(s) { return esc(s); }
+    renderStats(data.pagination.total);
+    renderTable(data.submissions);
+    renderPager(data.pagination);
+    document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleString();
+    return true;
+  } catch(err){
+    console.error(err);
+    showToast('Failed to load submissions', true);
+    return false;
+  }
+}
 
-    unlockBtn.addEventListener('click', function () {
-        const key = keyInput.value.trim();
-        if (key) load(key);
-    });
-    keyInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') unlockBtn.click();
-    });
-    document.getElementById('refresh-btn').addEventListener('click', function () {
-        try {
-            const key = localStorage.getItem(STORAGE_KEY);
-            if (key) load(key);
-        } catch (e) {}
-    });
+function renderStats(total){
+  const el = document.getElementById('stats');
+  el.innerHTML = `
+    <div class="stat"><div class="label">Total Submissions</div><div class="value">${total}</div></div>
+    <div class="stat"><div class="label">Current Page</div><div class="value">${currentPage}</div></div>
+  `;
+}
 
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) { keyInput.value = saved; load(saved); }
-    } catch (e) {}
-})();
+function renderTable(rows){
+  const body = document.getElementById('tableBody');
+  if(!rows || rows.length === 0){
+    body.innerHTML = `<tr><td colspan="6" class="empty">No submissions yet. Once people fill out the form, they'll appear here.</td></tr>`;
+    return;
+  }
+  body.innerHTML = rows.map(r => `
+    <tr>
+      <td><strong>${esc(r.name)}</strong></td>
+      <td><a class="email" href="mailto:${esc(r.email)}">${esc(r.email)}</a></td>
+      <td>${esc(r.purpose || '—')}</td>
+      <td>${formatOptions(r.options)}</td>
+      <td class="date">${formatDate(r.created_at)}</td>
+      <td><button class="del" data-id="${r.id}">Delete</button></td>
+    </tr>
+  `).join('');
+
+  body.querySelectorAll('.del').forEach(btn => {
+    btn.addEventListener('click', () => deleteSubmission(btn.dataset.id));
+  });
+}
+
+function renderPager(p){
+  totalPages = p.total_pages;
+  const el = document.getElementById('pager');
+  if(p.total_pages <= 1){ el.innerHTML = ''; return; }
+
+  let html = '';
+  html += `<button ${p.page===1?'disabled':''} onclick="loadSubmissions(${p.page-1})">← Prev</button>`;
+  for(let i=1; i<=p.total_pages; i++){
+    html += `<button class="${i===p.page?'active':''}" onclick="loadSubmissions(${i})">${i}</button>`;
+  }
+  html += `<button ${p.page===p.total_pages?'disabled':''} onclick="loadSubmissions(${p.page+1})">Next →</button>`;
+  el.innerHTML = html;
+}
+
+async function deleteSubmission(id){
+  if(!confirm('Delete this submission? This cannot be undone.')) return;
+  try {
+    const res = await fetch(API, {
+      method: 'DELETE',
+      headers: { 'X-Dashboard-Key': dashboardKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: parseInt(id) })
+    });
+    if(!res.ok) throw new Error();
+    showToast('Submission deleted');
+    loadSubmissions(currentPage);
+  } catch {
+    showToast('Delete failed', true);
+  }
+}
+
+// --- Helpers ---
+function esc(str){
+  const d = document.createElement('div');
+  d.textContent = str ?? '';
+  return d.innerHTML;
+}
+function formatDate(iso){
+  if(!iso) return '—';
+  const d = new Date(iso + 'Z');
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) +
+    '<br>' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+}
+function formatOptions(opts){
+  if(!opts) return '—';
+  if(Array.isArray(opts)) return `<ul class="opt-list">${opts.map(o=>`<li>${esc(o)}</li>`).join('')}</ul>`;
+  return esc(String(opts));
+}
+function showToast(msg, isError=false){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isError ? '#991b1b' : '#065f46';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// --- Auto-login if key in session ---
+if(dashboardKey){ login(); }
 </script>
-
 </body>
 </html>

@@ -2026,5 +2026,21 @@
 })();
 </script>
 
+<script src="track.js" defer></script>
+<script>
+(function () {
+    // 'survey_start' — fires once, on the first checkbox/radio/field change
+    // anywhere in the research form. {once:true} handles the "only once"
+    // part; this doesn't touch updateVisibility() or anything else already
+    // wired to these fields.
+    var form = document.getElementById('research-form');
+    if (form) {
+        form.addEventListener('change', function () {
+            if (window.GE_TRACK) window.GE_TRACK('survey_start');
+        }, { once: true });
+    }
+})();
+</script>
+
 </body>
 </html>

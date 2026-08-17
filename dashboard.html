@@ -3,136 +3,222 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Admin Dashboard — Guthrie Submissions</title>
+<meta name="robots" content="noindex, nofollow" />
+<title>Dashboard — Guthrie Entertainment</title>
 <style>
-  :root{
-    --bg:#f5f7fb; --card:#fff; --text:#0f1722; --muted:#6b7280;
-    --accent:#0b84ff; --accent-2:#0a66d3; --danger:#ef4444;
-    --radius:12px; --border:#e6e9ef;
-    --font:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+  :root {
+    --bg: #07060b;
+    --panel: rgba(19, 14, 28, 0.86);
+    --line: rgba(255, 255, 255, 0.09);
+    --magenta: #ff3d9e;
+    --violet: #8d5cf6;
+    --cyan: #3ddbff;
+    --amber: #ffb020;
+    --mint: #3dffb0;
+    --ink: #f4eff9;
+    --ink-dim: #ab9dc5;
   }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);padding:24px}
-  .wrap{max-width:1100px;margin:0 auto}
-  .header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px}
-  h1{font-size:24px;margin:0}
-  .muted{color:var(--muted);font-size:14px}
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink-dim);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    margin: 0;
+    padding: 28px 20px 60px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  h1, h2, h3 { font-family: 'Chakra Petch', system-ui, sans-serif; color: var(--ink); margin: 0; }
+  a { color: var(--cyan); }
 
-  /* Login gate */
-  .gate{max-width:400px;margin:80px auto;background:var(--card);padding:32px;border-radius:var(--radius);box-shadow:0 4px 24px rgba(2,6,23,.08)}
-  .gate h2{margin:0 0 8px}
-  .gate input{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-top:12px}
-  .gate button{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-top:16px}
-  .gate .err{color:var(--danger);font-size:13px;margin-top:8px;display:none}
+  /* ── Login gate ── */
+  .gate { max-width: 380px; margin: 90px auto; background: var(--panel); border: 1px solid var(--line);
+          padding: 30px; border-radius: 14px; }
+  .gate h2 { margin-bottom: 6px; }
+  .gate p { font-size: 13px; margin: 0 0 14px; }
+  .gate input { width: 100%; padding: 11px 12px; background: rgba(7,6,11,0.6); border: 1px solid var(--line);
+                border-radius: 8px; color: var(--ink); font-size: 14px; }
+  .gate button { width: 100%; margin-top: 12px; padding: 11px; border: none; border-radius: 8px; cursor: pointer;
+                 font-weight: 700; font-family: 'Chakra Petch', sans-serif;
+                 background: linear-gradient(135deg, var(--magenta), var(--violet)); color: #0a0710; }
+  .gate .err { color: var(--magenta); font-size: 13px; margin-top: 10px; display: none; }
 
-  /* Stats */
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px}
-  .stat{background:var(--card);padding:20px;border-radius:var(--radius);box-shadow:0 2px 8px rgba(2,6,23,.04)}
-  .stat .label{font-size:13px;color:var(--muted);font-weight:600}
-  .stat .value{font-size:32px;font-weight:700;margin-top:4px}
+  /* ── Layout ── */
+  #dashboard { display: none; }
+  .header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 26px; }
+  .muted { color: var(--ink-dim); font-size: 13px; }
+  .btn-sm { padding: 8px 14px; border-radius: 7px; border: 1px solid var(--line); background: transparent;
+            color: var(--ink-dim); cursor: pointer; font-size: 13px; font-family: 'Chakra Petch', sans-serif; font-weight: 700; }
+  .btn-sm:hover { border-color: var(--cyan); color: var(--ink); }
 
-  /* Table */
-  .table-card{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:0 2px 8px rgba(2,6,23,.04)}
-  table{width:100%;border-collapse:collapse}
-  th{text-align:left;padding:14px 16px;background:#f8fafc;font-size:13px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border)}
-  td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:top}
-  tr:last-child td{border-bottom:none}
-  tr:hover{background:#f8fafc}
-  .email{color:var(--accent-2);text-decoration:none}
-  .email:hover{text-decoration:underline}
-  .opt-list{margin:0;padding-left:18px;font-size:13px;color:var(--muted)}
-  .date{font-size:12px;color:var(--muted);white-space:nowrap}
-  .del{background:transparent;border:none;color:var(--danger);cursor:pointer;font-size:13px;padding:4px 8px;border-radius:6px}
-  .del:hover{background:#fef2f2}
-  .empty{text-align:center;padding:48px;color:var(--muted)}
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 24px; margin-bottom: 22px; }
+  .panel h2 { font-size: 17px; margin-bottom: 4px; }
+  .panel .sub { font-size: 12.5px; margin-bottom: 16px; }
 
-  /* Pagination */
-  .pager{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px}
-  .pager button{padding:8px 14px;border:1px solid var(--border);background:#fff;border-radius:8px;cursor:pointer;font-size:14px}
-  .pager button:disabled{opacity:.4;cursor:not-allowed}
-  .pager button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  /* ── Totals ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 22px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+  .stat .label { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase;
+                 color: var(--cyan); margin-bottom: 8px; }
+  .stat .value { font-size: 30px; font-weight: 700; color: var(--ink); font-family: 'Chakra Petch', sans-serif; }
+  .stat .note { font-size: 11.5px; margin-top: 4px; }
 
-  .actions-top{display:flex;gap:8px;align-items:center}
-  .btn-sm{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:14px;font-weight:600}
-  .btn-sm.danger{color:var(--danger);border-color:#fecaca}
+  /* ── AI summary ── */
+  .summary-text { font-size: 14.5px; line-height: 1.6; color: var(--ink); }
+  .summary-meta { font-size: 11px; margin-top: 10px; font-family: 'IBM Plex Mono', monospace; }
 
-  .toast{position:fixed;bottom:24px;right:24px;background:#065f46;color:#fff;padding:12px 18px;border-radius:8px;font-weight:600;opacity:0;transform:translateY(10px);transition:all .2s}
-  .toast.show{opacity:1;transform:none}
+  /* ── Neuron map ── */
+  #graph-wrap { position: relative; }
+  #graph { width: 100%; height: 480px; display: block; background: radial-gradient(circle at 50% 40%, rgba(141,92,246,0.07), transparent 60%); border-radius: 10px; }
+  .graph-empty { text-align: center; padding: 60px 20px; font-size: 13px; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px; font-size: 12px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .node-label { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; fill: var(--ink-dim); pointer-events: none; }
+  .node-circle { stroke: rgba(7,6,11,0.8); stroke-width: 1.5px; cursor: default; }
+  .edge-line { stroke: var(--cyan); }
 
-  @media(max-width:700px){
-    table{font-size:13px}
-    th:nth-child(4),td:nth-child(4){display:none}
+  /* ── Tool / sentiment / topic chips ── */
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--line); font-size: 12.5px; background: rgba(255,255,255,0.03); }
+  .chip b { color: var(--ink); }
+  .chip.sentiment-positive { border-color: rgba(61,255,176,0.45); }
+  .chip.sentiment-negative { border-color: rgba(255,61,158,0.45); }
+  .chip.sentiment-neutral { border-color: rgba(171,157,197,0.4); }
+
+  .tool-cat { margin-bottom: 14px; }
+  .tool-cat:last-child { margin-bottom: 0; }
+  .tool-cat h3 { font-size: 12px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1.2px; text-transform: uppercase;
+                 color: var(--cyan); margin-bottom: 8px; font-weight: 600; }
+  .tool-row { display: flex; align-items: center; gap: 10px; font-size: 13px; margin-bottom: 6px; }
+  .tool-row .name { width: 170px; flex-shrink: 0; color: var(--ink); }
+  .tool-bar-track { flex: 1; height: 7px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+  .tool-bar-fill { height: 100%; background: linear-gradient(90deg, var(--violet), var(--cyan)); border-radius: 4px; }
+  .tool-row .n { width: 26px; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; }
+
+  /* ── Recent text ── */
+  .recent-item { padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .recent-item:last-child { border-bottom: none; }
+  .recent-item .date { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--ink-dim); margin-bottom: 4px; }
+  .recent-item p { margin: 4px 0; color: var(--ink); }
+  .empty { text-align: center; padding: 30px; font-size: 13px; }
+
+  .toast { position: fixed; bottom: 22px; right: 22px; background: rgba(19,14,28,0.97); border: 1px solid var(--magenta);
+           color: var(--ink); padding: 12px 18px; border-radius: 8px; font-size: 13px; opacity: 0; transform: translateY(10px);
+           transition: all .2s; }
+  .toast.show { opacity: 1; transform: none; }
+
+  @media (max-width: 640px) {
+    .tool-row .name { width: 110px; font-size: 12px; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- LOGIN GATE -->
   <div class="gate" id="gate">
     <h2>Admin Access</h2>
-    <p class="muted">Enter your dashboard key to view submissions.</p>
+    <p class="muted">Enter the dashboard key to view site totals and survey data.</p>
     <input type="password" id="keyInput" placeholder="Dashboard key" autocomplete="current-password" />
     <button id="loginBtn">Unlock Dashboard</button>
     <div class="err" id="loginErr">Invalid key. Please try again.</div>
   </div>
 
-  <!-- DASHBOARD (hidden until authed) -->
-  <div id="dashboard" style="display:none">
+  <div id="dashboard">
     <div class="header">
       <div>
-        <h1>Submissions</h1>
+        <h1>Guthrie Entertainment — Dashboard</h1>
         <div class="muted" id="lastUpdated"></div>
       </div>
-      <div class="actions-top">
+      <div style="display:flex;gap:8px">
         <button class="btn-sm" id="refreshBtn">↻ Refresh</button>
-        <button class="btn-sm danger" id="logoutBtn">Log out</button>
+        <button class="btn-sm" id="logoutBtn">Log out</button>
       </div>
     </div>
 
-    <div class="stats" id="stats"></div>
+    <div class="stat-grid" id="statGrid"></div>
 
-    <div class="table-card">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Purpose</th>
-            <th>Options</th>
-            <th>Submitted</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
+    <div class="panel" id="summaryPanel" style="display:none">
+      <h2>What people are saying</h2>
+      <p class="sub">AI-generated from recent open-text survey answers.</p>
+      <div class="summary-text" id="summaryText"></div>
+      <div class="summary-meta muted" id="summaryMeta"></div>
     </div>
 
-    <div class="pager" id="pager"></div>
+    <div class="panel">
+      <h2>Survey neuron map</h2>
+      <p class="sub">Each node is a tool people said they use; a line means two tools were picked together in the same response — brighter and thicker means more often. Node size is total times that tool was picked.</p>
+      <div id="graph-wrap">
+        <svg id="graph"></svg>
+        <div class="graph-empty muted" id="graphEmpty" style="display:none">Not enough overlapping answers yet to draw a map.</div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Tool popularity</h2>
+      <p class="sub">How many survey respondents checked each tool, by category.</p>
+      <div id="toolBreakdown"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Sentiment &amp; topics</h2>
+      <p class="sub">From open-text answers, tagged automatically.</p>
+      <div class="chip-row" id="sentimentChips" style="margin-bottom:12px"></div>
+      <div class="chip-row" id="topicChips"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Recent open-text answers</h2>
+      <div id="recentList"></div>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
 </div>
 
 <script>
-const API = '/api/submissions';
-let dashboardKey = sessionStorage.getItem('dashboardKey') || '';
-let currentPage = 1;
-let totalPages = 1;
+const API = '/api/dashboard-data';
+let dashboardKey = sessionStorage.getItem('ge_dashboardKey') || '';
 
-// --- Auth ---
+// Kept in sync by hand with the tool lists in fablegear.html
+// (LIB_TOOLS / META_TOOLS / BACKUP_TOOLS / ACQ_TOOLS / HW_TOOLS) — if a
+// tool is added/renamed there, mirror it here or it'll show as its raw id.
+const TOOL_LABELS = {
+  'lib-rekordbox': 'Rekordbox', 'lib-serato': 'Serato DJ', 'lib-traktor': 'Traktor Pro',
+  'lib-virtualdj': 'VirtualDJ', 'lib-djay': 'djay', 'lib-enginedj': 'Engine DJ',
+  'lib-mixxx': 'Mixxx', 'lib-denondj': 'Denon DJ software', 'lib-applemusic': 'Apple Music / iTunes',
+  'lib-none': 'Just files in folders', 'lib-other': 'Other (library)',
+  'meta-mik': 'Mixed In Key', 'meta-tunebat': 'Tunebat', 'meta-builtin': 'Built-in analysis only',
+  'meta-manual': 'Manual tagging', 'meta-other': 'Other (metadata)',
+  'backup-dedicated': 'Dedicated backup tool', 'backup-manual': 'Manual folder copies',
+  'backup-cloud': 'Cloud sync', 'backup-none': 'No regular backup', 'backup-other': 'Other (backup)',
+  'acq-beatport': 'Beatport', 'acq-beatsource': 'Beatsource', 'acq-bandcamp': 'Bandcamp',
+  'acq-traxsource': 'Traxsource', 'acq-collection': 'Ripped / personal collection', 'acq-other': 'Other (acquisition)',
+  'hw-cdj3000': 'CDJ-3000', 'hw-cdj2000nxs2': 'CDJ-2000NXS2', 'hw-xdj': 'XDJ series',
+  'hw-denon': 'Denon SC / Prime', 'hw-controller': 'Controller', 'hw-other-check': 'Other (hardware)',
+};
+const CATEGORY_ORDER = ['library', 'metadata', 'backup', 'acquisition', 'hardware'];
+const CATEGORY_LABELS = { library: 'Library / performance', metadata: 'Metadata / analysis', backup: 'Backup', acquisition: 'Acquisition', hardware: 'Hardware' };
+const CATEGORY_COLORS = { library: '#ff3d9e', metadata: '#3ddbff', backup: '#8d5cf6', acquisition: '#ffb020', hardware: '#3dffb0' };
+function toolLabel(id) { return TOOL_LABELS[id] || id; }
+function categoryOf(toolId) {
+  const prefix = toolId.split('-')[0];
+  const map = { lib: 'library', meta: 'metadata', backup: 'backup', acq: 'acquisition', hw: 'hardware' };
+  return map[prefix] || 'other';
+}
+
 document.getElementById('loginBtn').addEventListener('click', login);
-document.getElementById('keyInput').addEventListener('keydown', e => { if(e.key==='Enter') login(); });
+document.getElementById('keyInput').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 document.getElementById('logoutBtn').addEventListener('click', logout);
-document.getElementById('refreshBtn').addEventListener('click', () => loadSubmissions(currentPage));
+document.getElementById('refreshBtn').addEventListener('click', load);
 
-async function login(){
+async function login() {
   const key = document.getElementById('keyInput').value.trim();
-  if(!key) return;
+  if (!key) return;
   dashboardKey = key;
-  const ok = await loadSubmissions(1);
-  if(ok){
-    sessionStorage.setItem('dashboardKey', key);
+  const ok = await load();
+  if (ok) {
+    sessionStorage.setItem('ge_dashboardKey', key);
     document.getElementById('gate').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
   } else {
@@ -140,123 +226,254 @@ async function login(){
     dashboardKey = '';
   }
 }
-
-function logout(){
-  sessionStorage.removeItem('dashboardKey');
-  dashboardKey = '';
+function logout() {
+  sessionStorage.removeItem('ge_dashboardKey');
   location.reload();
 }
 
-// --- Load submissions ---
-async function loadSubmissions(page=1){
-  currentPage = page;
+async function load() {
   try {
-    const res = await fetch(`${API}?page=${page}&per_page=25`, {
-      headers: { 'X-Dashboard-Key': dashboardKey }
-    });
-    if(res.status === 401){ return false; }
-    if(!res.ok) throw new Error('Fetch failed');
+    const res = await fetch(API, { headers: { 'X-Dashboard-Key': dashboardKey } });
+    if (res.status === 401) return false;
+    if (!res.ok) throw new Error('fetch failed: ' + res.status);
     const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'unknown error');
 
-    renderStats(data.pagination.total);
-    renderTable(data.submissions);
-    renderPager(data.pagination);
+    renderStats(data.totals);
+    renderSummary(data.summary);
+    renderGraph(data.tool_counts, data.tool_co_occurrence);
+    renderToolBreakdown(data.tool_counts);
+    renderSentiment(data.sentiment_counts);
+    renderTopics(data.topic_counts);
+    renderRecent(data.recent_text);
     document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleString();
     return true;
-  } catch(err){
+  } catch (err) {
     console.error(err);
-    showToast('Failed to load submissions', true);
+    showToast('Failed to load dashboard data', true);
     return false;
   }
 }
 
-function renderStats(total){
-  const el = document.getElementById('stats');
-  el.innerHTML = `
-    <div class="stat"><div class="label">Total Submissions</div><div class="value">${total}</div></div>
-    <div class="stat"><div class="label">Current Page</div><div class="value">${currentPage}</div></div>
-  `;
+function fmt(n) { return (n === null || n === undefined) ? '—' : n.toLocaleString(); }
+
+function renderStats(t) {
+  const starts = t.survey_starts, completes = t.survey_completes;
+  const rate = (starts && completes !== null) ? Math.round((completes / Math.max(starts, completes)) * 100) : null;
+  const cards = [
+    { label: 'Site visits', value: fmt(t.visits) },
+    { label: 'Consult requests', value: fmt(t.consult_requests) },
+    { label: 'Survey starts', value: fmt(t.survey_starts) },
+    { label: 'Survey completes', value: fmt(t.survey_completes), note: rate !== null ? rate + '% of starts finish' : null },
+    { label: 'App downloads', value: fmt(t.app_downloads), note: 'FableGear.zip, via GitHub' },
+  ];
+  document.getElementById('statGrid').innerHTML = cards.map(c => `
+    <div class="stat">
+      <div class="label">${c.label}</div>
+      <div class="value">${c.value}</div>
+      ${c.note ? `<div class="note muted">${c.note}</div>` : ''}
+    </div>
+  `).join('');
 }
 
-function renderTable(rows){
-  const body = document.getElementById('tableBody');
-  if(!rows || rows.length === 0){
-    body.innerHTML = `<tr><td colspan="6" class="empty">No submissions yet. Once people fill out the form, they'll appear here.</td></tr>`;
+function renderSummary(summary) {
+  const panel = document.getElementById('summaryPanel');
+  if (!summary || !summary.text) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  document.getElementById('summaryText').textContent = summary.text;
+  document.getElementById('summaryMeta').textContent = 'Generated ' + new Date(summary.generated_at).toLocaleString();
+}
+
+function renderToolBreakdown(toolCounts) {
+  const el = document.getElementById('toolBreakdown');
+  if (!toolCounts || !toolCounts.length) { el.innerHTML = '<div class="empty">No survey responses yet.</div>'; return; }
+  const byCategory = {};
+  toolCounts.forEach(row => {
+    (byCategory[row.category] = byCategory[row.category] || []).push(row);
+  });
+  const maxN = Math.max(...toolCounts.map(r => r.n));
+  el.innerHTML = CATEGORY_ORDER.filter(cat => byCategory[cat]).map(cat => `
+    <div class="tool-cat">
+      <h3>${CATEGORY_LABELS[cat]}</h3>
+      ${byCategory[cat].map(row => `
+        <div class="tool-row">
+          <span class="name">${toolLabel(row.tool_id)}</span>
+          <span class="tool-bar-track"><span class="tool-bar-fill" style="width:${Math.round((row.n / maxN) * 100)}%"></span></span>
+          <span class="n">${row.n}</span>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function renderSentiment(rows) {
+  const el = document.getElementById('sentimentChips');
+  if (!rows || !rows.length) { el.innerHTML = '<span class="muted">No sentiment data yet.</span>'; return; }
+  el.innerHTML = rows.map(r => `<span class="chip sentiment-${r.sentiment}"><b>${r.n}</b> ${r.sentiment}</span>`).join('');
+}
+function renderTopics(rows) {
+  const el = document.getElementById('topicChips');
+  if (!rows || !rows.length) { el.innerHTML = '<span class="muted">No topics tagged yet.</span>'; return; }
+  el.innerHTML = rows.map(r => `<span class="chip">${r.topic} <b>${r.n}</b></span>`).join('');
+}
+
+function renderRecent(rows) {
+  const el = document.getElementById('recentList');
+  if (!rows || !rows.length) { el.innerHTML = '<div class="empty">Nothing yet.</div>'; return; }
+  const fields = ['pain_point', 'blind_spot', 'suggestions', 'hw_open', 'fg_open_different', 'fg_open_missing'];
+  el.innerHTML = rows.slice(0, 20).map(r => {
+    const text = fields.map(f => r[f]).filter(Boolean).join(' — ');
+    if (!text) return '';
+    return `
+      <div class="recent-item">
+        <div class="date">${new Date(r.submitted_at).toLocaleString()}${r.sentiment ? ' · ' + r.sentiment : ''}</div>
+        <p>${esc(text)}</p>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Neuron map ───────────────────────────────────────────────────────────
+// A small hand-rolled force layout (Fruchterman-Reingold-ish) so this stays
+// a zero-dependency page like the rest of the site — no charting library.
+// Node count here is small (a few dozen tools at most), so a synchronous
+// layout on load is plenty fast; no need for an animated simulation loop.
+function renderGraph(toolCounts, coOccurrence) {
+  const svg = document.getElementById('graph');
+  const empty = document.getElementById('graphEmpty');
+  const legendEl = document.getElementById('legend');
+
+  if (!toolCounts || !toolCounts.length) {
+    svg.style.display = 'none';
+    empty.style.display = 'block';
+    legendEl.innerHTML = '';
     return;
   }
-  body.innerHTML = rows.map(r => `
-    <tr>
-      <td><strong>${esc(r.name)}</strong></td>
-      <td><a class="email" href="mailto:${esc(r.email)}">${esc(r.email)}</a></td>
-      <td>${esc(r.purpose || '—')}</td>
-      <td>${formatOptions(r.options)}</td>
-      <td class="date">${formatDate(r.created_at)}</td>
-      <td><button class="del" data-id="${r.id}">Delete</button></td>
-    </tr>
+
+  const width = svg.clientWidth || 1000;
+  const height = 480;
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.style.display = 'block';
+  empty.style.display = 'none';
+
+  // Only graph tools that actually co-occur with something, plus the
+  // handful of top standalone tools, so the map doesn't get cluttered with
+  // isolated dots nobody can read anything from.
+  const coTools = new Set();
+  (coOccurrence || []).forEach(e => { coTools.add(e.tool_a); coTools.add(e.tool_b); });
+  const sorted = [...toolCounts].sort((a, b) => b.n - a.n);
+  const topStandalone = sorted.filter(r => !coTools.has(r.tool_id)).slice(0, 8).map(r => r.tool_id);
+  const includeIds = new Set([...coTools, ...topStandalone]);
+
+  const nodes = sorted.filter(r => includeIds.has(r.tool_id)).map(r => ({
+    id: r.tool_id, label: toolLabel(r.tool_id), category: categoryOf(r.tool_id), weight: r.n,
+  }));
+  const edges = (coOccurrence || []).filter(e => includeIds.has(e.tool_a) && includeIds.has(e.tool_b))
+    .map(e => ({ source: e.tool_a, target: e.tool_b, weight: e.n }));
+
+  if (!nodes.length) {
+    svg.style.display = 'none';
+    empty.style.display = 'block';
+    legendEl.innerHTML = '';
+    return;
+  }
+
+  layoutForceDirected(nodes, edges, width, height);
+
+  const maxW = Math.max(...nodes.map(n => n.weight));
+  const maxEdgeW = edges.length ? Math.max(...edges.map(e => e.weight)) : 1;
+  const radius = w => 7 + Math.sqrt(w / maxW) * 20;
+
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  const edgeSvg = edges.map(e => {
+    const a = byId.get(e.source), b = byId.get(e.target);
+    if (!a || !b) return '';
+    const opacity = 0.15 + 0.55 * (e.weight / maxEdgeW);
+    const strokeW = 1 + 2.5 * (e.weight / maxEdgeW);
+    return `<line class="edge-line" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke-width="${strokeW.toFixed(2)}" opacity="${opacity.toFixed(2)}" />`;
+  }).join('');
+
+  const nodeSvg = nodes.map(n => `
+    <g>
+      <circle class="node-circle" cx="${n.x}" cy="${n.y}" r="${radius(n.weight).toFixed(1)}" fill="${CATEGORY_COLORS[n.category] || '#888'}" />
+      <text class="node-label" x="${n.x}" y="${n.y + radius(n.weight) + 12}" text-anchor="middle">${esc(n.label)}</text>
+    </g>
   `).join('');
 
-  body.querySelectorAll('.del').forEach(btn => {
-    btn.addEventListener('click', () => deleteSubmission(btn.dataset.id));
+  svg.innerHTML = edgeSvg + nodeSvg;
+
+  legendEl.innerHTML = CATEGORY_ORDER.map(cat => `
+    <span><i style="background:${CATEGORY_COLORS[cat]}"></i>${CATEGORY_LABELS[cat]}</span>
+  `).join('');
+}
+
+function layoutForceDirected(nodes, edges, width, height) {
+  const n = nodes.length;
+  nodes.forEach((node, i) => {
+    const angle = (2 * Math.PI * i) / n;
+    const r = Math.min(width, height) * 0.32;
+    node.x = width / 2 + Math.cos(angle) * r;
+    node.y = height / 2 + Math.sin(angle) * r;
   });
-}
+  const idx = new Map(nodes.map((node, i) => [node.id, i]));
+  const k = Math.sqrt((width * height) / Math.max(n, 1));
+  const iterations = 250;
 
-function renderPager(p){
-  totalPages = p.total_pages;
-  const el = document.getElementById('pager');
-  if(p.total_pages <= 1){ el.innerHTML = ''; return; }
+  for (let iter = 0; iter < iterations; iter++) {
+    const temp = 0.12 * (1 - iter / iterations);
+    nodes.forEach(node => { node.fx = 0; node.fy = 0; });
 
-  let html = '';
-  html += `<button ${p.page===1?'disabled':''} onclick="loadSubmissions(${p.page-1})">← Prev</button>`;
-  for(let i=1; i<=p.total_pages; i++){
-    html += `<button class="${i===p.page?'active':''}" onclick="loadSubmissions(${i})">${i}</button>`;
-  }
-  html += `<button ${p.page===p.total_pages?'disabled':''} onclick="loadSubmissions(${p.page+1})">Next →</button>`;
-  el.innerHTML = html;
-}
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        let dx = nodes[i].x - nodes[j].x;
+        let dy = nodes[i].y - nodes[j].y;
+        let dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+        const force = (k * k) / dist;
+        const fx = (dx / dist) * force, fy = (dy / dist) * force;
+        nodes[i].fx += fx; nodes[i].fy += fy;
+        nodes[j].fx -= fx; nodes[j].fy -= fy;
+      }
+    }
 
-async function deleteSubmission(id){
-  if(!confirm('Delete this submission? This cannot be undone.')) return;
-  try {
-    const res = await fetch(API, {
-      method: 'DELETE',
-      headers: { 'X-Dashboard-Key': dashboardKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: parseInt(id) })
+    edges.forEach(e => {
+      const i = idx.get(e.source), j = idx.get(e.target);
+      if (i === undefined || j === undefined) return;
+      let dx = nodes[i].x - nodes[j].x;
+      let dy = nodes[i].y - nodes[j].y;
+      let dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+      const force = (dist * dist) / k;
+      const fx = (dx / dist) * force, fy = (dy / dist) * force;
+      nodes[i].fx -= fx; nodes[i].fy -= fy;
+      nodes[j].fx += fx; nodes[j].fy += fy;
     });
-    if(!res.ok) throw new Error();
-    showToast('Submission deleted');
-    loadSubmissions(currentPage);
-  } catch {
-    showToast('Delete failed', true);
+
+    nodes.forEach(node => {
+      let dist = Math.sqrt(node.fx * node.fx + node.fy * node.fy) || 0.01;
+      const capped = Math.min(dist, 80) * temp;
+      node.x += (node.fx / dist) * capped;
+      node.y += (node.fy / dist) * capped;
+      node.x += (width / 2 - node.x) * 0.004;
+      node.y += (height / 2 - node.y) * 0.004;
+      node.x = Math.max(35, Math.min(width - 35, node.x));
+      node.y = Math.max(35, Math.min(height - 35, node.y));
+    });
   }
 }
 
-// --- Helpers ---
-function esc(str){
+function esc(str) {
   const d = document.createElement('div');
   d.textContent = str ?? '';
   return d.innerHTML;
 }
-function formatDate(iso){
-  if(!iso) return '—';
-  const d = new Date(iso + 'Z');
-  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) +
-    '<br>' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
-}
-function formatOptions(opts){
-  if(!opts) return '—';
-  if(Array.isArray(opts)) return `<ul class="opt-list">${opts.map(o=>`<li>${esc(o)}</li>`).join('')}</ul>`;
-  return esc(String(opts));
-}
-function showToast(msg, isError=false){
+function showToast(msg, isError) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.style.background = isError ? '#991b1b' : '#065f46';
+  t.style.borderColor = isError ? 'var(--magenta)' : 'var(--cyan)';
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// --- Auto-login if key in session ---
-if(dashboardKey){ login(); }
+if (dashboardKey) login();
 </script>
 </body>
 </html>

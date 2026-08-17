@@ -221,8 +221,12 @@
           z-index: 12000;
           cursor: pointer;
           user-select: none;
-          transition: transform 220ms ease;
+          /* Ambient moves glide on this transition, which is what reads as
+             "drifting" rather than jumping. The .teleporting class below
+             suspends it for the occasional instant jump. */
+          transition: left 4.5s ease-in-out, top 4.5s ease-in-out, transform 220ms ease;
         }
+        #mascot.teleporting { transition: transform 220ms ease; }
         #mascot img { width: 100%; height: auto; display: block; pointer-events: none; }
 
         /* ── Speech bubble ──────────────────────────────────────────────
@@ -952,7 +956,9 @@
     mascot.classList.remove('speaking');
   }
 
-  function place(x, y) {
+  /* Smooth move: rides the CSS transition on #mascot (left/top), so this is
+     what "drifting across the screen" actually is — a glide, not a jump. */
+  function moveTo(x, y) {
     const padding = 12;
     const maxX = window.innerWidth - mascot.offsetWidth - padding;
     const maxY = window.innerHeight - mascot.offsetHeight - padding;
@@ -962,24 +968,37 @@
     mascot.style.bottom = 'auto';
   }
 
-  function getPosition() {
-    const r = mascot.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  /* Instant move: suspends the glide transition for one jump via the
+     .teleporting class, then re-enables it on the next frame so the
+     following move (drift or otherwise) glides again as normal. */
+  function jumpTo(x, y) {
+    mascot.classList.add('teleporting');
+    void mascot.offsetWidth; // flush style so the transition is really off
+    moveTo(x, y);
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { mascot.classList.remove('teleporting'); });
+    });
   }
 
-  function teleportRandom() {
+  function randomPoint() {
     const padding = 18;
     const w = Math.max(0, window.innerWidth - mascot.offsetWidth - padding * 2);
     const h = Math.max(0, window.innerHeight - mascot.offsetHeight - padding * 2);
-    place(padding + Math.random() * w, padding + Math.random() * h);
+    return { x: padding + Math.random() * w, y: padding + Math.random() * h };
   }
+
+  function driftRandom() { const p = randomPoint(); moveTo(p.x, p.y); }
+  function teleportRandom() { const p = randomPoint(); jumpTo(p.x, p.y); }
 
   function teleportNear(el) {
     if (!el || !el.getBoundingClientRect) return teleportRandom();
     const rect = el.getBoundingClientRect();
-    const x = rect.right - mascot.offsetWidth;
-    const y = rect.top - mascot.offsetHeight - 20;
-    place(x, y);
+    jumpTo(rect.right - mascot.offsetWidth, rect.top - mascot.offsetHeight - 20);
+  }
+
+  function getPosition() {
+    const r = mascot.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   }
 
   function barrelRoll() {
@@ -989,36 +1008,34 @@
     img.classList.add('barrel-roll');
   }
 
-  /* Idle drift: only while nobody's mid-conversation with him. */
-  let driftTimer = null;
-  function scheduleDrift() {
+  /* Ambient wandering: continuous while nobody's mid-conversation with him —
+     mostly a slow glide to a new spot, occasionally an instant jump instead. */
+  let ambientTimer = null;
+  function scheduleAmbient() {
     if (prefersReduced) return;
-    clearTimeout(driftTimer);
-    driftTimer = setTimeout(function () {
-      if (!mascot.classList.contains('speaking')) teleportRandom();
-      scheduleDrift();
-    }, 7000 + Math.random() * 9000);
+    clearTimeout(ambientTimer);
+    ambientTimer = setTimeout(function () {
+      if (!mascot.classList.contains('speaking')) {
+        if (Math.random() < 0.22) teleportRandom();
+        else driftRandom();
+      }
+      scheduleAmbient();
+    }, 3500 + Math.random() * 3000);
   }
 
-  /* Click: a trick every time, never the same beat twice in a row. */
-  let lastTrick = -1;
+  /* Click: a barrel roll only sometimes, and he only actually says something
+     every 5-9 clicks (a fresh random threshold each time) rather than on
+     every single click — otherwise he never shuts up. */
+  let clickCount = 0;
+  let blurbThreshold = 5 + Math.floor(Math.random() * 5);
   function onMascotClick() {
-    clearTimeout(driftTimer);
-    let trick = Math.floor(Math.random() * 3);
-    if (trick === lastTrick) trick = (trick + 1) % 3;
-    lastTrick = trick;
-    if (trick === 0) {
-      barrelRoll();
-      showBubble('Whoooaa — barrel roll!', 1600);
-    } else if (trick === 1) {
-      teleportRandom();
-      showBubble(pickCatchphrase(), 2400);
-    } else {
-      barrelRoll();
-      teleportRandom();
-      showBubble(pickCatchphrase(), 2400);
+    clickCount++;
+    if (Math.random() < 0.45) barrelRoll();
+    if (clickCount >= blurbThreshold) {
+      showBubble(pickCatchphrase(), 2600);
+      clickCount = 0;
+      blurbThreshold = 5 + Math.floor(Math.random() * 5);
     }
-    setTimeout(scheduleDrift, 1400);
   }
 
   /* Called from the survey script when a new question block reveals itself.
@@ -1027,7 +1044,7 @@
      wins, it swaps in; if it's slow, empty, or the endpoint isn't
      configured, the canned line already shown just stays. */
   async function pointAt(el, fallbackMessage, aiOpts) {
-    clearTimeout(driftTimer);
+    clearTimeout(ambientTimer);
     teleportNear(el);
     showBubble(fallbackMessage, 4500);
     if (aiOpts) {
@@ -1047,7 +1064,7 @@
         }
       } catch (e) { /* keep the canned line */ }
     }
-    setTimeout(scheduleDrift, 1200);
+    setTimeout(scheduleAmbient, 1200);
   }
 
   mascot.addEventListener('click', onMascotClick);
@@ -1060,11 +1077,11 @@
   window.addEventListener('resize', function () {
     if (mascot.style.left) {
       const rect = mascot.getBoundingClientRect();
-      if (rect.right > window.innerWidth || rect.bottom > window.innerHeight) place(rect.left, rect.top);
+      if (rect.right > window.innerWidth || rect.bottom > window.innerHeight) jumpTo(rect.left, rect.top);
     }
   });
 
-  function init() { scheduleDrift(); }
+  function init() { scheduleAmbient(); }
   if (img.complete) init(); else img.addEventListener('load', init);
 
   window.__fgMascot = { getPosition: getPosition, pointAt: pointAt };
@@ -2005,6 +2022,22 @@
                 statusPanel.classList.add('show');
             });
     });
+})();
+</script>
+
+<script src="track.js" defer></script>
+<script>
+(function () {
+    // 'survey_start' — fires once, on the first checkbox/radio/field change
+    // anywhere in the research form. {once:true} handles the "only once"
+    // part; this doesn't touch updateVisibility() or anything else already
+    // wired to these fields.
+    var form = document.getElementById('research-form');
+    if (form) {
+        form.addEventListener('change', function () {
+            if (window.GE_TRACK) window.GE_TRACK('survey_start');
+        }, { once: true });
+    }
 })();
 </script>
 

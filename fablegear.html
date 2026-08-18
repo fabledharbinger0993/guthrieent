@@ -181,6 +181,56 @@
         #mascot-img.teleport-out { animation: mascot-teleport-out 0.32s cubic-bezier(0.55, 0, 1, 0.45) forwards; }
         #mascot-img.teleport-in { animation: mascot-teleport-in 0.38s cubic-bezier(0, 0.55, 0.45, 1) forwards; }
 
+        /* Teleport portal: a swirl glow parked behind the mascot, invisible
+           at rest. It never runs on its own timer — JS toggles .portal-out /
+           .portal-in in lockstep with the mascot's own teleport-out/in (see
+           jumpTo), holding the mascot invisible a beat longer on each end so
+           the portal can lead in and trail out around him instead of both
+           popping in sync. Sized off #mascot's own box so it scales with the
+           92px phone mascot the same as the 140px desktop one. */
+        .mascot-portal {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 172%;
+          height: 172%;
+          transform: translate(-50%, -50%) scale(0);
+          opacity: 0;
+          z-index: -1;
+          pointer-events: none;
+        }
+        .mascot-portal-img {
+          width: 100%;
+          height: 100%;
+          display: block;
+          object-fit: contain;
+          animation: portal-spin 10s linear infinite;
+        }
+        @keyframes portal-spin { to { transform: rotate(360deg); } }
+        /* Shrinks rapidly in step with the mascot's own vanish, then holds a
+           final collapsing fade a beat past when he's already gone (0.32s
+           mascot-out + ~0.11s trail = 0.43s — see PORTAL_TRAIL_MS in JS). */
+        .mascot-portal.portal-out {
+          animation: mascot-portal-out 0.43s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+        }
+        @keyframes mascot-portal-out {
+          0%   { transform: translate(-50%, -50%) scale(1);    opacity: 0.85; }
+          74%  { transform: translate(-50%, -50%) scale(0.12); opacity: 0.55; }
+          100% { transform: translate(-50%, -50%) scale(0);    opacity: 0; }
+        }
+        /* Blooms open, then expands to full size in step with the mascot's
+           own 0.38s grow-in (~0.09s lead + 0.38s = 0.47s, ~70% of 0.67s
+           total — see PORTAL_LEAD_MS in JS), then fades once he's fully back. */
+        .mascot-portal.portal-in {
+          animation: mascot-portal-in 0.67s cubic-bezier(0.22, 0.9, 0.3, 1) forwards;
+        }
+        @keyframes mascot-portal-in {
+          0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+          16%  { opacity: 0.9; }
+          70%  { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+          100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+
         /* ── Speech bubble ──────────────────────────────────────────────
            Short quips only now — teleport/spin reactions and the AI-narrated
            line when a new survey block reveals itself (see window.__fgMascot
@@ -403,6 +453,8 @@
             .mascot { transition: none; }
             #mascot.teleporting { filter: none; }
             #mascot-img.teleport-out, #mascot-img.teleport-in { animation: none; }
+            .mascot-portal-img { animation: none; }
+            .mascot-portal.portal-out, .mascot-portal.portal-in { animation: none; }
             .qblock[data-revealed] { animation: none; }
             details.panel.collapsible[open] > .details-body { animation: none; }
             details.panel.collapsible .summary-toggle { transition: none; }
@@ -845,6 +897,9 @@
      narrates new survey blocks as they appear (see window.__fgMascot in the
      script below). -->
 <div id="mascot" class="mascot idle" aria-hidden="false" role="button" aria-label="Spectre mascot — click for a trick">
+  <div id="mascot-portal" class="mascot-portal" aria-hidden="true">
+    <img class="mascot-portal-img" src="icon-swirl.png" alt="" />
+  </div>
   <img id="mascot-img" src="Spectre.png" alt="Spectre mascot" />
   <div id="mascot-bubble" class="mascot-bubble" role="status" aria-live="polite" aria-hidden="true">
     <div id="mascot-bubble-text" class="mascot-bubble-text" tabindex="-1"></div>
@@ -864,11 +919,18 @@
 (function () {
   const mascot = document.getElementById('mascot');
   const img = document.getElementById('mascot-img');
+  const portal = document.getElementById('mascot-portal');
   const bubble = document.getElementById('mascot-bubble');
   const bubbleText = document.getElementById('mascot-bubble-text');
   if (!mascot || !img || !bubble) return;
 
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* How much longer the portal lingers past each end of the mascot's own
+     teleport-out/in flash — see the portal-out/portal-in keyframe comments
+     in the CSS, which are authored to match these. */
+  const PORTAL_TRAIL_MS = 110;
+  const PORTAL_LEAD_MS = 90;
 
   const CATCHPHRASES = [
     'Drop the beat, not your playlists!',
@@ -910,28 +972,49 @@
   /* Instant side-to-side jump, with the flash/warp effect: the figure
      shrinks, spins and blows out brightness/saturation in place
      (teleport-out), gets repositioned while invisible mid-flash, then
-     reverses the same effect back in (teleport-in) at the new spot. Chained
-     off 'animationend' rather than a fixed timeout so it can never reposition
-     mid-flash-out or leave a class stuck if a frame is dropped. Reduced
-     motion skips the flash entirely and just cuts straight to the new spot. */
+     reverses the same effect back in (teleport-in) at the new spot. A swirl
+     portal (behind the mascot, see .mascot-portal) rides along: it keeps
+     fading at the old spot for PORTAL_TRAIL_MS after the mascot has already
+     vanished, then blooms open at the new spot and gets PORTAL_LEAD_MS of a
+     head start before the mascot itself starts growing back in. The mascot
+     stays invisible (holding teleport-out's ended state) across both of
+     those gaps — only the class swap that starts its grow-in is delayed, so
+     there's never a frame where he flashes back to full size early.
+     Everything is chained off 'animationend'/setTimeout in sequence rather
+     than raced, so a dropped frame can't reposition mid-flash or desync the
+     portal from him. Reduced motion skips all of it and cuts straight to the
+     new spot. */
   function jumpTo(x, y) {
     if (prefersReduced) { moveTo(x, y); return; }
     mascot.classList.add('teleporting');
     img.classList.remove('barrel-roll', 'teleport-out', 'teleport-in');
+    portal?.classList.remove('portal-out', 'portal-in');
     void img.offsetWidth; // flush style so the animation restarts cleanly
     img.classList.add('teleport-out');
+    portal?.classList.add('portal-out');
     img.addEventListener('animationend', function onOut(e) {
       if (e.target !== img || e.animationName !== 'mascot-teleport-out') return;
       img.removeEventListener('animationend', onOut);
-      img.classList.remove('teleport-out');
-      moveTo(x, y);
-      img.classList.add('teleport-in');
-      img.addEventListener('animationend', function onIn(e2) {
-        if (e2.target !== img || e2.animationName !== 'mascot-teleport-in') return;
-        img.removeEventListener('animationend', onIn);
-        img.classList.remove('teleport-in');
-        mascot.classList.remove('teleporting');
-      });
+      // Mascot is already gone (teleport-out holds scale(0)/opacity 0 via
+      // fill:forwards) — let the portal keep fading here a beat longer.
+      setTimeout(function () {
+        moveTo(x, y);
+        portal?.classList.remove('portal-out');
+        void portal?.offsetWidth;
+        portal?.classList.add('portal-in');
+        // Portal is blooming open at the new spot; give it a head start
+        // before the mascot (still invisible) starts growing back in.
+        setTimeout(function () {
+          img.classList.remove('teleport-out');
+          img.classList.add('teleport-in');
+          img.addEventListener('animationend', function onIn(e2) {
+            if (e2.target !== img || e2.animationName !== 'mascot-teleport-in') return;
+            img.removeEventListener('animationend', onIn);
+            img.classList.remove('teleport-in');
+            mascot.classList.remove('teleporting');
+          });
+        }, PORTAL_LEAD_MS);
+      }, PORTAL_TRAIL_MS);
     });
   }
 

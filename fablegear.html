@@ -136,76 +136,6 @@
         }
         /* Hide the original long panels so the page stays short */
 
-        /* Floats with the mascot rather than sitting inline at the very top of
-           <body>, where it rendered as an unstyled button above the header. */
-        /* ── "Click here" sign ────────────────────────────────────────────
-           A hovering neon sign above Spectre with an arrow pointing down at
-           him, rather than a standalone button off on its own — the point is
-           to say *he* is the thing you interact with.
-
-           The plate hugs the right edge and the arrow is nudged inward to sit
-           over his centre (--arrow-nudge), instead of centring the whole sign
-           on him. Centring would push a ~190px plate off the right of the
-           viewport once 2vw gets small, which is a real case on a ~1000px
-           window, not just on phones. */
-        .start-survey {
-          position: fixed;
-          bottom: calc(12vh + 154px);   /* mascot is 140px and square */
-          right: 2vw;
-          --arrow-nudge: 59px;          /* arrow centre → mascot centre */
-          z-index: 12001;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          gap: 2px;
-          background: none;
-          border: none;
-          padding: 0;
-          cursor: pointer;
-          animation: sign-bob 3.4s ease-in-out infinite;
-          transition: opacity 0.25s ease;
-        }
-        .sign-plate {
-          background: rgba(19,14,28,0.94);
-          border: 1px solid var(--magenta);
-          border-radius: 8px;
-          padding: 9px 15px;
-          font-family: 'Chakra Petch', sans-serif;
-          font-weight: 700;
-          font-size: 12.5px;
-          letter-spacing: 0.6px;
-          color: var(--ink);
-          white-space: nowrap;
-          text-shadow: 0 0 9px rgba(255,61,158,0.75);
-          box-shadow:
-            0 0 14px rgba(255,61,158,0.45),
-            inset 0 0 14px rgba(255,61,158,0.12);
-          transition: box-shadow 0.2s ease, border-color 0.2s ease;
-        }
-        .sign-arrow {
-          margin-right: var(--arrow-nudge);
-          color: var(--cyan);
-          fill: none;
-          stroke: currentColor;
-          stroke-width: 3;
-          stroke-linecap: round;
-          stroke-linejoin: round;
-          filter: drop-shadow(0 0 5px var(--cyan)) drop-shadow(0 0 13px rgba(61,219,255,0.5));
-        }
-        /* Settle once you're going for it — a target that never stops moving
-           is needlessly fiddly to hit, and worse with a tremor or a trackpad. */
-        .start-survey:hover,
-        .start-survey:focus-visible { animation-play-state: paused; }
-        .start-survey:hover .sign-plate {
-          border-color: var(--cyan);
-          box-shadow:
-            0 0 22px rgba(255,61,158,0.6),
-            inset 0 0 16px rgba(61,219,255,0.16);
-        }
-        @keyframes sign-bob {
-          0%, 100% { transform: translateY(0); }
-          50%      { transform: translateY(-7px); }
-        }
         /* ── Mascot + bubble ──────────────────────────────────────────────
            Two layouts on purpose. Desktop: the bubble hangs above-left of
            Spectre, anchored to his box, with a tail pointing at him. Phone:
@@ -222,12 +152,34 @@
           cursor: pointer;
           user-select: none;
           /* Ambient moves glide on this transition, which is what reads as
-             "drifting" rather than jumping. The .teleporting class below
-             suspends it for the occasional instant jump. */
+             drifting up and down in place rather than jumping. The
+             .teleporting class below suspends it for the instant side-to-side
+             jump, and adds the warp glow for its duration. */
           transition: left 4.5s ease-in-out, top 4.5s ease-in-out, transform 220ms ease;
         }
-        #mascot.teleporting { transition: transform 220ms ease; }
+        #mascot.teleporting {
+          transition: transform 220ms ease;
+          filter:
+            drop-shadow(0 0 34px rgba(61,219,255,0.95))
+            drop-shadow(0 0 60px rgba(255,61,158,0.65));
+        }
         #mascot img { width: 100%; height: auto; display: block; pointer-events: none; }
+        /* Teleport flash/warp: shrinks, spins and blows out brightness/
+           saturation in place, then reverses in once JS has instantly
+           repositioned the (invisible mid-flash) mascot. Revived from an
+           earlier mascot design — the outer glow above pairs with this. */
+        @keyframes mascot-teleport-out {
+          0%   { transform: scale(1) rotate(0deg); filter: brightness(1) saturate(1); opacity: 1; }
+          55%  { transform: scale(1.25) rotate(220deg); filter: brightness(2.6) saturate(2.2); opacity: 1; }
+          100% { transform: scale(0) rotate(420deg); filter: brightness(4) saturate(3); opacity: 0; }
+        }
+        @keyframes mascot-teleport-in {
+          0%   { transform: scale(0) rotate(-420deg); filter: brightness(4) saturate(3); opacity: 0; }
+          45%  { transform: scale(1.25) rotate(-200deg); filter: brightness(2.6) saturate(2.2); opacity: 1; }
+          100% { transform: scale(1) rotate(0deg); filter: brightness(1) saturate(1); opacity: 1; }
+        }
+        #mascot-img.teleport-out { animation: mascot-teleport-out 0.32s cubic-bezier(0.55, 0, 1, 0.45) forwards; }
+        #mascot-img.teleport-in { animation: mascot-teleport-in 0.38s cubic-bezier(0, 0.55, 0.45, 1) forwards; }
 
         /* ── Speech bubble ──────────────────────────────────────────────
            Short quips only now — teleport/spin reactions and the AI-narrated
@@ -449,7 +401,8 @@
                What does need suppressing is his idle drift. */
             .mascot.idle { animation: none; }
             .mascot { transition: none; }
-            .start-survey { animation: none; }
+            #mascot.teleporting { filter: none; }
+            #mascot-img.teleport-out, #mascot-img.teleport-in { animation: none; }
             .qblock[data-revealed] { animation: none; }
             details.panel.collapsible[open] > .details-body { animation: none; }
             details.panel.collapsible .summary-toggle { transition: none; }
@@ -866,14 +819,6 @@
                hang 360px off a right-pinned mascot, which is what pushed the
                questions off the left edge. It becomes a bottom sheet instead. */
             #mascot { width: 92px; bottom: 14px; right: 10px; }
-            /* Sign rides above the smaller mascot; the arrow nudge shrinks to
-               match his new centre (10px edge + 46px half-width). */
-            .start-survey {
-                bottom: 118px;          /* 14px offset + 92px mascot + gap */
-                right: 10px;
-                --arrow-nudge: 35px;
-            }
-            .sign-plate { font-size: 12px; padding: 8px 13px; }
             /* The bubble is a short quip now, not a form, so on a phone it
                just becomes a full-width toast above Spectre instead of a
                tall sheet — there's nothing long enough inside it to scroll. */
@@ -894,19 +839,11 @@
 </head>
 <body class="splash-open">
 
-<!-- Start survey control -->
-<button id="start-survey-btn" class="start-survey" type="button" aria-haspopup="dialog">
-  <span class="sign-plate">Click here to start the survey</span>
-  <svg class="sign-arrow" viewBox="0 0 24 34" width="22" height="32" aria-hidden="true" focusable="false">
-    <path d="M12 2 V23" />
-    <path d="M4 16 L12 25 L20 16" />
-  </svg>
-</button>
-
 <!-- Mascot container. The survey itself lives on the page (#survey-start
-     below) — Spectre no longer hosts it in his speech bubble. He wanders,
-     reacts to clicks with a trick, and narrates new survey blocks as they
-     appear (see window.__fgMascot in the script below). -->
+     below) — Spectre no longer hosts it in his speech bubble. He floats in
+     the dead space beside the content, reacts to clicks with a trick, and
+     narrates new survey blocks as they appear (see window.__fgMascot in the
+     script below). -->
 <div id="mascot" class="mascot idle" aria-hidden="false" role="button" aria-label="Spectre mascot — click for a trick">
   <img id="mascot-img" src="Spectre.png" alt="Spectre mascot" />
   <div id="mascot-bubble" class="mascot-bubble" role="status" aria-live="polite" aria-hidden="true">
@@ -915,18 +852,20 @@
 </div>
 
 <script>
-/* Spectre: wanders the page, reacts to clicks with a trick, and narrates new
-   survey blocks as they reveal (window.__fgMascot.pointAt, called from the
-   survey script further down). He does NOT host the survey anymore — it
-   lives on the page at #survey-start. See the mascot-bubble CSS comment for
-   why, and functions/api/mascot-line.js for the AI-generated narration line
-   this races against the canned fallback below. */
+/* Spectre: floats up and down in the dead space beside the page content,
+   teleporting between the left and right edges rather than drifting across
+   the middle of the screen where he'd cover the page. Also reacts to clicks
+   with a trick, and narrates new survey blocks as they reveal
+   (window.__fgMascot.pointAt, called from the survey script further down).
+   He does NOT host the survey anymore — it lives on the page at
+   #survey-start. See the mascot-bubble CSS comment for why, and
+   functions/api/mascot-line.js for the AI-generated narration line this
+   races against the canned fallback below. */
 (function () {
   const mascot = document.getElementById('mascot');
   const img = document.getElementById('mascot-img');
   const bubble = document.getElementById('mascot-bubble');
   const bubbleText = document.getElementById('mascot-bubble-text');
-  const startBtn = document.getElementById('start-survey-btn');
   if (!mascot || !img || !bubble) return;
 
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -957,7 +896,7 @@
   }
 
   /* Smooth move: rides the CSS transition on #mascot (left/top), so this is
-     what "drifting across the screen" actually is — a glide, not a jump. */
+     what "floating up and down" actually is — a glide, not a jump. */
   function moveTo(x, y) {
     const padding = 12;
     const maxX = window.innerWidth - mascot.offsetWidth - padding;
@@ -968,32 +907,66 @@
     mascot.style.bottom = 'auto';
   }
 
-  /* Instant move: suspends the glide transition for one jump via the
-     .teleporting class, then re-enables it on the next frame so the
-     following move (drift or otherwise) glides again as normal. */
+  /* Instant side-to-side jump, with the flash/warp effect: the figure
+     shrinks, spins and blows out brightness/saturation in place
+     (teleport-out), gets repositioned while invisible mid-flash, then
+     reverses the same effect back in (teleport-in) at the new spot. Chained
+     off 'animationend' rather than a fixed timeout so it can never reposition
+     mid-flash-out or leave a class stuck if a frame is dropped. Reduced
+     motion skips the flash entirely and just cuts straight to the new spot. */
   function jumpTo(x, y) {
+    if (prefersReduced) { moveTo(x, y); return; }
     mascot.classList.add('teleporting');
-    void mascot.offsetWidth; // flush style so the transition is really off
-    moveTo(x, y);
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () { mascot.classList.remove('teleporting'); });
+    img.classList.remove('barrel-roll', 'teleport-out', 'teleport-in');
+    void img.offsetWidth; // flush style so the animation restarts cleanly
+    img.classList.add('teleport-out');
+    img.addEventListener('animationend', function onOut(e) {
+      if (e.target !== img || e.animationName !== 'mascot-teleport-out') return;
+      img.removeEventListener('animationend', onOut);
+      img.classList.remove('teleport-out');
+      moveTo(x, y);
+      img.classList.add('teleport-in');
+      img.addEventListener('animationend', function onIn(e2) {
+        if (e2.target !== img || e2.animationName !== 'mascot-teleport-in') return;
+        img.removeEventListener('animationend', onIn);
+        img.classList.remove('teleport-in');
+        mascot.classList.remove('teleporting');
+      });
     });
   }
 
-  function randomPoint() {
+  /* Below this width there isn't real dead space on both sides of the
+     centred content, so he stays parked on the right like before rather
+     than teleporting on top of the page. */
+  const TWO_LANE_MIN_WIDTH = 1180;
+  function twoLanesAvailable() { return window.innerWidth >= TWO_LANE_MIN_WIDTH; }
+
+  let currentSide = 'right';
+  function laneX(side) {
+    const padding = 12;
+    return side === 'left' ? padding : window.innerWidth - mascot.offsetWidth - padding;
+  }
+  function randomY() {
     const padding = 18;
-    const w = Math.max(0, window.innerWidth - mascot.offsetWidth - padding * 2);
     const h = Math.max(0, window.innerHeight - mascot.offsetHeight - padding * 2);
-    return { x: padding + Math.random() * w, y: padding + Math.random() * h };
+    return padding + Math.random() * h;
   }
 
-  function driftRandom() { const p = randomPoint(); moveTo(p.x, p.y); }
-  function teleportRandom() { const p = randomPoint(); jumpTo(p.x, p.y); }
+  /* Drift: a new height on whichever side he's already on — this is the
+     up/down float. Teleport: flips to the other side (when there's room for
+     two) at a new height — this is the side-to-side jump. */
+  function driftRandom() { moveTo(laneX(currentSide), randomY()); }
+  function teleportRandom() {
+    if (twoLanesAvailable()) currentSide = currentSide === 'left' ? 'right' : 'left';
+    jumpTo(laneX(currentSide), randomY());
+  }
 
   function teleportNear(el) {
     if (!el || !el.getBoundingClientRect) return teleportRandom();
     const rect = el.getBoundingClientRect();
-    jumpTo(rect.right - mascot.offsetWidth, rect.top - mascot.offsetHeight - 20);
+    const x = rect.right - mascot.offsetWidth;
+    currentSide = x < window.innerWidth / 2 ? 'left' : 'right';
+    jumpTo(x, rect.top - mascot.offsetHeight - 20);
   }
 
   function getPosition() {
@@ -1069,12 +1042,13 @@
 
   mascot.addEventListener('click', onMascotClick);
 
-  startBtn?.addEventListener('click', function (e) {
-    e.preventDefault();
-    document.getElementById('survey-start')?.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
-  });
-
   window.addEventListener('resize', function () {
+    // Shrunk below the two-lane width while parked on the left: snap back
+    // to the right lane rather than leaving him stranded over the content.
+    if (!twoLanesAvailable() && currentSide === 'left') {
+      currentSide = 'right';
+      moveTo(laneX('right'), mascot.offsetTop);
+    }
     if (mascot.style.left) {
       const rect = mascot.getBoundingClientRect();
       if (rect.right > window.innerWidth || rect.bottom > window.innerHeight) jumpTo(rect.left, rect.top);

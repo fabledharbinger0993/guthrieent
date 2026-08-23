@@ -135,33 +135,14 @@
             text-transform: uppercase;
         }
         /* Hide the original long panels so the page stays short */
-        .survey-removed { display: none !important; }
 
-        /* Floats with the mascot rather than sitting inline at the very top of
-           <body>, where it rendered as an unstyled button above the header. */
-        .start-survey {
-          position: fixed;
-          bottom: calc(12vh + 150px);
-          right: 2vw;
-          z-index: 12001;
-          background: linear-gradient(135deg, var(--magenta), var(--violet));
-          color: #0a0710;
-          border: none;
-          border-radius: 6px;
-          padding: 9px 16px;
-          font-family: 'Chakra Petch', sans-serif;
-          font-weight: 700;
-          font-size: 13px;
-          letter-spacing: 0.5px;
-          cursor: pointer;
-          box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-        }
-        .start-survey:hover { box-shadow: 0 0 24px rgba(255,61,158,0.45); }
-        @media (max-width: 640px) {
-          .start-survey { bottom: auto; top: 12px; right: 12px; }
-        }
-
-        /* Mascot layout */
+        /* ── Mascot + bubble ──────────────────────────────────────────────
+           Two layouts on purpose. Desktop: the bubble hangs above-left of
+           Spectre, anchored to his box, with a tail pointing at him. Phone:
+           that anchoring cannot fit — a 360px bubble hung off a mascot pinned
+           to the right edge lands mostly off-screen — so below 640px it
+           becomes a viewport-width bottom sheet and the tail is dropped,
+           since it would no longer be pointing at anything. */
         #mascot {
           position: fixed;
           bottom: 12vh;
@@ -170,54 +151,144 @@
           z-index: 12000;
           cursor: pointer;
           user-select: none;
-          transition: transform 220ms ease, right 220ms ease, left 220ms ease;
+          /* Ambient moves glide on this transition, which is what reads as
+             drifting up and down in place rather than jumping. The
+             .teleporting class below suspends it for the instant side-to-side
+             jump, and adds the warp glow for its duration. */
+          transition: left 4.5s ease-in-out, top 4.5s ease-in-out, transform 220ms ease;
+        }
+        #mascot.teleporting {
+          transition: transform 220ms ease;
+          filter:
+            drop-shadow(0 0 34px rgba(61,219,255,0.95))
+            drop-shadow(0 0 60px rgba(255,61,158,0.65));
         }
         #mascot img { width: 100%; height: auto; display: block; pointer-events: none; }
+        /* Teleport flash/warp: shrinks, spins and blows out brightness/
+           saturation in place, then reverses in once JS has instantly
+           repositioned the (invisible mid-flash) mascot. Revived from an
+           earlier mascot design — the outer glow above pairs with this. */
+        @keyframes mascot-teleport-out {
+          0%   { transform: scale(1) rotate(0deg); filter: brightness(1) saturate(1); opacity: 1; }
+          55%  { transform: scale(1.25) rotate(220deg); filter: brightness(2.6) saturate(2.2); opacity: 1; }
+          100% { transform: scale(0) rotate(420deg); filter: brightness(4) saturate(3); opacity: 0; }
+        }
+        @keyframes mascot-teleport-in {
+          0%   { transform: scale(0) rotate(-420deg); filter: brightness(4) saturate(3); opacity: 0; }
+          45%  { transform: scale(1.25) rotate(-200deg); filter: brightness(2.6) saturate(2.2); opacity: 1; }
+          100% { transform: scale(1) rotate(0deg); filter: brightness(1) saturate(1); opacity: 1; }
+        }
+        #mascot-img.teleport-out { animation: mascot-teleport-out 0.32s cubic-bezier(0.55, 0, 1, 0.45) forwards; }
+        #mascot-img.teleport-in { animation: mascot-teleport-in 0.38s cubic-bezier(0, 0.55, 0.45, 1) forwards; }
 
-        /* Thought bubble */
+        /* Teleport portal: a swirl glow parked behind the mascot, invisible
+           at rest. It never runs on its own timer — JS toggles .portal-out /
+           .portal-in in lockstep with the mascot's own teleport-out/in (see
+           jumpTo), holding the mascot invisible a beat longer on each end so
+           the portal can lead in and trail out around him instead of both
+           popping in sync. Sized off #mascot's own box so it scales with the
+           92px phone mascot the same as the 140px desktop one. */
+        .mascot-portal {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 172%;
+          height: 172%;
+          transform: translate(-50%, -50%) scale(0);
+          opacity: 0;
+          z-index: -1;
+          pointer-events: none;
+        }
+        .mascot-portal-img {
+          width: 100%;
+          height: 100%;
+          display: block;
+          object-fit: contain;
+          animation: portal-spin 10s linear infinite;
+        }
+        @keyframes portal-spin { to { transform: rotate(360deg); } }
+        /* Shrinks rapidly in step with the mascot's own vanish, then holds a
+           final collapsing fade a beat past when he's already gone (0.32s
+           mascot-out + ~0.11s trail = 0.43s — see PORTAL_TRAIL_MS in JS). */
+        .mascot-portal.portal-out {
+          animation: mascot-portal-out 0.43s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+        }
+        @keyframes mascot-portal-out {
+          0%   { transform: translate(-50%, -50%) scale(1);    opacity: 0.85; }
+          74%  { transform: translate(-50%, -50%) scale(0.12); opacity: 0.55; }
+          100% { transform: translate(-50%, -50%) scale(0);    opacity: 0; }
+        }
+        /* Blooms open, then expands to full size in step with the mascot's
+           own 0.38s grow-in (~0.09s lead + 0.38s = 0.47s, ~70% of 0.67s
+           total — see PORTAL_LEAD_MS in JS), then fades once he's fully back. */
+        .mascot-portal.portal-in {
+          animation: mascot-portal-in 0.67s cubic-bezier(0.22, 0.9, 0.3, 1) forwards;
+        }
+        @keyframes mascot-portal-in {
+          0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+          16%  { opacity: 0.9; }
+          70%  { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+          100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+
+        /* ── Speech bubble ──────────────────────────────────────────────
+           Short quips only now — teleport/spin reactions and the AI-narrated
+           line when a new survey block reveals itself (see window.__fgMascot
+           in the mascot script below). The survey itself lives on the page,
+           not in here; see the "Survey lives on the page" note there for why. */
         .mascot-bubble {
           position: absolute;
-          bottom: 110%;
-          right: 110%;
-          width: 360px;
-          max-width: calc(100vw - 80px);
-          background: #fff;
-          color: #111;
+          bottom: calc(100% + 18px);
+          right: 0;
+          width: 280px;
+          max-width: calc(100vw - 2vw - 24px);
+          background: rgba(19,14,28,0.97);
+          border: 1px solid var(--line);
+          color: var(--ink);
           border-radius: 12px;
-          box-shadow: 0 12px 28px rgba(0,0,0,0.14);
-          padding: 12px;
+          box-shadow: 0 18px 44px rgba(0,0,0,0.55);
+          backdrop-filter: blur(10px);
+          padding: 16px 18px;
           display: none;
-          font-size: 15px;
+          font-family: 'IBM Plex Sans', sans-serif;
+          font-size: 14px;
+          text-align: left;
         }
-        .mascot.open .mascot-bubble { display: block; }
+        #mascot-bubble[aria-hidden="false"] { display: block; }
+        /* Tail: same fill + only the two outward edges bordered, so it reads
+           as part of the panel rather than a diamond sitting on top of it. */
         .mascot-bubble::after {
-          content:""; position:absolute; right:-14px; bottom:-6px; width:18px;height:18px;background:#fff;transform:rotate(45deg);
+          content: "";
+          position: absolute;
+          right: 38px;
+          bottom: -7px;
+          width: 12px;
+          height: 12px;
+          background: rgba(19,14,28,0.97);
+          border-right: 1px solid var(--line);
+          border-bottom: 1px solid var(--line);
+          transform: rotate(45deg);
         }
-        .mascot-bubble-text { font-weight:600; margin-bottom:8px; }
-        .mascot-bubble-content { max-height:38vh; overflow:auto; font-size:14px; }
+        .mascot-bubble-text {
+          font-family: 'Chakra Petch', sans-serif;
+          font-weight: 700;
+          font-size: 1.02rem;
+          line-height: 1.3;
+          color: var(--ink);
+        }
 
-        /* Mascot controls */
-        .mascot-controls { display:flex; gap:8px; align-items:center; margin-top:10px; flex-wrap:wrap; }
-        .mascot-btn { background:#222;color:#fff;border:none;padding:6px 10px;border-radius:6px; cursor:pointer; font-size:13px; }
-        .mascot-send { font-size:12px; color:#444; display:flex; align-items:center; gap:6px; }
-
-        /* Idle meander */
+        /* Idle meander + click tricks */
         @keyframes meander { 0%{transform:translateY(0) rotate(0);}25%{transform:translateY(-6px) rotate(-2deg);}50%{transform:translateY(0);}75%{transform:translateY(-4px) rotate(1deg);}100%{transform:translateY(0);} }
         .mascot.idle { animation: meander 6s ease-in-out infinite; }
-        .mascot.open.idle { animation: none; }
+        .mascot.speaking.idle { animation-play-state: paused; }
+        @keyframes barrel-roll { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        #mascot-img.barrel-roll { animation: barrel-roll 0.6s ease-in-out; }
 
         /* .mascot-narrated quieting (non-destructive) */
         .mascot-narrated .likert-text, .mascot-narrated .field-label, .mascot-narrated legend, .mascot-narrated p, .mascot-narrated .qblock-title, .mascot-narrated .step-label {
           font-size: 11.5px !important; opacity: 0.55; transition: font-size .18s, opacity .18s;
         }
         .mascot-narrated input, .mascot-narrated textarea, .mascot-narrated .likert-options, .mascot-narrated .check-grid { opacity: 1; }
-
-        /* Compact forms inside bubble */
-        .mascot-bubble-content .group-title { font-weight:600; margin-bottom:6px; }
-        .mascot-bubble-content .compact-grid { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
-        .mascot-bubble-content .likert-compact { display:flex; gap:6px; align-items:center; margin-bottom:8px; }
-        .mascot-bubble-content .likert-compact label { font-size:13px; margin-right:8px; }
-        .mascot-bubble-content textarea { width:100%; min-height:80px; resize:vertical; }
 
         /* Small hint pulse */
         .mascot.hint { box-shadow: 0 0 0 6px rgba(255,160,0,0.12); transform:scale(1.02); transition: box-shadow .28s, transform .28s; }
@@ -374,17 +445,16 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
-            /* Click/keyboard handling and button semantics are only ever
-               added in JS when motion isn't reduced (see the mascot module),
-               so the pointer cursor needs to not imply an affordance that
-               isn't there for reduced-motion users. */
-            .mascot { cursor: default; }
-            .mascot, .mascot-tip-bubble { transition: opacity 0.2s linear; }
-            .mascot.is-hopping { animation: none; }
-            .mascot-figure,
-            .mascot-figure.is-spinning,
-            .mascot-figure.is-teleport-out,
-            .mascot-figure.is-teleport-in { animation: none; }
+            /* Spectre is genuinely clickable now (he opens/closes the bubble),
+               so unlike the old pointer-mascot he keeps his pointer cursor
+               here — the affordance is real regardless of motion settings.
+               What does need suppressing is his idle drift. */
+            .mascot.idle { animation: none; }
+            .mascot { transition: none; }
+            #mascot.teleporting { filter: none; }
+            #mascot-img.teleport-out, #mascot-img.teleport-in { animation: none; }
+            .mascot-portal-img { animation: none; }
+            .mascot-portal.portal-out, .mascot-portal.portal-in { animation: none; }
             .qblock[data-revealed] { animation: none; }
             details.panel.collapsible[open] > .details-body { animation: none; }
             details.panel.collapsible .summary-toggle { transition: none; }
@@ -622,7 +692,42 @@
             font-size: 0.9rem;
         }
         .check-row:hover { border-color: var(--violet); }
-        .check-row input[type="checkbox"] { accent-color: var(--magenta); width: 15px; height: 15px; flex-shrink: 0; }
+        /* Neon checkbox: dark fill at rest with a visible cyan outline (not
+           the default white OS checkbox, which read as barely-there against
+           this background), then lights up like a neon sign once checked. */
+        .check-row input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            margin: 0;
+            border-radius: 4px;
+            background: rgba(7,6,11,0.85);
+            border: 1.5px solid var(--cyan);
+            box-shadow: 0 0 4px rgba(61,219,255,0.3);
+            cursor: pointer;
+            display: grid;
+            place-content: center;
+            transition: box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+        .check-row input[type="checkbox"]::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            transform: scale(0);
+            transition: transform 0.12s ease;
+            background: var(--cyan);
+            box-shadow: 0 0 8px var(--cyan), 0 0 18px rgba(61,219,255,0.7);
+        }
+        .check-row input[type="checkbox"]:checked {
+            border-color: var(--cyan);
+            background: rgba(61,219,255,0.14);
+            box-shadow: 0 0 10px rgba(61,219,255,0.7), inset 0 0 10px rgba(61,219,255,0.3);
+        }
+        .check-row input[type="checkbox"]:checked::before { transform: scale(1); }
+        .check-row input[type="checkbox"]:hover { border-color: #8ceeff; }
         .check-row input:checked ~ span { color: var(--ink); }
 
         .other-text { margin-top: 8px; display: block; }
@@ -760,363 +865,284 @@
             section.panel { padding: 32px 22px; }
             .hero { padding: 80px 0 60px; }
             #splash-skip { bottom: 18px; right: 18px; }
-            /* The rail has nowhere to go on a phone; the tip carries the copy. */
-            .mascot { width: 260px; height: 260px; }
-            .mascot-tip { display: none; }
+
+            /* Phone: Spectre shrinks and tucks into the corner, and the bubble
+               stops being anchored to him — at this width there is no room to
+               hang 360px off a right-pinned mascot, which is what pushed the
+               questions off the left edge. It becomes a bottom sheet instead. */
+            #mascot { width: 92px; bottom: 14px; right: 10px; }
+            /* The bubble is a short quip now, not a form, so on a phone it
+               just becomes a full-width toast above Spectre instead of a
+               tall sheet — there's nothing long enough inside it to scroll. */
+            .mascot-bubble {
+                position: fixed;
+                left: 10px;
+                right: 10px;
+                bottom: 116px;
+                width: auto;
+                max-width: none;
+                padding: 14px 16px;
+                border-radius: 14px;
+            }
+            .mascot-bubble::after { display: none; }
         }
 
     </style>
 </head>
 <body class="splash-open">
 
-<!-- Start survey control -->
-<button id="start-survey-btn" class="start-survey" type="button" aria-haspopup="dialog">Start the survey</button>
-
-<!-- Mascot container -->
-<div id="mascot" class="mascot idle" aria-hidden="false" role="button" aria-label="Spectre mascot">
+<!-- Mascot container. The survey itself lives on the page (#survey-start
+     below) — Spectre no longer hosts it in his speech bubble. He floats in
+     the dead space beside the content, reacts to clicks with a trick, and
+     narrates new survey blocks as they appear (see window.__fgMascot in the
+     script below). -->
+<div id="mascot" class="mascot idle" aria-hidden="false" role="button" aria-label="Spectre mascot — click for a trick">
+  <div id="mascot-portal" class="mascot-portal" aria-hidden="true">
+    <img class="mascot-portal-img" src="icon-swirl.png" alt="" />
+  </div>
   <img id="mascot-img" src="Spectre.png" alt="Spectre mascot" />
-  <div id="mascot-bubble" class="mascot-bubble" role="dialog" aria-live="polite" aria-hidden="true">
+  <div id="mascot-bubble" class="mascot-bubble" role="status" aria-live="polite" aria-hidden="true">
     <div id="mascot-bubble-text" class="mascot-bubble-text" tabindex="-1"></div>
-    <div id="mascot-bubble-content" class="mascot-bubble-content"></div>
-    <div class="mascot-controls">
-      <button id="mascot-prev" class="mascot-btn" aria-label="Previous question">◀ Prev</button>
-      <button id="mascot-next" class="mascot-btn" aria-label="Next question">Next ▶</button>
-      <button id="mascot-finish" class="mascot-btn" aria-label="Finish survey">Finish</button>
-      <button id="mascot-cancel" class="mascot-btn" aria-label="Cancel survey">Cancel</button>
-      <label class="mascot-send">
-        <input type="checkbox" id="mascot-send-toggle" /> Send to dashboard
-      </label>
-    </div>
   </div>
 </div>
 
 <script>
-/* Mascot-driven inline survey (renders questions inside the bubble).
-   Uses existing DOM when possible: group-lib, group-meta, group-backup, group-acq,
-   #hw-section, #fg-tried-section, #open-section. Hides originals from page.
-*/
+/* Spectre: floats up and down in the dead space beside the page content,
+   teleporting between the left and right edges rather than drifting across
+   the middle of the screen where he'd cover the page. Also reacts to clicks
+   with a trick, and narrates new survey blocks as they reveal
+   (window.__fgMascot.pointAt, called from the survey script further down).
+   He does NOT host the survey anymore — it lives on the page at
+   #survey-start. See the mascot-bubble CSS comment for why, and
+   functions/api/mascot-line.js for the AI-generated narration line this
+   races against the canned fallback below. */
+(function () {
+  const mascot = document.getElementById('mascot');
+  const img = document.getElementById('mascot-img');
+  const portal = document.getElementById('mascot-portal');
+  const bubble = document.getElementById('mascot-bubble');
+  const bubbleText = document.getElementById('mascot-bubble-text');
+  if (!mascot || !img || !bubble) return;
 
-const FLOW = [
-  { id: 'inventory', title: "What's in your setup?", type: 'inventory', sources: ['#group-lib','#group-meta','#group-backup','#group-acq'] },
-  { id: 'hardware', title: 'Hardware', type: 'section', selector:'#hw-section' },
-  { id: 'fablegear', title: 'FableGear feedback', type: 'section', selector:'#fg-tried-section' },
-  { id: 'open', title: "Anything we haven't asked?", type: 'section', selector:'#open-section' }
-];
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const STORAGE_KEY = 'fg_mascot_inline_v1';
-const mascot = document.getElementById('mascot');
-const bubble = document.getElementById('mascot-bubble');
-const bubbleText = document.getElementById('mascot-bubble-text');
-const bubbleContent = document.getElementById('mascot-bubble-content');
-const startBtn = document.getElementById('start-survey-btn');
-const nextBtn = document.getElementById('mascot-next');
-const prevBtn = document.getElementById('mascot-prev');
-const finishBtn = document.getElementById('mascot-finish');
-const cancelBtn = document.getElementById('mascot-cancel');
-const sendToggle = document.getElementById('mascot-send-toggle');
+  /* How much longer the portal lingers past each end of the mascot's own
+     teleport-out/in flash — see the portal-out/portal-in keyframe comments
+     in the CSS, which are authored to match these. */
+  const PORTAL_TRAIL_MS = 110;
+  const PORTAL_LEAD_MS = 90;
 
-let state = { index: 0, answers: {}, active: false, lastActiveAt: Date.now() };
+  const CATCHPHRASES = [
+    'Drop the beat, not your playlists!',
+    'Cue point locked in.',
+    'Catch me if you can!',
+    "Whoa — didn't spill a single cue point.",
+    "Let's keep this library groovin'.",
+    'BPM steady. So am I. Mostly.',
+    'New track, who dis?',
+    'Somebody has to keep these beats grounded.',
+  ];
+  function pickCatchphrase() { return CATCHPHRASES[Math.floor(Math.random() * CATCHPHRASES.length)]; }
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) state = JSON.parse(raw);
-  } catch(e){ console.warn('load state', e); }
-}
-function saveState() { state.lastActiveAt = Date.now(); localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-
-/* Hide original long survey nodes (so page stays short) */
-function removeInlineSurveyPanels() {
-  const toHide = ['#inventory', '#satisfaction-section', '#hw-section', '#fg-tried-section', '#open-section', '#tool-blocks', '#fg-nudge'];
-  toHide.forEach(sel => {
-    const el = document.querySelector(sel);
-    if (el) el.classList.add('survey-removed');
-  });
-}
-
-/* Utility: shallow clone options from a grid node into a vertical list of checkboxes */
-function cloneGridAsCheckboxes(gridSelector, namePrefix) {
-  const grid = document.querySelector(gridSelector);
-  if (!grid) return null;
-  // If grid already contains inputs, clone them; otherwise attempt to extract textual choices (children)
-  const wrapper = document.createElement('div');
-  wrapper.className = 'compact-grid';
-  const inputs = grid.querySelectorAll('input[type="checkbox"], input[type="radio"]');
-  if (inputs.length) {
-    inputs.forEach((inp, i) => {
-      const id = `${namePrefix}_${i}`;
-      const labelText = inp.nextElementSibling?.textContent?.trim() || inp.getAttribute('value') || 'Option';
-      const cb = document.createElement('label');
-      cb.innerHTML = `<input type="checkbox" name="${namePrefix}" value="${inp.value || labelText}" /> ${labelText}`;
-      wrapper.appendChild(cb);
-    });
-  } else {
-    // fall back to transcribing child text nodes into checkboxes
-    const children = Array.from(grid.children).filter(c => c.textContent && c.textContent.trim().length > 0);
-    if (children.length) {
-      children.forEach((ch, i) => {
-        const text = ch.textContent.trim();
-        const cb = document.createElement('label');
-        cb.innerHTML = `<input type="checkbox" name="${namePrefix}" value="${text}" /> ${text}`;
-        wrapper.appendChild(cb);
-      });
-    } else {
-      // no options found
-      return null;
-    }
+  let bubbleTimer = null;
+  function showBubble(text, ms) {
+    clearTimeout(bubbleTimer);
+    bubbleText.textContent = text;
+    bubble.setAttribute('aria-hidden', 'false');
+    mascot.classList.add('speaking');
+    bubbleTimer = setTimeout(hideBubble, ms || 3000);
   }
-  return wrapper;
-}
-
-/* Build likert compact: reads .likert items inside a selector and builds 1-5 radios */
-function cloneLikertsFrom(selector) {
-  const container = document.createElement('div');
-  container.className = 'likert-list';
-  const scope = document.querySelector(selector);
-  if (!scope) return null;
-  const likerts = scope.querySelectorAll('.likert');
-  if (!likerts.length) return null;
-  likerts.forEach((l,i) => {
-    const textEl = l.querySelector('.likert-text');
-    const name = l.dataset.name || `likert_${i}`;
-    const label = document.createElement('div');
-    label.className = 'likert-compact';
-    const title = document.createElement('label');
-    title.textContent = textEl ? textEl.textContent.trim() : 'Rate:';
-    label.appendChild(title);
-    const options = document.createElement('div');
-    options.style.display = 'inline-flex';
-    options.style.gap = '6px';
-    for (let v=1; v<=5; v++) {
-      const id = `likert_${name}_${v}`;
-      options.innerHTML += `<label style="font-size:13px;"><input type="radio" name="${name}" value="${v}" /> ${v}</label>`;
-    }
-    label.appendChild(options);
-    container.appendChild(label);
-  });
-  return container;
-}
-
-/* Copy textareas/fields from a section (pain-point, blind-spot etc) */
-function cloneTextareasFrom(selector) {
-  const scope = document.querySelector(selector);
-  if (!scope) return null;
-  const fields = scope.querySelectorAll('textarea, input[type="text"], input[type="email"]');
-  if (!fields.length) return null;
-  const wrapper = document.createElement('div');
-  wrapper.className = 'compact-grid';
-  fields.forEach(f => {
-    const label = scope.querySelector(`label[for="${f.id}"]`);
-    const lab = document.createElement('label');
-    lab.innerHTML = `<div class="group-title">${label ? label.textContent.trim() : (f.placeholder || f.name || 'Open response')}</div><textarea name="${f.name || f.id}" placeholder="${label ? '' : 'Your answer'}"></textarea>`;
-    wrapper.appendChild(lab);
-  });
-  return wrapper;
-}
-
-/* Render the current step into bubbleContent */
-function renderCurrentStep() {
-  bubbleContent.innerHTML = '';
-  const step = FLOW[state.index];
-  bubbleText.textContent = step.title || 'Question';
-  if (step.type === 'inventory') {
-    // for each source attempt to clone checkboxes
-    FLOW[0].sources.forEach((sel, idx) => {
-      const title = document.createElement('div'); title.className='group-title';
-      // make a friendlier title if possible
-      const mapTitle = { '#group-lib': 'Library / performance software', '#group-meta':'Metadata / tagging / analysis', '#group-backup':'File management / backup', '#group-acq':'Music acquisition' };
-      title.textContent = mapTitle[sel] || sel;
-      bubbleContent.appendChild(title);
-      const box = cloneGridAsCheckboxes(sel, `inventory_${idx}`);
-      if (box) bubbleContent.appendChild(box);
-      else {
-        const empty = document.createElement('div'); empty.textContent = 'No options found for this group.';
-        bubbleContent.appendChild(empty);
-      }
-    });
-  } else if (step.type === 'section') {
-    // For known sections, try to extract likerts and textareas if present
-    const lik = cloneLikertsFrom(step.selector);
-    if (lik) bubbleContent.appendChild(lik);
-    const txt = cloneTextareasFrom(step.selector);
-    if (txt) bubbleContent.appendChild(txt);
-    // if nothing found, fall back to cloning header/description
-    if (!lik && !txt) {
-      const orig = document.querySelector(step.selector);
-      if (orig) {
-        const clone = orig.cloneNode(true);
-        // remove IDs to avoid duplicates
-        clone.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
-        // strip hidden attributes so clone is usable
-        clone.querySelectorAll('[hidden]').forEach(n => n.removeAttribute('hidden'));
-        bubbleContent.appendChild(clone);
-      } else {
-        bubbleContent.innerHTML = '<p>Question content not found.</p>';
-      }
-    }
-  } else {
-    bubbleContent.innerHTML = '<p>Unsupported step type.</p>';
+  function hideBubble() {
+    bubble.setAttribute('aria-hidden', 'true');
+    mascot.classList.remove('speaking');
   }
 
-  // restore previously saved answers into inputs if present
-  const saved = state.answers[FLOW[state.index].id];
-  if (saved) {
-    // populate checkboxes/radios/textareas by name
-    Object.keys(saved).forEach(k => {
-      const val = saved[k];
-      const els = bubbleContent.querySelectorAll(`[name="${k}"]`);
-      if (!els.length) return;
-      els.forEach(el => {
-        if (el.type === 'checkbox') {
-          if (Array.isArray(val)) el.checked = val.includes(el.value);
-          else el.checked = !!val;
-        } else if (el.type === 'radio') {
-          el.checked = (el.value == val);
-        } else {
-          el.value = val;
+  /* Smooth move: rides the CSS transition on #mascot (left/top), so this is
+     what "floating up and down" actually is — a glide, not a jump. */
+  function moveTo(x, y) {
+    const padding = 12;
+    const maxX = window.innerWidth - mascot.offsetWidth - padding;
+    const maxY = window.innerHeight - mascot.offsetHeight - padding;
+    mascot.style.left = Math.max(padding, Math.min(maxX, x)) + 'px';
+    mascot.style.top = Math.max(padding, Math.min(maxY, y)) + 'px';
+    mascot.style.right = 'auto';
+    mascot.style.bottom = 'auto';
+  }
+
+  /* Instant side-to-side jump, with the flash/warp effect: the figure
+     shrinks, spins and blows out brightness/saturation in place
+     (teleport-out), gets repositioned while invisible mid-flash, then
+     reverses the same effect back in (teleport-in) at the new spot. A swirl
+     portal (behind the mascot, see .mascot-portal) rides along: it keeps
+     fading at the old spot for PORTAL_TRAIL_MS after the mascot has already
+     vanished, then blooms open at the new spot and gets PORTAL_LEAD_MS of a
+     head start before the mascot itself starts growing back in. The mascot
+     stays invisible (holding teleport-out's ended state) across both of
+     those gaps — only the class swap that starts its grow-in is delayed, so
+     there's never a frame where he flashes back to full size early.
+     Everything is chained off 'animationend'/setTimeout in sequence rather
+     than raced, so a dropped frame can't reposition mid-flash or desync the
+     portal from him. Reduced motion skips all of it and cuts straight to the
+     new spot. */
+  function jumpTo(x, y) {
+    if (prefersReduced) { moveTo(x, y); return; }
+    mascot.classList.add('teleporting');
+    img.classList.remove('barrel-roll', 'teleport-out', 'teleport-in');
+    portal?.classList.remove('portal-out', 'portal-in');
+    void img.offsetWidth; // flush style so the animation restarts cleanly
+    img.classList.add('teleport-out');
+    portal?.classList.add('portal-out');
+    img.addEventListener('animationend', function onOut(e) {
+      if (e.target !== img || e.animationName !== 'mascot-teleport-out') return;
+      img.removeEventListener('animationend', onOut);
+      // Mascot is already gone (teleport-out holds scale(0)/opacity 0 via
+      // fill:forwards) — let the portal keep fading here a beat longer.
+      setTimeout(function () {
+        moveTo(x, y);
+        portal?.classList.remove('portal-out');
+        void portal?.offsetWidth;
+        portal?.classList.add('portal-in');
+        // Portal is blooming open at the new spot; give it a head start
+        // before the mascot (still invisible) starts growing back in.
+        setTimeout(function () {
+          img.classList.remove('teleport-out');
+          img.classList.add('teleport-in');
+          img.addEventListener('animationend', function onIn(e2) {
+            if (e2.target !== img || e2.animationName !== 'mascot-teleport-in') return;
+            img.removeEventListener('animationend', onIn);
+            img.classList.remove('teleport-in');
+            mascot.classList.remove('teleporting');
+          });
+        }, PORTAL_LEAD_MS);
+      }, PORTAL_TRAIL_MS);
+    });
+  }
+
+  /* Below this width there isn't real dead space on both sides of the
+     centred content, so he stays parked on the right like before rather
+     than teleporting on top of the page. */
+  const TWO_LANE_MIN_WIDTH = 1180;
+  function twoLanesAvailable() { return window.innerWidth >= TWO_LANE_MIN_WIDTH; }
+
+  let currentSide = 'right';
+  function laneX(side) {
+    const padding = 12;
+    return side === 'left' ? padding : window.innerWidth - mascot.offsetWidth - padding;
+  }
+  function randomY() {
+    const padding = 18;
+    const h = Math.max(0, window.innerHeight - mascot.offsetHeight - padding * 2);
+    return padding + Math.random() * h;
+  }
+
+  /* Drift: a new height on whichever side he's already on — this is the
+     up/down float. Teleport: flips to the other side (when there's room for
+     two) at a new height — this is the side-to-side jump. */
+  function driftRandom() { moveTo(laneX(currentSide), randomY()); }
+  function teleportRandom() {
+    if (twoLanesAvailable()) currentSide = currentSide === 'left' ? 'right' : 'left';
+    jumpTo(laneX(currentSide), randomY());
+  }
+
+  function teleportNear(el) {
+    if (!el || !el.getBoundingClientRect) return teleportRandom();
+    const rect = el.getBoundingClientRect();
+    const x = rect.right - mascot.offsetWidth;
+    currentSide = x < window.innerWidth / 2 ? 'left' : 'right';
+    jumpTo(x, rect.top - mascot.offsetHeight - 20);
+  }
+
+  function getPosition() {
+    const r = mascot.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+
+  function barrelRoll() {
+    if (prefersReduced) return;
+    img.classList.remove('barrel-roll');
+    void img.offsetWidth; // restart the animation
+    img.classList.add('barrel-roll');
+  }
+
+  /* Ambient wandering: continuous while nobody's mid-conversation with him —
+     mostly a slow glide to a new spot, occasionally an instant jump instead. */
+  let ambientTimer = null;
+  function scheduleAmbient() {
+    if (prefersReduced) return;
+    clearTimeout(ambientTimer);
+    ambientTimer = setTimeout(function () {
+      if (!mascot.classList.contains('speaking')) {
+        if (Math.random() < 0.22) teleportRandom();
+        else driftRandom();
+      }
+      scheduleAmbient();
+    }, 3500 + Math.random() * 3000);
+  }
+
+  /* Click: a barrel roll only sometimes, and he only actually says something
+     every 5-9 clicks (a fresh random threshold each time) rather than on
+     every single click — otherwise he never shuts up. */
+  let clickCount = 0;
+  let blurbThreshold = 5 + Math.floor(Math.random() * 5);
+  function onMascotClick() {
+    clickCount++;
+    if (Math.random() < 0.45) barrelRoll();
+    if (clickCount >= blurbThreshold) {
+      showBubble(pickCatchphrase(), 2600);
+      clickCount = 0;
+      blurbThreshold = 5 + Math.floor(Math.random() * 5);
+    }
+  }
+
+  /* Called from the survey script when a new question block reveals itself.
+     Moves Spectre to it, shows the canned line immediately, then races a
+     short-timeout call to /api/mascot-line for a livelier AI line — if that
+     wins, it swaps in; if it's slow, empty, or the endpoint isn't
+     configured, the canned line already shown just stays. */
+  async function pointAt(el, fallbackMessage, aiOpts) {
+    clearTimeout(ambientTimer);
+    teleportNear(el);
+    showBubble(fallbackMessage, 4500);
+    if (aiOpts) {
+      try {
+        const ctrl = new AbortController();
+        const timeout = setTimeout(function () { ctrl.abort(); }, 1500);
+        const res = await fetch('/api/mascot-line', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(aiOpts),
+          signal: ctrl.signal,
+        });
+        clearTimeout(timeout);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.ok && data.line) showBubble(data.line, 4500);
         }
-      });
-    });
-  }
-
-  bubble.setAttribute('aria-hidden', 'false');
-  bubbleText.focus?.();
-  saveState();
-}
-
-/* Collect answers from current bubble content */
-function collectAnswersFromBubble() {
-  const data = {};
-  const inputs = bubbleContent.querySelectorAll('input, textarea, select');
-  inputs.forEach(inp => {
-    const name = inp.name || inp.id;
-    if (!name) return;
-    if (inp.type === 'checkbox') {
-      if (!data[name]) data[name] = [];
-      if (inp.checked) data[name].push(inp.value || true);
-    } else if (inp.type === 'radio') {
-      if (inp.checked) data[name] = inp.value;
-    } else {
-      data[name] = inp.value;
+      } catch (e) { /* keep the canned line */ }
     }
-  });
-  state.answers[FLOW[state.index].id] = data;
-  saveState();
-  return data;
-}
-
-/* Navigation handlers */
-function nextStep() {
-  collectAnswersFromBubble();
-  if (state.index < FLOW.length - 1) {
-    state.index++;
-    renderCurrentStep();
-  } else finishSurvey();
-}
-function prevStep() {
-  collectAnswersFromBubble();
-  if (state.index > 0) {
-    state.index--;
-    renderCurrentStep();
+    setTimeout(scheduleAmbient, 1200);
   }
-}
 
-/* Finish */
-async function finishSurvey() {
-  collectAnswersFromBubble();
-  state.active = false;
-  saveState();
-  bubbleText.textContent = 'Saving…';
-  const payload = { answers: state.answers, timestamp: Date.now() };
-  if (sendToggle && sendToggle.checked) {
-    try {
-      const r = await fetch('/api/sendSurvey', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-      bubbleText.textContent = r.ok ? 'Thanks — survey sent.' : 'Saved locally (send failed).';
-    } catch (e) {
-      console.warn(e);
-      bubbleText.textContent = 'Saved locally (send failed).';
+  mascot.addEventListener('click', onMascotClick);
+
+  window.addEventListener('resize', function () {
+    // Shrunk below the two-lane width while parked on the left: snap back
+    // to the right lane rather than leaving him stranded over the content.
+    if (!twoLanesAvailable() && currentSide === 'left') {
+      currentSide = 'right';
+      moveTo(laneX('right'), mascot.offsetTop);
     }
-  } else {
-    bubbleText.textContent = 'Saved locally. Click Spectre to resume.';
-  }
-  setTimeout(() => { mascot.classList.remove('open'); bubble.setAttribute('aria-hidden','true'); }, 900);
-  saveState();
-}
-
-/* Cancel (reset) */
-function cancelSurvey() {
-  if (!confirm('Cancel survey and reset progress?')) return;
-  state = { index: 0, answers: {}, active: false, lastActiveAt: Date.now() };
-  saveState();
-  // un-narrate any original elements just in case
-  document.querySelectorAll('.mascot-narrated').forEach(n => n.classList.remove('mascot-narrated'));
-  bubbleText.textContent = 'Cancelled. Click Start to begin again.';
-  mascot.classList.remove('open');
-}
-
-/* Enforce visible bounds -> keep at least ~60% of mascot visible */
-function enforceVisibilityBounds() {
-  const rect = mascot.getBoundingClientRect();
-  const vw = window.innerWidth;
-  const visible = Math.max(0, Math.min(1, (Math.min(rect.right, vw) - Math.max(rect.left, 0)) / rect.width));
-  if (visible < 0.6) {
-    if (rect.left < 0) { mascot.style.right = (window.innerWidth - (rect.width * 0.65)) + 'px'; mascot.style.left = 'auto'; }
-    else if (rect.right > vw) { mascot.style.right = '2vw'; mascot.style.left = 'auto'; }
-  }
-}
-
-/* Wiring */
-function wireEvents() {
-  startBtn?.addEventListener('click', (e) => {
-    e.preventDefault();
-    state.active = true;
-    mascot.classList.add('open'); mascot.classList.remove('idle');
-    renderCurrentStep();
-    saveState();
-  });
-
-  mascot?.addEventListener('click', (e) => {
-    if (e.target.closest('.mascot-bubble')) return;
-    if (mascot.classList.contains('open')) {
-      mascot.classList.remove('open'); bubble.setAttribute('aria-hidden','true'); state.active = false; saveState();
-      setTimeout(()=>mascot.classList.add('idle'), 800);
-    } else {
-      mascot.classList.add('open'); bubble.setAttribute('aria-hidden','false'); state.active = true; renderCurrentStep(); mascot.classList.remove('idle'); saveState();
+    if (mascot.style.left) {
+      const rect = mascot.getBoundingClientRect();
+      if (rect.right > window.innerWidth || rect.bottom > window.innerHeight) jumpTo(rect.left, rect.top);
     }
   });
 
-  nextBtn?.addEventListener('click', nextStep);
-  prevBtn?.addEventListener('click', prevStep);
-  finishBtn?.addEventListener('click', finishSurvey);
-  cancelBtn?.addEventListener('click', cancelSurvey);
+  function init() { scheduleAmbient(); }
+  if (img.complete) init(); else img.addEventListener('load', init);
 
-  window.addEventListener('resize', enforceVisibilityBounds);
-  window.addEventListener('beforeunload', saveState);
-}
-
-/* Init */
-document.addEventListener('DOMContentLoaded', () => {
-  loadState();
-  // NOT calling removeInlineSurveyPanels() yet. It hides the whole on-page
-  // survey (#inventory, #tool-blocks, #hw-section, ...) on the assumption the
-  // bubble replaces it — but the bubble cannot actually submit yet: finishSurvey()
-  // POSTs to /api/sendSurvey, which does not exist (only /api/survey does), and
-  // its nested {answers:{step:{...}}} payload does not match the flat shape
-  // /api/survey + the D1 schema expect. Hiding the working form behind it would
-  // mean collecting no responses at all. Re-enable this line once the bubble
-  // emits the canonical payload and posts to /api/survey.
-  wireEvents();
-  // friendly hint if partial progress
-  if (state.index && state.index > 0 && state.index < FLOW.length) {
-    bubbleText.textContent = 'Resume your survey by clicking Spectre.';
-    mascot.classList.add('hint');
-    setTimeout(()=>mascot.classList.remove('hint'), 3000);
-  } else {
-    bubbleText.textContent = 'Click "Start the survey" to call Spectre.';
-  }
-  enforceVisibilityBounds();
-});
-
+  window.__fgMascot = { getPosition: getPosition, pointAt: pointAt };
+})();
 </script>
 
 <div id="splash">
@@ -2053,6 +2079,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 statusPanel.classList.add('show');
             });
     });
+})();
+</script>
+
+<script src="track.js" defer></script>
+<script>
+(function () {
+    // 'survey_start' — fires once, on the first checkbox/radio/field change
+    // anywhere in the research form. {once:true} handles the "only once"
+    // part; this doesn't touch updateVisibility() or anything else already
+    // wired to these fields.
+    var form = document.getElementById('research-form');
+    if (form) {
+        form.addEventListener('change', function () {
+            if (window.GE_TRACK) window.GE_TRACK('survey_start');
+        }, { once: true });
+    }
 })();
 </script>
 

@@ -171,6 +171,11 @@
   }
 
   .hero-inner{position:relative; z-index:2;}
+  .hero-logo{
+    width:clamp(96px, 11vw, 150px);
+    margin-bottom:18px;
+    filter:drop-shadow(0 6px 24px rgba(0,0,0,0.55)) drop-shadow(0 0 22px rgba(255,47,146,0.3));
+  }
 
   /* ============ COLLAGE CONFETTI ============ */
   .confetti{position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:1;}
@@ -599,14 +604,16 @@
     transition:transform .25s ease, box-shadow .25s ease;
     cursor:default;
   }
-  .cork .pin-card:nth-child(1){transform:rotate(-3deg);}
-  .cork .pin-card:nth-child(2){transform:rotate(2.4deg);}
-  .cork .pin-card:nth-child(3){transform:rotate(-1.6deg);}
-  .cork .pin-card:nth-child(4){transform:rotate(3.2deg);}
-  .cork .pin-card:nth-child(5){transform:rotate(1.4deg);}
-  .cork .pin-card:nth-child(6){transform:rotate(-2.8deg);}
-  .cork .pin-card:nth-child(7){transform:rotate(2deg);}
-  .cork .pin-card:nth-child(8){transform:rotate(-1.2deg);}
+  /* nth-child(8n+X) cycles the same 8 tilt angles for any number of cards,
+     instead of hardcoding indices 1-8 and leaving later cards unrotated. */
+  .cork .pin-card:nth-child(8n+1){transform:rotate(-3deg);}
+  .cork .pin-card:nth-child(8n+2){transform:rotate(2.4deg);}
+  .cork .pin-card:nth-child(8n+3){transform:rotate(-1.6deg);}
+  .cork .pin-card:nth-child(8n+4){transform:rotate(3.2deg);}
+  .cork .pin-card:nth-child(8n+5){transform:rotate(1.4deg);}
+  .cork .pin-card:nth-child(8n+6){transform:rotate(-2.8deg);}
+  .cork .pin-card:nth-child(8n+7){transform:rotate(2deg);}
+  .cork .pin-card:nth-child(8n+8){transform:rotate(-1.2deg);}
   .cork .pin-card:hover{
     transform:rotate(0deg) scale(1.05) translateY(-6px) !important;
     box-shadow:0 26px 50px rgba(0,0,0,0.6), 0 0 0 1px var(--hotline), 0 0 34px rgba(255,47,146,0.35);
@@ -636,6 +643,34 @@
     color:var(--paper-dim);
     padding:10px 4px 0;
     text-align:center;
+  }
+
+  /* ============ CLIPS — short video ============ */
+  .clips{
+    padding:80px 0 100px;
+    border-top:1px solid var(--line);
+  }
+  .clip-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:22px;
+    margin-top:20px;
+  }
+  @media (max-width:920px){ .clip-grid{grid-template-columns:repeat(2, 1fr);} }
+  @media (max-width:480px){ .clip-grid{grid-template-columns:1fr; max-width:340px; margin-left:auto; margin-right:auto;} }
+  .clip-card{
+    position:relative;
+    background:#000;
+    border-radius:4px;
+    overflow:hidden;
+    box-shadow:0 14px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(243,234,217,0.1);
+  }
+  .clip-card video{
+    display:block;
+    width:100%;
+    height:auto;
+    max-height:70vh;
+    background:#000;
   }
 
   /* ============ BOOKING / FOOTER ============ */
@@ -698,6 +733,19 @@
     text-align:center;
     padding:64px 0 48px;
   }
+  /* Deliberately not the full-bleed .closer-photo img treatment below —
+     this is a branded WKDU graphic with baked-in text, not an atmospheric
+     backdrop. Sized to read clearly, not to fill the section. */
+  .closer-photo-content .closer-wkdu{
+    position:static;
+    display:block;
+    width:clamp(220px, 30vw, 360px);
+    height:auto;
+    margin:0 auto 28px;
+    border-radius:6px;
+    box-shadow:0 20px 46px rgba(0,0,0,0.55), 0 0 0 1px rgba(243,234,217,0.14);
+    transform:rotate(-1.4deg);
+  }
   .closer-photo .tagline{
     font-family:var(--disp);
     text-transform:uppercase;
@@ -733,23 +781,20 @@
 <!-- ============ HERO ============ -->
 <header class="hero">
   <div class="hero-bg-art" aria-hidden="true">
-    <img src=
-      
+    <img src="assets/photo-mt3.jpeg"
       alt="">
   </div>
   <div class="hero-glow-ball" aria-hidden="true"></div>
   <div class="confetti hero-confetti" aria-hidden="true">
-    <img class="c1" src=
-      
+    <img class="c1" src="assets/flyer-colette.png"
       alt="">
-    <img class="c2" src=
-      
+    <img class="c2" src="assets/flyer-b-and-b.png"
       alt="">
-    <img class="c3" src=
-      
+    <img class="c3" src="assets/flyer-luckywell.png"
       alt="">
   </div>
   <div class="wrap hero-inner">
+    <img class="hero-logo" src="assets/logo-osos.png" alt="Osos Discos">
     <div class="eyebrow">Philadelphia · House + Disco</div>
     <h1>OSOS<span>DISCOS</span></h1>
     <p class="hero-sub">Cameron Kelly &amp; Marshall T — <b>decades of experience, fresh passion on the decks.</b> New Orleans soul meets Philly's dance floor, one feel‑good groove at a time.</p>
@@ -771,11 +816,9 @@
 <!-- ============ INTRO ============ -->
 <section class="intro">
   <div class="confetti" aria-hidden="true">
-    <img src=
-      
+    <img src="assets/flyer-lunar.png"
       alt="" style="top:10%; left:3%; width:92px; transform:rotate(-9deg); opacity:0.34;">
-    <img src=
-      
+    <img src="assets/flyer-johnyb.jpeg"
       alt="" style="bottom:8%; right:4%; width:104px; transform:rotate(8deg); opacity:0.32;">
   </div>
   <div class="wrap">
@@ -788,9 +831,7 @@
 <div class="wrap">
   <div class="filmstrip">
     <figure>
-      <img src=
-
-        
+      <img src="assets/photo-cam.jpeg" alt="Cameron Kelly on the decks, lit blue and purple under a tent">
       <figcaption>Lasers On</figcaption>
     </figure>
   </div>
@@ -827,16 +868,11 @@
     <div class="artist-visual">
       <div class="vcard tilt-l">
         <span class="tag-corner">WKDU · EMM 2023</span>
-        <div class="frame"><img src=
-                        
-                             
-                             </div>
+        <div class="frame"><img src="assets/photo-cam1.jpeg" alt="Cameron Kelly, black and white portrait behind the decks"></div>
       </div>
       <div class="vcard tilt-l">
         <span class="tag-corner">WHCR 90.3 · The Mix Lab</span>
-        <div class="frame"><img src=
-                             
-                             </div>
+        <div class="frame"><img src="assets/flyer-cameron-mixlab.jpeg" alt="The Mix Lab on WHCR 90.3 with Cameron Kelly"></div>
       </div>
     </div>
 
@@ -858,11 +894,9 @@
 <!-- ============ UNITED ============ -->
 <section class="united" id="united">
   <div class="confetti" aria-hidden="true">
-    <img src=
-      
+    <img src="assets/flyer-revibe.png"
       alt="" style="top:6%; right:6%; width:110px; transform:rotate(10deg); opacity:0.3;">
-    <img src=
-      
+    <img src="assets/flyer-soulsessions.jpeg"
       alt="" style="bottom:5%; left:4%; width:96px; transform:rotate(-12deg); opacity:0.3;">
   </div>
   <div class="wrap">
@@ -884,8 +918,7 @@
 <!-- ============ FLYER WALL ============ -->
 <section class="wall" id="wall">
   <div class="confetti" aria-hidden="true">
-    <img src
-      
+    <img src="assets/flyer-fishbowl1.jpeg"
       alt="" style="top:4%; left:2%; width:88px; transform:rotate(-8deg); opacity:0.28;">
   </div>
   <div class="wrap wall-inner">
@@ -900,52 +933,125 @@
     <div class="cork">
       <div class="pin-card">
         <span class="tape" aria-hidden="true"></span>
-        <div class="frame"><img src=
-
-                             
+        <div class="frame"><img src="assets/flyer-flea-natasha.jpeg" alt="Richmond Street Flea Halloween flyer"></div>
         <div class="cap">Richmond Street Flea · Halloween</div>
       </div>
       <div class="pin-card">
         <span class="tape" aria-hidden="true"></span>
-        <div class="frame"><img src=
-                             
-                             </div>
+        <div class="frame"><img src="assets/flyer-bounce.jpeg" alt="Bounce at Nut Hut Saloon flyer"></div>
         <div class="cap">Bounce · Nut Hut Saloon</div>
       </div>
       <div class="pin-card">
         <span class="tape" aria-hidden="true"></span>
-        <div class="frame"><img src=
-                             
-                             </div>
-        <div class="cap">Sunday Vinyl · Wissahickon</div>
+        <div class="frame"><img src="assets/flyer-wally.png" alt="Stouty's Birthday Tour with Wally Callerio and Cameron Kelly at Crobar"></div>
+        <div class="cap">Stouty's B-Day Tour · Crobar, Cleveland</div>
       </div>
       <div class="pin-card">
         <span class="tape" aria-hidden="true"></span>
-        <div class="frame"><img src=
-                             
-                             </div>
+        <div class="frame"><img src="assets/photo-mt2.jpeg" alt="Marshall T behind the decks, red lighting"></div>
         <div class="cap">Behind the Decks</div>
       </div>
       <div class="pin-card">
         <span class="tape" aria-hidden="true"></span>
-        <div class="frame"><img src=
-                             
-                             </div>
+        <div class="frame"><img src="assets/flyer-marshall-mixlab.jpeg" alt="The Mix Lab on WHCR 90.3 with Marshall T"></div>
         <div class="cap">The Mix Lab · WHCR</div>
       </div>
       <div class="pin-card">
         <span class="tape" aria-hidden="true"></span>
-        <div class="frame"><img src=
-                             
-                             </div>
-        <div class="cap">NYE · Wissahickon</div>
+        <div class="frame"><img src="assets/flyer-movin.png" alt="Movin' Co Dance Party at Johnny Brenda's flyer"></div>
+        <div class="cap">Movin' Co · Johnny Brenda's</div>
       </div>
       <div class="pin-card">
         <span class="tape" aria-hidden="true"></span>
-        <div class="frame"><img src=
-                             
-                             </div>
+        <div class="frame"><img src="assets/flyer-angelonis.jpeg" alt="Angeloni's Club Madrid pop art flyer"></div>
         <div class="cap">Angeloni's · Pop Art</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src="assets/flyer-b-and-b1.png" alt="Bob and Barbara's House and Disco flyer"></div>
+        <div class="cap">Bob &amp; Barbara's · House &amp; Disco</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src="assets/flyer-fishbowl.png" alt="The Fishbowl Project flyer"></div>
+        <div class="cap">The Fishbowl Project</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src="assets/flyer-getdown.png" alt="Cameron Kelly August ten day lineup flyer"></div>
+        <div class="cap">August · 10 Days Deep</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src="assets/flyer-johnyb1.png" alt="Johnny Brenda's flyer"></div>
+        <div class="cap">Johnny Brenda's</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src="assets/flyer-markwon.png" alt="Markwon's Birthday Breakdown featuring Keoki at The Juke Joint flyer"></div>
+        <div class="cap">Markwon's B-Day Breakdown ft. Keoki</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src="assets/flyer-ncdl.jpeg" alt="Neon Clown Dream Lounge flyer"></div>
+        <div class="cap">Neon Clown Dream Lounge</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src="assets/flyer-next.png" alt="Cameron Kelly Come Dance With Me tour dates flyer"></div>
+        <div class="cap">Come Dance With Me · Tour Dates</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src="assets/flyer-next2.png" alt="Cameron Kelly upcoming dates flyer, Philadelphia skyline"></div>
+        <div class="cap">Upcoming Dates · Philly</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src="assets/flyer-purehouse.png" alt="Pure House with Rogue flyer"></div>
+        <div class="cap">Pure House with Rogue</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src="assets/flyer-revibe1.png" alt="ReVibe flyer"></div>
+        <div class="cap">ReVibe</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src="assets/flyer-upcoming.png" alt="Cameron Kelly upcoming dates flyer, Philadelphia street scene"></div>
+        <div class="cap">Upcoming Dates</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src="assets/photo-mt1.jpeg" alt="Marshall T under a disco ball, colorful lighting"></div>
+        <div class="cap">Under the Disco Ball</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CLIPS — short video, in motion ============ -->
+<section class="clips" id="clips">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="kicker">In Motion</div>
+        <h2>On the Decks</h2>
+      </div>
+      <div class="sec-num">A few seconds from the booth.</div>
+    </div>
+    <div class="clip-grid">
+      <div class="clip-card">
+        <video controls muted playsinline preload="metadata" src="assets/osos-clip-1.mov"></video>
+      </div>
+      <div class="clip-card">
+        <video controls muted playsinline preload="metadata" src="assets/osos-clip-2.mov"></video>
+      </div>
+      <div class="clip-card">
+        <video controls muted playsinline preload="metadata" src="assets/osos-clip-3.mov"></video>
+      </div>
+      <div class="clip-card">
+        <video controls muted playsinline preload="metadata" src="assets/osos-clip-4.mov"></video>
       </div>
     </div>
   </div>
@@ -977,9 +1083,9 @@
 
 <!-- ============ CLOSER PHOTO — final full-bleed image ============ -->
 <section class="closer-photo">
-"Cameron Kelly and Marshall T at the record store for WKDU's Freak Flag, digging through crates side by side">
   <div class="closer-photo-scrim"></div>
   <div class="closer-photo-content wrap">
+    <img class="closer-wkdu" src="assets/flyer-wkdu.png" alt="Cameron Kelly and Marshall T at the record store for WKDU's Freak Flag, digging through crates side by side">
     <div class="eyebrow" style="justify-content:center; margin-bottom:16px;">WKDU 91.7 · Freak Flag</div>
     <div class="tagline">Authentic House + Disco.<br>Philly Roots. <em>No Dead Dance Floors.</em></div>
     <p class="copyright">© Guthrie Entertainment LLC · Philadelphia, PA</p>

@@ -21,6 +21,9 @@
 /*.mp4
   Cache-Control: public, max-age=604800, must-revalidate
 
+/*.mov
+  Cache-Control: public, max-age=604800, must-revalidate
+
 /*.css
   Cache-Control: public, max-age=604800, must-revalidate
 

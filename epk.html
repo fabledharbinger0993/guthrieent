@@ -1,0 +1,969 @@
+
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Osos Discos — Cameron Kelly &amp; Marshall T | Philadelphia House &amp; Disco Duo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0b0713;
+    --void-2:#150c22;
+    --paper:#f3ead9;
+    --paper-dim:#cfc3ae;
+    --hotline:#ff2f92;
+    --hotline-2:#ff6fb8;
+    --laser:#29e5ff;
+    --sunburn:#ff7a1a;
+    --brass:#ffc94d;
+    --line:rgba(243,234,217,0.14);
+    --disp:'Anton', sans-serif;
+    --body:'Space Grotesk', sans-serif;
+    --mono:'IBM Plex Mono', monospace;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--void);
+    color:var(--paper);
+    font-family:var(--body);
+    line-height:1.6;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* film grain */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    pointer-events:none;
+    z-index:500;
+    opacity:0.05;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  a{color:inherit;}
+  img{display:block; max-width:100%;}
+
+  .wrap{max-width:1180px; margin:0 auto; padding:0 clamp(20px,5vw,56px);}
+
+  ::selection{background:var(--hotline); color:var(--void);}
+
+  a:focus-visible, button:focus-visible{
+    outline:2px solid var(--laser);
+    outline-offset:4px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important;}
+  }
+
+  /* ============ EYEBROW / PILLS ============ */
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:11.5px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--laser);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{content:"◆"; color:var(--hotline); font-size:9px;}
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    padding:7px 14px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    color:var(--paper-dim);
+  }
+  .pill b{color:var(--laser); font-weight:600;}
+
+  /* ============ HERO ============ */
+  .hero{
+    position:relative;
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:120px 0 60px;
+    background:
+      radial-gradient(ellipse 900px 500px at 82% 8%, rgba(255,122,26,0.20), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 10% 90%, rgba(41,229,255,0.14), transparent 60%),
+      radial-gradient(ellipse 1000px 700px at 50% 40%, rgba(255,47,146,0.10), transparent 65%),
+      linear-gradient(180deg, var(--void) 0%, var(--void-2) 60%, var(--void) 100%);
+    overflow:hidden;
+  }
+
+  .hero-glow-ball{
+    position:absolute;
+    top:-120px; right:-120px;
+    width:420px; height:420px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.55), rgba(41,229,255,0.18) 35%, transparent 70%);
+    filter:blur(2px);
+    opacity:0.55;
+    pointer-events:none;
+    z-index:1;
+  }
+
+  /* full-spread logo wash, sits behind the headline */
+  .hero-bg-art{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    overflow:hidden;
+    pointer-events:none;
+  }
+  .hero-bg-art img{
+    position:absolute;
+    top:50%; left:60%;
+    width:min(1400px, 145vw);
+    max-width:none;
+    transform:translate(-42%,-50%);
+    opacity:0.30;
+    filter:saturate(1.15);
+  }
+  .hero-bg-art::after{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      linear-gradient(100deg, var(--void) 0%, rgba(11,7,19,0.72) 30%, rgba(11,7,19,0.35) 55%, rgba(11,7,19,0.65) 78%, var(--void) 100%),
+      linear-gradient(0deg, var(--void) 0%, transparent 22%, transparent 78%, var(--void) 100%);
+  }
+  @media (max-width:760px){
+    .hero-bg-art img{left:50%; top:38%; width:220vw; transform:translate(-50%,-50%); opacity:0.24;}
+  }
+
+  .hero-inner{position:relative; z-index:2;}
+
+  /* ============ COLLAGE CONFETTI ============ */
+  .confetti{position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:1;}
+  .confetti img{
+    position:absolute;
+    width:118px;
+    border-radius:6px;
+    border:2px solid rgba(243,234,217,0.16);
+    box-shadow:0 16px 30px rgba(0,0,0,0.5);
+    opacity:0.5;
+    filter:saturate(1.2);
+  }
+  .hero-confetti .c1{top:14%; left:6%; width:100px; transform:rotate(-11deg); opacity:0.4;}
+  .hero-confetti .c2{bottom:16%; left:11%; width:120px; transform:rotate(7deg); opacity:0.42;}
+  .hero-confetti .c3{top:8%; left:22%; width:76px; transform:rotate(16deg); opacity:0.3;}
+  @media (max-width:760px){ .hero-confetti{display:none;} }
+
+  .hero h1{
+    font-family:var(--disp);
+    text-transform:uppercase;
+    font-weight:400;
+    line-height:0.86;
+    font-size:clamp(64px, 15vw, 168px);
+    letter-spacing:0.01em;
+    margin:22px 0 8px;
+    color:var(--paper);
+    text-shadow:
+      0 0 2px rgba(243,234,217,0.6),
+      0 0 24px rgba(255,47,146,0.55),
+      0 0 60px rgba(41,229,255,0.25);
+  }
+  .hero h1 span{
+    display:block;
+    color:transparent;
+    -webkit-text-stroke:2px var(--hotline);
+    text-shadow:0 0 30px rgba(255,47,146,0.45);
+  }
+
+  .hero-sub{
+    max-width:520px;
+    font-size:clamp(15px,2vw,18px);
+    color:var(--paper-dim);
+    margin:18px 0 34px;
+  }
+  .hero-sub b{color:var(--paper); font-weight:600;}
+
+  .cta-row{display:flex; flex-wrap:wrap; gap:14px; margin-bottom:56px;}
+
+  .btn{
+    font-family:var(--mono);
+    font-size:12.5px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    text-decoration:none;
+    padding:15px 26px;
+    border-radius:3px;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    transition:transform .18s ease, box-shadow .18s ease;
+    border:1px solid transparent;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn-solid{
+    background:var(--hotline);
+    color:var(--void);
+    font-weight:600;
+    box-shadow:0 0 0 rgba(255,47,146,0);
+  }
+  .btn-solid:hover{box-shadow:0 10px 30px rgba(255,47,146,0.35);}
+  .btn-line{
+    border-color:rgba(243,234,217,0.35);
+    color:var(--paper);
+  }
+  .btn-line:hover{border-color:var(--laser); color:var(--laser);}
+
+  /* ticker */
+  .ticker{
+    position:relative;
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    background:rgba(255,255,255,0.02);
+    padding:14px 0;
+    white-space:nowrap;
+    overflow:hidden;
+  }
+  .ticker-track{
+    display:inline-flex;
+    gap:0;
+    animation:scroll-left 26s linear infinite;
+  }
+  .ticker span{
+    font-family:var(--mono);
+    font-size:13px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--paper-dim);
+    padding:0 22px;
+    display:inline-flex;
+    align-items:center;
+    gap:22px;
+  }
+  .ticker span::after{content:"✦"; color:var(--hotline); font-size:10px;}
+  @keyframes scroll-left{
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}
+  }
+
+  /* ============ INTRO ============ */
+  .intro{
+    padding:110px 0 70px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse 640px 420px at 8% 15%, rgba(41,229,255,0.10), transparent 60%),
+      radial-gradient(ellipse 640px 420px at 94% 85%, rgba(255,47,146,0.10), transparent 60%),
+      radial-gradient(ellipse 500px 380px at 85% 10%, rgba(255,201,77,0.08), transparent 60%);
+  }
+  .intro p{
+    max-width:760px;
+    margin:26px auto 0;
+    font-size:clamp(17px,2.4vw,21px);
+    color:var(--paper-dim);
+  }
+  .intro p b{color:var(--paper); font-weight:600;}
+
+  .intro-rule{
+    width:64px; height:3px;
+    background:linear-gradient(90deg, var(--hotline), var(--laser));
+    margin:0 auto;
+    border-radius:2px;
+  }
+
+  /* ============ FILMSTRIP ============ */
+  .filmstrip{
+    display:grid;
+    grid-template-columns:1.3fr 1fr 1fr;
+    gap:14px;
+    padding:0 0 110px;
+  }
+  .filmstrip figure{
+    position:relative;
+    border-radius:6px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    padding-top:125%; /* 4:5 box, padding-trick for universal support */
+  }
+  .filmstrip figure:first-child{padding-top:87.5%; /* 8:7 */}
+  .filmstrip img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover; object-position:center 30%;
+    display:block; filter:saturate(1.05) contrast(1.03);
+  }
+  .filmstrip figcaption{
+    position:absolute; left:0; right:0; bottom:0;
+    padding:14px 16px 12px;
+    background:linear-gradient(0deg, rgba(11,7,19,0.92), transparent);
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--paper-dim);
+  }
+
+  @media (max-width:760px){
+    .filmstrip{grid-template-columns:1fr 1fr;}
+    .filmstrip figure:first-child{grid-column:span 2; aspect-ratio:16/10;}
+  }
+
+  /* ============ SECTION HEADERS ============ */
+  .sec-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:20px;
+    margin-bottom:44px;
+    flex-wrap:wrap;
+    border-bottom:1px solid var(--line);
+    padding-bottom:22px;
+  }
+  .sec-head h2{
+    font-family:var(--disp);
+    text-transform:uppercase;
+    font-weight:400;
+    font-size:clamp(38px,6vw,64px);
+    line-height:0.92;
+  }
+  .sec-num{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--paper-dim);
+    letter-spacing:.1em;
+  }
+
+  /* ============ ARTIST SECTIONS ============ */
+  .artist{
+    padding:90px 0;
+    position:relative;
+  }
+  .artist + .artist{border-top:1px solid var(--line);}
+
+  .artist-grid{
+    display:grid;
+    grid-template-columns:1.15fr 0.85fr;
+    gap:60px;
+    align-items:start;
+  }
+  .artist.reverse .artist-grid{grid-template-columns:0.85fr 1.15fr;}
+  .artist.reverse .artist-copy{order:2;}
+  .artist.reverse .artist-visual{order:1;}
+
+  @media (max-width:880px){
+    .artist-grid, .artist.reverse .artist-grid{grid-template-columns:1fr; gap:40px;}
+    .artist.reverse .artist-copy, .artist.reverse .artist-visual{order:initial;}
+    .vcard.tilt-r{margin-left:8%; width:82%;}
+  }
+  @media (max-width:520px){
+    .vcard.tilt-r{margin-left:0; width:100%;}
+  }
+
+  .kicker{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--hotline);
+    margin-bottom:12px;
+  }
+  .artist-copy h3{
+    font-family:var(--disp);
+    text-transform:uppercase;
+    font-weight:400;
+    font-size:clamp(34px,5vw,54px);
+    line-height:0.95;
+    margin-bottom:20px;
+    color:var(--paper);
+  }
+  .artist-copy p{
+    color:var(--paper-dim);
+    font-size:16px;
+    max-width:60ch;
+    margin-bottom:16px;
+  }
+  .artist-copy p b{color:var(--paper); font-weight:600;}
+
+  .stat-strip{
+    display:flex;
+    gap:0;
+    margin:30px 0 8px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .stat{
+    flex:1;
+    padding:18px 16px;
+    text-align:center;
+    border-right:1px solid var(--line);
+    background:rgba(255,255,255,0.02);
+  }
+  .stat:last-child{border-right:none;}
+  .stat .num{
+    font-family:var(--disp);
+    font-size:clamp(26px,4vw,34px);
+    color:var(--laser);
+    line-height:1;
+    text-shadow:0 0 18px rgba(41,229,255,0.4);
+  }
+  .stat .lbl{
+    font-family:var(--mono);
+    font-size:9.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--paper-dim);
+    margin-top:6px;
+  }
+
+  .tag-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:22px 0;
+  }
+  .tag{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.06em;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    color:var(--paper-dim);
+  }
+
+  .shared-stage{
+    margin-top:24px;
+    padding-top:20px;
+    border-top:1px dashed var(--line);
+    font-family:var(--body);
+    font-size:15px;
+  }
+  .shared-stage b{color:var(--brass); font-weight:600;}
+  .shared-stage .note{
+    display:block;
+    margin-top:6px;
+    color:var(--paper-dim);
+    font-size:13.5px;
+    font-style:italic;
+  }
+
+  /* visual card stack */
+  .artist-visual{
+    position:relative;
+    display:grid;
+    gap:18px;
+  }
+  .vcard{
+    position:relative;
+    border-radius:8px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    box-shadow:0 24px 50px rgba(0,0,0,0.45);
+    transition:transform .3s ease;
+  }
+  .vcard:hover{transform:translateY(-6px) rotate(0deg) !important;}
+  .vcard .frame{position:relative; width:100%; padding-top:118%;}
+  .vcard img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;}
+  .vcard.tilt-l{transform:rotate(-2.5deg);}
+  .vcard.tilt-r{transform:rotate(2deg); margin-left:12%; width:88%;}
+  .vcard .tag-corner{
+    position:absolute; top:10px; left:10px; z-index:2;
+    font-family:var(--mono);
+    font-size:9.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    background:rgba(11,7,19,0.75);
+    color:var(--laser);
+    padding:5px 9px;
+    border-radius:3px;
+    border:1px solid rgba(41,229,255,0.35);
+  }
+
+  /* ============ UNITED / CALLOUT ============ */
+  .united{
+    padding:100px 0;
+    position:relative;
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse 750px 450px at 12% 15%, rgba(255,201,77,0.11), transparent 60%),
+      radial-gradient(ellipse 750px 450px at 88% 85%, rgba(255,47,146,0.13), transparent 60%),
+      radial-gradient(ellipse 600px 400px at 90% 10%, rgba(41,229,255,0.08), transparent 60%);
+    border-top:1px solid var(--line);
+  }
+  .united-copy{
+    max-width:760px;
+    margin:0 auto;
+  }
+  .united-copy p{
+    color:var(--paper-dim);
+    font-size:16.5px;
+    margin-bottom:18px;
+  }
+  .united-copy p b{color:var(--paper); font-weight:600;}
+
+  .callout{
+    margin:44px auto 0;
+    max-width:760px;
+    border:1px dashed var(--sunburn);
+    border-radius:10px;
+    padding:28px 30px;
+    background:rgba(255,122,26,0.05);
+    position:relative;
+  }
+  .callout::before{
+    content:"NOT JUST A BACK-TO-BACK";
+    position:absolute;
+    top:-13px; left:24px;
+    background:var(--void);
+    padding:0 10px;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.16em;
+    color:var(--sunburn);
+  }
+  .callout p{color:var(--paper-dim); font-size:15.5px; margin:0;}
+  .callout p b{color:var(--brass); font-weight:600;}
+
+  /* ============ FLYER WALL ============ */
+  .wall{
+    padding:120px 0 100px;
+    border-top:1px solid var(--line);
+    position:relative;
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse 800px 500px at 90% 6%, rgba(255,122,26,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 4% 90%, rgba(41,229,255,0.09), transparent 60%),
+      radial-gradient(ellipse 600px 400px at 50% 50%, rgba(255,47,146,0.05), transparent 65%);
+  }
+  .wall::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(243,234,217,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(243,234,217,0.035) 1px, transparent 1px);
+    background-size:38px 38px;
+    pointer-events:none;
+  }
+  .wall-inner{position:relative; z-index:1;}
+
+  .cork{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:34px 26px;
+    margin-top:20px;
+  }
+  @media (max-width:920px){ .cork{grid-template-columns:repeat(2, 1fr);} }
+  @media (max-width:480px){ .cork{grid-template-columns:1fr; max-width:340px; margin-left:auto; margin-right:auto;} }
+
+  .pin-card{
+    position:relative;
+    background:#12101a;
+    padding:10px 10px 34px;
+    border-radius:2px;
+    box-shadow:0 18px 34px rgba(0,0,0,0.5);
+    transition:transform .25s ease, box-shadow .25s ease;
+    cursor:default;
+  }
+  .cork .pin-card:nth-child(1){transform:rotate(-3deg);}
+  .cork .pin-card:nth-child(2){transform:rotate(2.4deg);}
+  .cork .pin-card:nth-child(3){transform:rotate(-1.6deg);}
+  .cork .pin-card:nth-child(4){transform:rotate(3.2deg);}
+  .cork .pin-card:nth-child(5){transform:rotate(1.4deg);}
+  .cork .pin-card:nth-child(6){transform:rotate(-2.8deg);}
+  .cork .pin-card:nth-child(7){transform:rotate(2deg);}
+  .cork .pin-card:nth-child(8){transform:rotate(-1.2deg);}
+  .cork .pin-card:hover{
+    transform:rotate(0deg) scale(1.05) translateY(-6px) !important;
+    box-shadow:0 26px 50px rgba(0,0,0,0.6), 0 0 0 1px var(--hotline), 0 0 34px rgba(255,47,146,0.35);
+    z-index:5;
+  }
+  .pin-card .frame{position:relative; width:100%; padding-top:125%;}
+  .pin-card img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    filter:saturate(1.05);
+  }
+  .pin-card .tape{
+    position:absolute;
+    top:-10px; left:50%;
+    width:64px; height:22px;
+    transform:translateX(-50%) rotate(-2deg);
+    background:rgba(243,234,217,0.16);
+    border:1px solid rgba(243,234,217,0.22);
+    backdrop-filter:blur(1px);
+  }
+  .pin-card .cap{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--paper-dim);
+    padding:10px 4px 0;
+    text-align:center;
+  }
+
+  /* ============ BOOKING / FOOTER ============ */
+  .booking{
+    padding:100px 0 50px;
+    border-top:1px solid var(--line);
+  }
+  .booking-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:50px;
+  }
+  @media (max-width:760px){ .booking-grid{grid-template-columns:1fr; gap:36px;} }
+
+  .booking h4{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--laser);
+    margin-bottom:18px;
+  }
+  .booking-line{
+    display:flex;
+    justify-content:space-between;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+    font-size:15px;
+  }
+  .booking-line span:first-child{color:var(--paper-dim); font-family:var(--mono); font-size:12px; letter-spacing:.06em;}
+  .booking-line a{text-decoration:none;}
+  .booking-line a:hover{color:var(--hotline);}
+
+  /* ============ CLOSER PHOTO — final full-bleed image ============ */
+  .closer-photo{
+    position:relative;
+    min-height:78vh;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    overflow:hidden;
+    border-top:1px solid var(--line);
+  }
+  .closer-photo img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    object-position:center 28%;
+    filter:saturate(1.08) contrast(1.02);
+  }
+  .closer-photo-scrim{
+    position:absolute; inset:0;
+    background:
+      linear-gradient(0deg, var(--void) 0%, rgba(11,7,19,0.75) 22%, rgba(11,7,19,0.15) 52%, rgba(11,7,19,0.35) 100%),
+      radial-gradient(ellipse 800px 500px at 50% 100%, rgba(255,47,146,0.18), transparent 70%);
+  }
+  .closer-photo-content{
+    position:relative;
+    z-index:1;
+    text-align:center;
+    padding:64px 0 48px;
+  }
+  .closer-photo .tagline{
+    font-family:var(--disp);
+    text-transform:uppercase;
+    font-weight:400;
+    font-size:clamp(26px,5.4vw,48px);
+    line-height:1.12;
+    color:transparent;
+    -webkit-text-stroke:1.6px var(--paper);
+    letter-spacing:0.01em;
+    text-shadow:0 4px 30px rgba(0,0,0,0.6);
+  }
+  .closer-photo .tagline em{
+    font-style:normal;
+    -webkit-text-stroke:1.6px var(--hotline);
+    color:transparent;
+  }
+  .closer-photo p.copyright{
+    margin-top:24px;
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--paper-dim);
+    letter-spacing:.06em;
+  }
+  @media (max-width:640px){
+    .closer-photo{min-height:64vh;}
+  }
+
+  section{scroll-margin-top:20px;}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="hero-bg-art" aria-hidden="true">
+    <img src=
+      
+      alt="">
+  </div>
+  <div class="hero-glow-ball" aria-hidden="true"></div>
+  <div class="confetti hero-confetti" aria-hidden="true">
+    <img class="c1" src=
+      
+      alt="">
+    <img class="c2" src=
+      
+      alt="">
+    <img class="c3" src=
+      
+      alt="">
+  </div>
+  <div class="wrap hero-inner">
+    <div class="eyebrow">Philadelphia · House + Disco</div>
+    <h1>OSOS<span>DISCOS</span></h1>
+    <p class="hero-sub">Cameron Kelly &amp; Marshall T — <b>decades of experience, fresh passion on the decks.</b> New Orleans soul meets Philly's dance floor, one feel‑good groove at a time.</p>
+    <div class="cta-row">
+      <a class="btn btn-solid" href="#booking">Book Osos Discos</a>
+      <a class="btn btn-line" href="#wall">See the Flyer Wall ↓</a>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>New Orleans</span><span>Philadelphia</span><span>Atlantic City</span><span>Online Radio</span>
+      <span>New Orleans</span><span>Philadelphia</span><span>Atlantic City</span><span>Online Radio</span>
+      <span>New Orleans</span><span>Philadelphia</span><span>Atlantic City</span><span>Online Radio</span>
+      <span>New Orleans</span><span>Philadelphia</span><span>Atlantic City</span><span>Online Radio</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ INTRO ============ -->
+<section class="intro">
+  <div class="confetti" aria-hidden="true">
+    <img src=
+      
+      alt="" style="top:10%; left:3%; width:92px; transform:rotate(-9deg); opacity:0.34;">
+    <img src=
+      
+      alt="" style="bottom:8%; right:4%; width:104px; transform:rotate(8deg); opacity:0.32;">
+  </div>
+  <div class="wrap">
+    <div class="intro-rule"></div>
+    <p>Osos Discos is the dynamic DJ duo of <b>Cameron Kelly</b> and <b>Marshall T</b>, blending decades of experience with fresh passion on the decks. Based in Philadelphia, this partnership unites the soulful roots of New Orleans with the contemporary energy of Philly's dance scene. Their sound is all about feel-good vibes — a rich mix of classic house grooves and shimmering disco beats that light up any dance floor. Both DJs share a love for infectious rhythms and an unshakeable commitment to keeping the crowd moving, creating an atmosphere where everyone feels the groove.</p>
+  </div>
+</section>
+
+<!-- ============ FILMSTRIP ============ -->
+<div class="wrap">
+  <div class="filmstrip">
+    <figure>
+      <img src=
+
+        
+      <figcaption>Lasers On</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- ============ CAMERON ============ -->
+<section class="artist" id="cameron">
+  <div class="wrap artist-grid">
+    <div class="artist-copy">
+      <div class="kicker">01 — Two Decades Behind the Decks</div>
+      <h3>Cameron Kelly</h3>
+      <p>Cameron Kelly brings over 20 years of DJing expertise to Osos Discos. A New Orleans native who started throwing parties in 1996, Cameron has honed his craft across the country. He cut his teeth in the vibrant NOLA club circuit, holding down residencies at legendary spots like <b>The Ninth Circle</b>, <b>Oz</b>, <b>The Bourbon Pub/Parade</b>, and <b>The Dragon's Den</b>.</p>
+      <p>Over the years, he expanded into radio, with shows on pioneering internet stations such as ChicagoHouseFM, MyHouseYourHouse, and Sugar Shack Radio. After relocating to Philadelphia, Cameron became a familiar name in the local scene with regular sets at venues ranging from the iconic <b>Bob &amp; Barbara's Lounge</b> to indie hotspots like Johnny Brenda's and the Richmond Street Flea. He's even brought his beats to Atlantic City, grooving at Superfrico and Angeloni's Club Madrid.</p>
+
+      <div class="stat-strip">
+        <div class="stat"><div class="num">24</div><div class="lbl">States Played</div></div>
+        <div class="stat"><div class="num">1996</div><div class="lbl">Party Origin</div></div>
+        <div class="stat"><div class="num">3</div><div class="lbl">Radio Stations</div></div>
+      </div>
+
+      <div class="tag-row">
+        <span class="tag">New Orleans</span>
+        <span class="tag">Philadelphia</span>
+        <span class="tag">Atlantic City</span>
+        <span class="tag">Online Radio</span>
+      </div>
+
+      <div class="shared-stage">
+        Shared stages with <b>Derrick Carter</b> · <b>Big Freedia</b> · <b>Tortured Soul</b> · <b>Kermit Ruffins</b>
+        <span class="note">Disco's funky soul + driving house + a touch of acid-house flair.</span>
+      </div>
+    </div>
+
+    <div class="artist-visual">
+      <div class="vcard tilt-l">
+        <span class="tag-corner">WKDU · EMM 2023</span>
+        <div class="frame"><img src=
+                        
+                             
+                             </div>
+      </div>
+      <div class="vcard tilt-l">
+        <span class="tag-corner">WHCR 90.3 · The Mix Lab</span>
+        <div class="frame"><img src=
+                             
+                             </div>
+      </div>
+    </div>
+
+    <div class="artist-copy">
+      <div class="kicker">02 — From Roadie to Resident DJ</div>
+      <h3>Marshall T</h3>
+      <p>Marshall T is the newer half of Osos Discos, bringing a fresh spark and sharp ear to the duo's performances. He began his musical journey as Cameron's dedicated roadie <b>(and husband)</b>, absorbing the craft from the sidelines as he helped lug vinyl and set up gear.</p>
+      <p>Inspired by Cameron's passion and the magic of the dance floor, Marshall soon tried his hand behind the decks. He quickly proved he had the talent to match his enthusiasm. Now an emerging DJ in his own right, Marshall holds down regular gigs at <b>Superfrico</b>, <b>Angeloni's Club Madrid</b>, and the Richmond Street Flea. He's also made crowd-pleasing appearances at various one-off events across Philadelphia, steadily building a name for his blend of upbeat disco classics and modern house tracks. Marshall's selections showcase his love for the genre's roots and his knack for finding the perfect track to elevate the mood.</p>
+
+      <div class="tag-row">
+        <span class="tag">Superfrico</span>
+        <span class="tag">Angeloni's Club Madrid</span>
+        <span class="tag">Richmond Street Flea</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ UNITED ============ -->
+<section class="united" id="united">
+  <div class="confetti" aria-hidden="true">
+    <img src=
+      
+      alt="" style="top:6%; right:6%; width:110px; transform:rotate(10deg); opacity:0.3;">
+    <img src=
+      
+      alt="" style="bottom:5%; left:4%; width:96px; transform:rotate(-12deg); opacity:0.3;">
+  </div>
+  <div class="wrap">
+    <div class="sec-head" style="border-bottom:none; margin-bottom:26px; justify-content:center; text-align:center; flex-direction:column; align-items:center;">
+      <div class="kicker">Two Selectors, One Dance Floor</div>
+      <h2>United by Philly Roots</h2>
+    </div>
+    <div class="united-copy">
+      <p>Together as Osos Discos, Cameron and Marshall deliver an irresistible energy born from their unique partnership. Their Philly roots run deep — the duo calls the City of Brotherly Love home, and their sets often pay homage to Philadelphia's rich musical heritage while also channeling the funky Crescent City flavors from Cameron's past. When they hit the booth side by side, you can expect a collaborative vibe where each DJ pushes the other to new heights. They seamlessly trade tracks, blending old-school with new-school, and their chemistry behind the decks is palpable.</p>
+      <p>Osos Discos thrives on creating an inclusive, jubilant atmosphere. Whether it's a packed nightclub, an outdoor block party, or a trendy lounge, they transform any space into a joyous dance floor. The duo's combined energy invites dancers of all ages and backgrounds to share in the groove. With <b>Cameron's veteran instincts</b> guiding the flow and <b>Marshall's fresh perspective</b> keeping things exciting, an Osos Discos set is a celebration of house and disco in its purest form.</p>
+
+      <div class="callout">
+        <p>Osos Discos isn't just two DJs playing back to back — Cameron and Marshall build and throw their own parties together. They co-founded <b>Soulful Sessions Philly</b> alongside Antonio Estrella; after his passing, they launched <b>Pure House with Rogue</b>, a residency that was later rebranded <b>ReVibe</b> when Rogue stepped away. They also run <b>The Fishbowl Project</b>, a feel-good, ego-free, body-positive, all-vinyl disco party held every third Sunday in Philadelphia, and have been featured together on <b>WKDU 91.7FM's Freak Flag</b>, the station's weekly electronic music guest-DJ program.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FLYER WALL ============ -->
+<section class="wall" id="wall">
+  <div class="confetti" aria-hidden="true">
+    <img src
+      
+      alt="" style="top:4%; left:2%; width:88px; transform:rotate(-8deg); opacity:0.28;">
+  </div>
+  <div class="wrap wall-inner">
+    <div class="sec-head">
+      <div>
+        <div class="kicker">Receipts</div>
+        <h2>On the Wall</h2>
+      </div>
+      <div class="sec-num">Real gigs. Real flyers. Taped up, not staged.</div>
+    </div>
+
+    <div class="cork">
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src=
+
+                             
+        <div class="cap">Richmond Street Flea · Halloween</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src=
+                             
+                             </div>
+        <div class="cap">Bounce · Nut Hut Saloon</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src=
+                             
+                             </div>
+        <div class="cap">Sunday Vinyl · Wissahickon</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src=
+                             
+                             </div>
+        <div class="cap">Behind the Decks</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src=
+                             
+                             </div>
+        <div class="cap">The Mix Lab · WHCR</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src=
+                             
+                             </div>
+        <div class="cap">NYE · Wissahickon</div>
+      </div>
+      <div class="pin-card">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="frame"><img src=
+                             
+                             </div>
+        <div class="cap">Angeloni's · Pop Art</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BOOKING / FOOTER ============ -->
+<footer class="booking" id="booking">
+  <div class="wrap">
+    <div class="booking-grid">
+      <div>
+        <h4>Booking</h4>
+        <div class="booking-line"><span>Email</span><a href="mailto:cameron@phillydisco.com">cameron@phillydisco.com</a></div>
+        <div class="booking-line"><span>Phone</span><a href="tel:6607235111">660-723-5111</a></div>
+        <div class="booking-line"><span>Entity</span><span>Guthrie Entertainment LLC · Philadelphia, PA</span></div>
+      </div>
+      <div>
+        <h4>Find Us Online</h4>
+        <div class="booking-line"><span>Web</span><a href="https://guthrieent.com" target="_blank" rel="noopener">guthrieent.com</a></div>
+        <div class="booking-line"><span>IG · Cameron</span><a href="https://instagram.com/camalama" target="_blank" rel="noopener">@camalama</a></div>
+        <div class="booking-line"><span>IG · Marshall</span><a href="https://instagram.com/djmarshall.t" target="_blank" rel="noopener">@djmarshall.t</a></div>
+        <div class="booking-line"><span>SoundCloud</span><a href="https://soundcloud.com/kineticnola" target="_blank" rel="noopener">kineticnola</a></div>
+        <div class="booking-line"><span>Twitch</span><a href="https://twitch.tv/chefcamalama" target="_blank" rel="noopener">chefcamalama</a></div>
+        <div class="booking-line"><span>Resident Advisor</span><a href="https://ra.co/dj/cameronkelly" target="_blank" rel="noopener">ra.co/dj/cameronkelly</a></div>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<!-- ============ CLOSER PHOTO — final full-bleed image ============ -->
+<section class="closer-photo">
+"Cameron Kelly and Marshall T at the record store for WKDU's Freak Flag, digging through crates side by side">
+  <div class="closer-photo-scrim"></div>
+  <div class="closer-photo-content wrap">
+    <div class="eyebrow" style="justify-content:center; margin-bottom:16px;">WKDU 91.7 · Freak Flag</div>
+    <div class="tagline">Authentic House + Disco.<br>Philly Roots. <em>No Dead Dance Floors.</em></div>
+    <p class="copyright">© Guthrie Entertainment LLC · Philadelphia, PA</p>
+  </div>
+</section>
+
+</body>
+</html>

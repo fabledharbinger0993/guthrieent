@@ -1,7 +1,8 @@
 /*
- * Cloudflare Pages Function backing dashboard.html — aggregate-only reads
- * from D1, gated by a shared key. Never returns emails or the raw payload:
- * the dashboard is a "how's the research going" view, not a data export.
+ * Cloudflare Pages Function backing dashboard.html — the single unified
+ * admin view. Aggregate-only reads from D1, gated by a shared key. Never
+ * returns emails or the raw payload: this is a "how's it going" view, not
+ * a data export.
  *
  * Setup (one-time, Cloudflare dashboard):
  *   Pages project → Settings → Environment variables → DASHBOARD_KEY.
@@ -22,9 +23,30 @@
  *   so a dashboard view doesn't pay for a fresh AI call every time. No AI
  *   binding just means no summary field in the response — the rest of the
  *   dashboard is unaffected.
+ *
+ * SITE-WIDE TOTALS (visits / consult requests / survey starts)
+ *   Read from the `events` table (functions/api/track.js writes visits and
+ *   survey starts; functions/api/consult.js writes consult requests
+ *   directly). Survey *completes* is just COUNT(*) on `responses` — no
+ *   separate event for that. If `events` doesn't exist yet on a given D1
+ *   (schema.sql not yet run), those three counts come back null rather
+ *   than failing the whole dashboard.
+ *
+ * APP DOWNLOADS
+ *   Pulled live from the GitHub releases API (asset download_count on the
+ *   FableGear.zip asset) — GitHub already counts this authoritatively, so
+ *   there's no click-tracking to build or maintain. This is a *different*
+ *   GitHub path than functions/fablegear/release.js: that one deliberately
+ *   avoids api.github.com because it's called on every visitor's page load.
+ *   This one only runs when the dashboard itself is opened, so the stricter
+ *   unauthenticated api.github.com rate limit (60/hr) isn't a concern —
+ *   still cached briefly (DOWNLOADS_CACHE_SECONDS) to be a good citizen.
  */
 
 const SUMMARY_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+const DOWNLOADS_CACHE_SECONDS = 600;
+const RELEASE_REPO = 'fabledharbinger0993/FableGear';
+const RELEASE_ASSET = 'FableGear.zip';
 
 export async function onRequestGet({ request, env }) {
   if (!env.DASHBOARD_KEY) {
@@ -48,6 +70,7 @@ export async function onRequestGet({ request, env }) {
       recentText,
       sentimentCounts,
       topicCounts,
+      toolCoOccurrence,
     ] = await Promise.all([
       env.DB.prepare(
         `SELECT
@@ -88,14 +111,37 @@ export async function onRequestGet({ request, env }) {
         `SELECT topic, COUNT(*) AS n FROM response_topics
          GROUP BY topic ORDER BY n DESC LIMIT 20`
       ).all(),
+      // Co-occurrence: how often two tools are picked in the *same*
+      // response. Self-join on response_id with tool_id < tool_id to count
+      // each unordered pair once. This is the "neuron map" the dashboard
+      // renders as a node-link graph — nodes from tool_counts above
+      // (weighted by n), edges from this (weighted by n).
+      env.DB.prepare(
+        `SELECT a.tool_id AS tool_a, b.tool_id AS tool_b, COUNT(*) AS n
+         FROM response_tools a
+         JOIN response_tools b
+           ON a.response_id = b.response_id AND a.tool_id < b.tool_id
+         GROUP BY a.tool_id, b.tool_id
+         HAVING n >= 2
+         ORDER BY n DESC
+         LIMIT 150`
+      ).all(),
     ]);
 
-    const summary = env.AI ? await getOrRefreshSummary(env, totals.total) : null;
+    const [summary, siteTotals, appDownloads] = await Promise.all([
+      env.AI ? getOrRefreshSummary(env, totals.total) : null,
+      getSiteTotals(env),
+      getAppDownloads(env),
+    ]);
 
     return json({
       ok: true,
-      totals,
+      totals: Object.assign({}, totals, siteTotals, {
+        survey_completes: totals.total,
+        app_downloads: appDownloads,
+      }),
       tool_counts: toolCounts.results,
+      tool_co_occurrence: toolCoOccurrence.results,
       likert_stats: likertStats.results,
       recent_text: recentText.results,
       sentiment_counts: sentimentCounts.results,
@@ -105,6 +151,64 @@ export async function onRequestGet({ request, env }) {
   } catch (err) {
     console.error('Dashboard query failed:', err);
     return json({ ok: false, error: 'Query failed.' }, 500);
+  }
+}
+
+// Visits / consult requests / survey starts from the `events` table. Returns
+// nulls instead of throwing if that table doesn't exist yet on this D1 (i.e.
+// schema.sql hasn't been run against it) — the rest of the dashboard still
+// loads, those three cards just show "—" until it has been.
+async function getSiteTotals(env) {
+  try {
+    const rows = await env.DB.prepare(
+      `SELECT type, COUNT(*) AS n FROM events
+       WHERE type IN ('visit', 'consult_request', 'survey_start')
+       GROUP BY type`
+    ).all();
+    const byType = {};
+    for (const row of rows.results) byType[row.type] = row.n;
+    return {
+      visits: byType.visit || 0,
+      consult_requests: byType.consult_request || 0,
+      survey_starts: byType.survey_start || 0,
+    };
+  } catch (err) {
+    console.error('Site totals query failed (events table missing?):', err);
+    return { visits: null, consult_requests: null, survey_starts: null };
+  }
+}
+
+// Live download count for FableGear.zip from GitHub's releases API, cached
+// briefly. Null on any failure — the rest of the dashboard is unaffected.
+async function getAppDownloads(env) {
+  const cache = caches.default;
+  const cacheKey = new Request('https://guthrieent.com/__cache/dashboard-downloads');
+
+  const hit = await cache.match(cacheKey);
+  if (hit) return (await hit.json()).count;
+
+  try {
+    const res = await fetch(`https://api.github.com/repos/${RELEASE_REPO}/releases/latest`, {
+      headers: {
+        'User-Agent': 'guthrieent.com-dashboard',
+        Accept: 'application/vnd.github+json',
+      },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const asset = Array.isArray(data.assets)
+      ? data.assets.find(function (a) { return a.name === RELEASE_ASSET; })
+      : null;
+    const count = asset ? asset.download_count : null;
+
+    const cacheResponse = new Response(JSON.stringify({ count }), {
+      headers: { 'Cache-Control': `public, max-age=${DOWNLOADS_CACHE_SECONDS}` },
+    });
+    await cache.put(cacheKey, cacheResponse.clone());
+    return count;
+  } catch (err) {
+    console.error('Download count lookup failed:', err);
+    return null;
   }
 }
 

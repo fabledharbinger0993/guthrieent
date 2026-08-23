@@ -119,6 +119,20 @@ export async function onRequestPost({ request, env }) {
       console.error('Customer copy failed:', ackErr);
     }
 
+    // 3. Log the request for the dashboard's totals. Best-effort and after
+    //    the fact — the email above is the actual booking; this only feeds
+    //    a count. Same DB binding functions/api/survey.js already uses,
+    //    shared across the whole Pages project, so no separate setup.
+    if (env.DB) {
+      try {
+        await env.DB.prepare(
+          "INSERT INTO events (type, meta, created_at) VALUES ('consult_request', ?, datetime('now'))"
+        ).bind(JSON.stringify({ name, email })).run();
+      } catch (logErr) {
+        console.error('Consult event log failed (request still sent):', logErr);
+      }
+    }
+
     return json({ ok: true });
   } catch (err) {
     console.error('Fetch error:', err);

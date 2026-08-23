@@ -94,32 +94,53 @@
   .pill b{color:var(--laser); font-weight:600;}
 
   /* ============ HERO ============ */
-  .hero{
-    position:relative;
-    min-height:100svh;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    padding:120px 0 60px;
-    background:
-      radial-gradient(ellipse 900px 500px at 82% 8%, rgba(255,122,26,0.20), transparent 60%),
-      radial-gradient(ellipse 700px 500px at 10% 90%, rgba(41,229,255,0.14), transparent 60%),
-      radial-gradient(ellipse 1000px 700px at 50% 40%, rgba(255,47,146,0.10), transparent 65%),
-      linear-gradient(180deg, var(--void) 0%, var(--void-2) 60%, var(--void) 100%);
-    overflow:hidden;
-  }
+.hero{
+  min-height:100svh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  padding:120px 0 0;
+  background:
+    linear-gradient(180deg, rgba(16,13,22,.35), var(--ink) 88%),
+    radial-gradient(circle at 82% 14%, rgba(255,59,157,.22), transparent 28rem),
+    radial-gradient(circle at 8% 86%, rgba(126,238,255,.13), transparent 26rem);
+}
 
-  .hero-glow-ball{
-    position:absolute;
-    top:-120px; right:-120px;
-    width:420px; height:420px;
-    border-radius:50%;
-    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.55), rgba(41,229,255,0.18) 35%, transparent 70%);
-    filter:blur(2px);
-    opacity:0.55;
-    pointer-events:none;
-    z-index:1;
-  }
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  opacity:.18;
+  background-image:
+    linear-gradient(rgba(244,236,220,.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(244,236,220,.08) 1px, transparent 1px);
+  background-size:44px 44px;
+  mask-image:linear-gradient(to bottom, black, transparent 75%);
+}
+
+.hero h1{
+  max-width:900px;
+  margin:22px 0 14px;
+  font-family:var(--display);
+  font-size:clamp(76px, 16vw, 184px);
+  font-weight:400;
+  line-height:.79;
+  letter-spacing:-.015em;
+  text-transform:uppercase;
+  color:var(--paper);
+}
+
+.hero h1 span{
+  color:transparent;
+  -webkit-text-stroke:2px var(--pink);
+  text-shadow:
+    4px 4px 0 rgba(255,59,157,.20),
+    0 0 32px rgba(255,59,157,.25);
+}  
 
   /* full-spread logo wash, sits behind the headline */
   .hero-bg-art{

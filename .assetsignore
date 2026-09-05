@@ -1,0 +1,19 @@
+# Cloudflare Workers static-assets upload ignore file (gitignore-style).
+#
+# This project's assets.directory is the repo root, and unlike classic
+# Cloudflare Pages, Workers static assets has no built-in exclusion for
+# dotfiles or source directories — everything not listed here gets uploaded
+# and served as a public static file. Confirmed live and publicly reachable
+# before this file existed: .git/config, .git/HEAD, .git/logs/HEAD (full
+# commit history, reconstructable object-by-object), CLAUDE.md, schema.sql,
+# every functions/**/*.js handler's source, and .github/workflows/ci.yml.
+#
+# No secret *values* were found in git history (everything reads from
+# env.* — Cloudflare-managed secrets, never committed), but this still
+# needs to stay excluded: git history, D1 schema, and server source have
+# no business being public.
+.git
+.github
+functions
+CLAUDE.md
+schema.sql

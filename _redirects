@@ -1,0 +1,16 @@
+# Confirmed live on production (guthrieent.com, the Cloudflare Pages
+# deployment): /CLAUDE.md and /schema.sql serve their real file content
+# (text/markdown and application/x-sql respectively) to anyone. Everything
+# else checked -- .git/*, functions/**/*.js -- turned out to be a false
+# alarm: this project's Pages deployment already falls back to the
+# homepage (200, text/html) for those, same as any other unmatched path,
+# because Pages has always excluded .git and functions/ from what it
+# uploads. CLAUDE.md and schema.sql are ordinary repo-root files with no
+# such special-casing, so they're served like any other static asset.
+#
+# .assetsignore (added for the separate Workers-static-assets deployment)
+# has no effect here -- Pages doesn't read that file. This is the
+# Pages-native way to stop answering a specific path with its real
+# content: matching requests get the homepage back, reported as 404.
+/CLAUDE.md / 404
+/schema.sql / 404

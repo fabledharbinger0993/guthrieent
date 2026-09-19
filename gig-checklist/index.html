@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Gig Checklist</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="wrap">
+  <h1>Gig Checklist</h1>
+  <p class="subtitle">Internal gear + cable prep tool. Not part of the public site.</p>
+
+  <div class="panel gig-info">
+    <div>
+      <label for="gig-name">Gig / client</label>
+      <input type="text" id="gig-name" placeholder="e.g. Smith wedding" />
+    </div>
+    <div>
+      <label for="gig-date">Date</label>
+      <input type="date" id="gig-date" />
+    </div>
+    <div class="full">
+      <label for="gig-notes">Notes</label>
+      <textarea id="gig-notes" placeholder="Load-in time, parking, contact, power availability, etc."></textarea>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button type="button" id="new-gig-btn">New gig (clear)</button>
+    <button type="button" id="print-btn">Print / save as PDF</button>
+  </div>
+
+  <div id="summary"></div>
+
+  <div id="gear-sections"></div>
+
+  <div id="cable-sections"></div>
+
+  <div class="panel" id="notes-section" style="display:none"></div>
+</div>
+
+<script src="gear-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

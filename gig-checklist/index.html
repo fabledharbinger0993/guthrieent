@@ -2,9 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="robots" content="noindex, nofollow" />
 <title>Gig Checklist</title>
+
+<!-- PWA: installable, works offline, launches full-screen from the home
+     screen icon. See README.md "Installing on your phone". -->
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#0d0f12" />
+
+<!-- iOS specifically ignores manifest.json for "Add to Home Screen" and
+     wants these instead. -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Gig Checklist" />
+<link rel="apple-touch-icon" href="icons/icon-180.png" />
+
+<link rel="icon" href="icons/icon-192.png" />
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -43,5 +57,16 @@
 
 <script src="gear-data.js"></script>
 <script src="app.js"></script>
+<script>
+  // Registering here (not app.js) keeps app.js dependency-free of the PWA
+  // concern — it'll run fine as a plain page too, service worker or not.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch((err) => {
+        console.warn('Service worker registration failed:', err);
+      });
+    });
+  }
+</script>
 </body>
 </html>

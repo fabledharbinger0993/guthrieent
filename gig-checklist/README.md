@@ -8,6 +8,31 @@ self-contained enough (three plain files, zero dependencies, zero build
 step) to split into its own repo later with a straight copy — nothing to
 untangle.
 
+## Installing on your phone
+
+This is a PWA (Progressive Web App) — it installs like a real app straight
+from the browser, no App Store, no Mac, no Xcode:
+
+**iPhone (Safari):** open the page → Share button → **Add to Home Screen**.
+It launches full-screen with its own icon, no browser chrome, and works
+with zero signal (a parking lot, a basement venue, airplane mode) once
+you've opened it online at least once.
+
+**Android (Chrome):** open the page → ⋮ menu → **Install app** (or
+**Add to Home screen**, depending on Chrome version).
+
+It has to be served over HTTPS for the "works offline" part to actually
+work (or `localhost` while testing locally) — a `file://` link opened
+straight from disk will run, but skips the install prompt and the offline
+cache. If you're testing before this is deployed anywhere, run a quick
+local server from this folder (`python3 -m http.server`) and open
+`http://localhost:8000`.
+
+**If you change `gear-data.js`, `app.js`, `styles.css`, or `index.html`
+later:** bump `CACHE_VERSION` in `sw.js`, or your phone will keep showing
+the old cached version until that changes. This is called out again at
+the top of `sw.js` for the same reason.
+
 ## What it does
 
 1. **Pick your gear.** Check off what you're bringing (speakers, DJ
@@ -34,6 +59,9 @@ over.
 | `gear-data.js` | **Edit this one.** The gear inventory and the cable rules. Plain data — add a gear item, add or change a cable rule, no app logic to touch. |
 | `app.js` | Rendering + state. Reads `gear-data.js`; shouldn't need editing unless you're changing how the app *works* rather than what it knows. |
 | `styles.css` | Styling, including print styles. |
+| `manifest.json` | PWA metadata (name, icons, standalone display) — what makes "Add to Home Screen" behave like a real app. |
+| `sw.js` | Service worker — caches the app shell for offline use. Bump `CACHE_VERSION` here after editing any of the above. |
+| `icons/` | Home-screen icon at the three sizes iOS/Android actually ask for (180/192/512). |
 
 ## Adding a new gear item
 

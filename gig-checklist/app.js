@@ -135,9 +135,11 @@
     root.innerHTML = '';
 
     let anyRendered = false;
+    let anySourceSelected = false;
 
     window.GIG_CABLE_RULES.forEach((sourceRule) => {
       if (qty(sourceRule.sourceId) === 0) return;
+      anySourceSelected = true;
 
       const lines = sourceRule.cables.filter((c) => c.when(qty));
       if (!lines.length) return;
@@ -205,7 +207,9 @@
 
     if (!anyRendered) {
       root.appendChild(el('p', { class: 'empty-note' }, [
-        'Pick a mixer or all-in-one unit above (Alpha Theta Euphonia or AlphaTheta OMNIS-DUO) to see what cables it needs.',
+        anySourceSelected
+          ? "Mixer selected — pick some speakers or CDJs above to see what it needs to connect to them."
+          : 'Pick a mixer or all-in-one unit above (Alpha Theta Euphonia or AlphaTheta OMNIS-DUO) to see what cables it needs.',
       ]));
     }
   }

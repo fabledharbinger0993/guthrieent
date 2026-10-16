@@ -601,6 +601,19 @@
         table.data td.num { font-family: 'IBM Plex Mono', monospace; color: var(--ink); }
         table.data tr.highlight td { color: var(--ink); font-weight: 600; }
 
+        .install-steps { margin: 18px 0 14px; padding-left: 22px; display: grid; gap: 10px; }
+        .install-steps strong { color: var(--ink); }
+        code {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85em;
+            padding: 1px 6px;
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            background: rgba(0,0,0,0.3);
+            color: var(--ink);
+        }
+        /* Commands get their own line and wrap only at spaces, so a phone never splits a word. */
+        .install-steps code { display: inline-block; margin-top: 6px; line-height: 1.6; }
         .dep { padding: 14px 0; border-bottom: 1px solid var(--line); }
         .dep:last-child { border-bottom: none; }
         .dep-name { font-family: 'IBM Plex Mono', monospace; color: var(--ink); font-size: 0.95rem; font-weight: 600; }
@@ -1200,38 +1213,47 @@
         <p>We also got tired of paying four separate companies to do four things to the same folder of music, with no single place to see the results. So FableGear reads the file references your library actually uses, repairs the ones pointing nowhere, and reports what it found. Your cue points, hot cues, playlists, and ratings are not touched.</p>
     </section>
 
+    <section class="panel" id="forge">
+        <h2>The Forge: tempo, key, tags and loudness in one pass</h2>
+        <p>Point The Forge at a folder and it runs FableGear's three in-house tools on every track. Each one skips what a file already carries (an existing BPM, an existing key, loudness already on target), so running it again on the same folder is safe and only the new tracks get touched.</p>
+        <div class="promise-grid">
+            <div class="promise-item">
+                <strong>Iron · reads the music</strong>
+                Finds tempo, musical key, and where the beats fall, counting back to beat 1. Every result carries a confidence score, so you can check the few tracks it was unsure about instead of trusting all of them equally.
+            </div>
+            <div class="promise-item">
+                <strong>Anvil · writes the tags</strong>
+                Puts BPM and key into the file itself (MP3, AIFF, FLAC, WAV, M4A) and into FableGear's own library, so the values survive a rebuilt rekordbox database. Tags other tools wrote, like Mixed In Key's energy level, are kept as they were.
+            </div>
+            <div class="promise-item">
+                <strong>Quench · levels loudness</strong>
+                Measures each track to the EBU R128 broadcast standard and adjusts only the ones outside your target, keeping format, bit depth, tags and cover art. It will not push a file into clipping, it asks once before rewriting anything, and it leaves AAC/M4A alone.
+            </div>
+        </div>
+    </section>
+
     <section class="panel">
-        <h2>What you can do with it</h2>
+        <h2>And the library work around it</h2>
         <ul class="feature-list">
             <li class="feature-item">
                 <span class="feature-tag">[ 01 ] REPAIR</span>
                 <strong>Reconnect tracks rekordbox lost</strong>
-                When a drive gets renamed or a folder moves, FableGear finds the files rekordbox can no longer locate and points the library back at them. Cue points, hot cues, ratings, and playlist membership stay as they were.
+                Rename a drive or move a folder in Finder and rekordbox loses the files, because Finder never updates its database. FableGear finds where they went and points the library back at them. Cue points, hot cues, ratings, and playlists stay as they were.
             </li>
             <li class="feature-item">
                 <span class="feature-tag">[ 02 ] DEDUPLICATE</span>
                 <strong>Find the same song filed more than once</strong>
-                It compares audio fingerprints rather than filenames, so it recognizes a raw rip and the same track after a Mixed In Key or Platinum Notes pass as one song. Duration is part of the match, which is what stops a 3:30 radio edit from being merged with a 7:00 extended mix. You choose what to keep, and playlist membership moves to the copy you keep instead of being lost.
+                It matches on audio fingerprint and duration, not filename, so a raw rip and the same track after a Mixed In Key or Platinum Notes pass count as one song, while a 3:30 radio edit and a 7:00 extended mix stay separate. Extra copies move to an archive folder beside your library rather than being deleted, and can be put back. A separate tool merges duplicate entries inside the rekordbox database, moving every playlist onto the entry that stays.
             </li>
             <li class="feature-item">
-                <span class="feature-tag">[ 03 ] ANALYZE</span>
-                <strong>Tempo and key you can check</strong>
-                FableGear detects BPM and musical key and writes them to your file tags. It also reports how confident it was, so you can review the handful of tracks it was unsure about instead of trusting all of them equally.
+                <span class="feature-tag">[ 03 ] ORGANIZE</span>
+                <strong>Rename, sort, and convert</strong>
+                Rename files from their tags (Artist - Title by default), sort them into folders by artist, label, or genre, and convert between formats. Every move is written to a log first, so you can see what happened and undo it.
             </li>
             <li class="feature-item">
                 <span class="feature-tag">[ 04 ] RECOVER</span>
                 <strong>Rebuild playlists from a USB stick</strong>
                 If your laptop library is gone but you still have an exported drive, FableGear can read the crates off that drive and rebuild them, then write them back into a live rekordbox library.
-            </li>
-            <li class="feature-item">
-                <span class="feature-tag">[ 05 ] ORGANIZE</span>
-                <strong>Rename and sort by what you choose</strong>
-                Rename files from their tags and sort them into folders by label, artist, genre, or the structure of your own crates. Every move is written to a log first, so you can see what happened and undo it.
-            </li>
-            <li class="feature-item">
-                <span class="feature-tag">[ 06 ] EXPORT</span>
-                <strong>Write a USB that a CDJ reads</strong>
-                FableGear can write the Pioneer library format and the analysis files that go with it, including beat grids and waveforms. See the honest note about this below.
             </li>
         </ul>
     </section>
@@ -1240,22 +1262,22 @@
         <summary>
             <div class="summary-text">
                 <h2>Numbers, and how we got them</h2>
-                <p class="summary-teaser">The benchmark methodology and the 91.4% exact-match number behind the tempo-detection claim.</p>
+                <p class="summary-teaser">How Iron's tempo and key were measured against 20,096 rekordbox-analyzed tracks.</p>
             </div>
             <span class="summary-toggle" aria-hidden="true"></span>
         </summary>
         <div class="details-body">
-        <p>Claims about analysis quality are easy to make and hard to check, so here is ours with the method attached. Rekordbox writes its own beat grid for every track it analyzes. We read 12,687 of those grids out of one working DJ library and used them as the answer key, then ran a random 300-track sample through FableGear and compared.</p>
+        <p>Claims about analysis quality are easy to make and hard to check, so here is ours with the method attached. Rekordbox stores its own tempo and key for every track it analyzes. We used those as the answer key for 20,096 tracks from one working DJ library and ran Iron over all of them.</p>
         <table class="data">
-            <thead><tr><th>Beat detection</th><th>Within 4%</th><th>Within 1%</th><th>Exact</th></tr></thead>
+            <thead><tr><th>Iron against rekordbox</th><th>Tracks</th><th>Agreement</th></tr></thead>
             <tbody>
-                <tr><td>Our previous method</td><td class="num">90.7%</td><td class="num">36.8%</td><td class="num">13.4%</td></tr>
-                <tr class="highlight"><td>What ships now</td><td class="num">98.3%</td><td class="num">94.8%</td><td class="num">91.4%</td></tr>
+                <tr class="highlight"><td>Tempo, exact (within 0.6 BPM)</td><td class="num">20,096</td><td class="num">81.3%</td></tr>
+                <tr><td>Tempo, within 4%</td><td class="num">20,096</td><td class="num">92.9%</td></tr>
+                <tr><td>Key, exact</td><td class="num">1,998</td><td class="num">62.2%</td></tr>
             </tbody>
         </table>
-        <p>The last column is the one that matters. A tempo that is 4% off drifts a full beat within about 25 bars, which is useless for a beat grid even though it looks fine as a percentage. Exact agreement with rekordbox on 91.4% of tracks is what makes a grid worth putting on a USB stick.</p>
-        <p>We also found and fixed a real bug in our own loudness tool while measuring this. It was raising volume to hit a target without checking how close the audio already was to maximum, which clipped the file and deleted the original. On the tracks we tested it damaged 39 out of 39. It now refuses to raise volume past the point where clipping starts, and tells you when it cannot reach the target instead of ruining the file to get there.</p>
-        <div class="caveat"><strong>What that measurement does not prove:</strong> it is one library, with one person's taste in music, and 300 tracks. A collection of drum and bass or hip hop would score differently. We publish the method so you can disagree with it.</div>
+        <p>Exact tempo is the number that matters. A tempo 4% off drifts a full beat within about 25 bars, which is useless for a beat grid even though it looks fine as a percentage. Key is the weaker result, measured on tracks the model never saw while it was being built. About a third of its misses land a fifth away, which usually still mixes, but spot-check keys before you lean on them.</p>
+        <div class="caveat"><strong>What these numbers do not prove:</strong> it is one library, with one person's taste in music, and rekordbox's answer is a reference rather than the truth. A collection of drum and bass or hip hop would score differently. An earlier version of this page quoted 91.4% exact tempo from a 300-track sample using essentia, a library we have since removed. On the same 50 tracks Iron matched or beat it (100% against 96% exact); the figure above comes from a far larger sample and is the one to trust.</div>
         </div>
     </details>
 
@@ -1263,37 +1285,17 @@
         <summary>
             <div class="summary-text">
                 <h2>How it compares to DJ software</h2>
-                <p class="summary-teaser">Where FableGear overlaps with Mixed In Key, Platinum Notes, Lexicon, and Rekord Cloud — and where it doesn't try to.</p>
+                <p class="summary-teaser">Where FableGear overlaps with Mixed In Key, Platinum Notes, Lexicon, and Rekord Cloud, and where it doesn't try to.</p>
             </div>
             <span class="summary-toggle" aria-hidden="true"></span>
         </summary>
         <div class="details-body">
-        <p>FableGear does not try to beat the specialists at their own specialty. It does the library maintenance parts in one free local app instead of four paid ones.</p>
+        <p>FableGear does not try to beat the specialists at their own specialty. It does the library maintenance parts in one local app instead of four paid ones.</p>
         <ul class="feature-list">
-            <li class="feature-item"><span class="feature-tag">REKORDBOX</span><strong>Still required for some things</strong>Rekordbox is a player and a performance tool, and it is good at that. It is not built to keep a large archive readable through years of drive changes. FableGear does the archive work and leaves performance to rekordbox. You can run both.</li>
-            <li class="feature-item"><span class="feature-tag">MIXED IN KEY</span><strong>Key and energy analysis</strong>Mixed In Key is a mature paid product and its energy ratings have no equivalent here. Our key detection is good but we have not measured it against an answer key the way we did with tempo, so we are not going to claim it is better. FableGear is free and includes key detection as part of library work rather than as a separate purchase.</li>
-            <li class="feature-item"><span class="feature-tag">PLATINUM NOTES</span><strong>Loudness and correction</strong>Platinum Notes is a paid batch processor that rewrites your audio. FableGear measures loudness to the same broadcast standard on your own machine for free, but it is deliberately more conservative: it will decline to change a file rather than clip it. If you want aggressive per-track mastering, Platinum Notes does that and we do not.</li>
-            <li class="feature-item"><span class="feature-tag">LEXICON</span><strong>Library management across apps</strong>Lexicon is a polished paid app that syncs libraries between rekordbox, Serato, Traktor, and others. It is more finished than FableGear and supports more platforms. FableGear is free, open source, macOS only, and focused on rekordbox specifically, including reading and writing the Pioneer USB format directly.</li>
-            <li class="feature-item"><span class="feature-tag">REKORDCLOUD</span><strong>Cloud library tools</strong>Rekord Cloud does library conversion and cleanup through a browser, on a subscription. FableGear does its work on your machine with no account and no upload. If you prefer a hosted service with support, that is a fair reason to pick theirs.</li>
-        </ul>
-        </div>
-    </details>
-
-    <details class="panel collapsible">
-        <summary>
-            <div class="summary-text">
-                <h2>How it compares to general file tools</h2>
-                <p class="summary-teaser">Against Picard, Mp3tag, dupeGuru, and Finder itself — and why none of them know what a cue point is.</p>
-            </div>
-            <span class="summary-toggle" aria-hidden="true"></span>
-        </summary>
-        <div class="details-body">
-        <p>Plenty of people already clean music folders with tools that were not written for DJs. Those tools are often excellent, and they do not know what a cue point is.</p>
-        <ul class="feature-list">
-            <li class="feature-item"><span class="feature-tag">MUSICBRAINZ PICARD</span><strong>Fingerprint tagging</strong>Picard is free, cross platform, and better than FableGear at filling in correct release metadata from MusicBrainz. It also happily reorganizes files in ways that leave rekordbox unable to find them. FableGear uses the same fingerprinting service but updates the rekordbox database alongside the files, so tagging does not break your library.</li>
-            <li class="feature-item"><span class="feature-tag">MP3TAG</span><strong>Bulk tag editing</strong>Mp3tag is faster and more flexible for pure tag editing, and it has years of refinement behind it. It has no idea your library exists. FableGear edits fewer fields but keeps the database in agreement with what it wrote.</li>
-            <li class="feature-item"><span class="feature-tag">DUPEGURU / GEMINI</span><strong>Duplicate finders</strong>General duplicate finders match on filename, size, or hash. That misses the case DJs actually have, where the same song exists as a raw rip and again after processing, so the bytes differ completely. FableGear matches on audio fingerprint and duration, and shows you which playlists each copy is in before you delete anything.</li>
-            <li class="feature-item"><span class="feature-tag">FINDER, FOOBAR2000, VLC</span><strong>Moving files and auditioning them</strong>Moving files in Finder is exactly what breaks a rekordbox library, because Finder does not update the database. FableGear moves files and updates the references in the same operation. It also has preview decks built in, so you do not need a second player open to hear what you are about to change.</li>
+            <li class="feature-item"><span class="feature-tag">REKORDBOX</span><strong>Still your player</strong>Rekordbox is a performance tool, and good at it. It is not built to keep a large archive readable through years of drive changes. FableGear does the archive work; run both.</li>
+            <li class="feature-item"><span class="feature-tag">MIXED IN KEY</span><strong>Key and energy</strong>A mature paid product, and its energy ratings have no equivalent here. Iron's key agrees with rekordbox 62% of the time; we have not measured Mixed In Key the same way, so we do not claim to beat it. Anvil leaves its tags intact.</li>
+            <li class="feature-item"><span class="feature-tag">PLATINUM NOTES</span><strong>Loudness</strong>If you want aggressive per-track mastering, Platinum Notes does that and we do not. Quench measures to the same broadcast standard and will decline to change a file rather than clip it.</li>
+            <li class="feature-item"><span class="feature-tag">LEXICON · REKORD CLOUD</span><strong>Library management</strong>Lexicon is more finished and syncs across more DJ apps; Rekord Cloud is a hosted subscription with support. FableGear is free during the beta, open source, rekordbox-focused, and runs entirely on your Mac with no account.</li>
         </ul>
         </div>
     </details>
@@ -1302,46 +1304,35 @@
         <summary>
             <div class="summary-text">
                 <h2>What it is built on</h2>
-                <p class="summary-teaser">The open source dependencies FableGear runs on, and their licenses.</p>
+                <p class="summary-teaser">Our own engines, the open source projects FableGear runs on, and their licenses.</p>
             </div>
             <span class="summary-toggle" aria-hidden="true"></span>
         </summary>
         <div class="details-body">
-        <p>FableGear is Python. It leans on open source projects that are better at their jobs than anything we would write, and it is worth knowing what they are, because they determine what the app can and cannot do. Our own code is MIT licensed. These are installed from the Python package index on your machine when you first run the app rather than shipped inside the download.</p>
-
-        <h3>Audio analysis</h3>
-        <div class="dep"><span class="dep-name">ffmpeg</span><span class="dep-lic">LGPL / GPL</span><span class="dep-why">Decodes every format, measures loudness and true peak to the EBU R128 standard, and handles format conversion. Installed separately with Homebrew. Nearly everything audio in FableGear goes through it.</span></div>
-        <div class="dep"><span class="dep-name">essentia</span><span class="dep-lic">AGPL-3.0</span><span class="dep-why">Beat tracking, from the Music Technology Group at Universitat Pompeu Fabra. This is the single biggest reason our tempo numbers improved from 13% to 91% exact. It is optional: if there is no build available for your macOS and Python version, the app installs without it, falls back to a less accurate method, and says so in its health panel rather than quietly giving you worse grids.</span></div>
-        <div class="dep"><span class="dep-name">librosa</span><span class="dep-lic">ISC</span><span class="dep-why">Musical key detection, waveform generation, and the tempo fallback when essentia is unavailable. Works everywhere, which is why it stays.</span></div>
-        <div class="dep"><span class="dep-name">pyacoustid and Chromaprint</span><span class="dep-lic">MIT / LGPL</span><span class="dep-why">Audio fingerprinting, used to recognize duplicates and to look up metadata from AcoustID and MusicBrainz. This is what lets duplicate detection work on processed copies.</span></div>
-
-        <h3>Reading and writing your library</h3>
+        <p>FableGear is Python and MIT licensed. The analysis, tagging, and loudness engines are our own; everything else leans on open source projects that are better at their jobs than anything we would write. The Python packages install on your Mac when the installer runs; ffmpeg and Chromaprint you install yourself.</p>
+        <div class="dep"><span class="dep-name">Iron, Anvil, Quench</span><span class="dep-lic">MIT · ours</span><span class="dep-why">Tempo, key, and beat detection; tag reading and writing; loudness levelling. The three tools inside The Forge.</span></div>
+        <div class="dep"><span class="dep-name">ffmpeg</span><span class="dep-lic">LGPL / GPL</span><span class="dep-why">Decodes every format for Iron, measures and rewrites loudness for Quench, and handles format conversion.</span></div>
+        <div class="dep"><span class="dep-name">Chromaprint and pyacoustid</span><span class="dep-lic">LGPL / MIT</span><span class="dep-why">Audio fingerprints, which is what lets duplicate detection recognize processed copies.</span></div>
         <div class="dep"><span class="dep-name">pyrekordbox</span><span class="dep-lic">MIT</span><span class="dep-why">Reads and writes the rekordbox database and its analysis files. Dylan Jones' work here is the reason an app like this is possible at all.</span></div>
-        <div class="dep"><span class="dep-name">mutagen</span><span class="dep-lic">GPL-2.0-or-later</span><span class="dep-why">Reads and writes tags across MP3, AIFF, FLAC, WAV, and M4A. Every tag FableGear touches goes through it.</span></div>
-        <div class="dep"><span class="dep-name">numpy and soundfile</span><span class="dep-lic">BSD</span><span class="dep-why">Numerical work and audio file inspection, including reading the bit depth of a source file so a conversion does not silently downgrade it.</span></div>
-
-        <h3>The app itself</h3>
-        <div class="dep"><span class="dep-name">Flask, Waitress, pywebview</span><span class="dep-lic">BSD / ZPL</span><span class="dep-why">FableGear runs a small web server on your machine and shows it in a native window. That is why the interface looks like a web app: it is one, served only to you, on localhost.</span></div>
-        <div class="dep"><span class="dep-name">yt-dlp</span><span class="dep-lic">Unlicense</span><span class="dep-why">Powers the download tool. What you do with it is your responsibility.</span></div>
-        <div class="dep"><span class="dep-name">Model Context Protocol SDK</span><span class="dep-lic">MIT</span><span class="dep-why">Lets an AI assistant drive FableGear's tools directly, with a required order so it cannot deduplicate a library it has not audited yet.</span></div>
-
-        <p style="margin-top:24px">Two projects deserve credit without being dependencies. The reverse engineering of Pioneer's USB formats by Deep Symmetry (crate-digger and dysentery) and by Jan Holthuis (rekordcrate) is what made the export work possible. We did not figure that format out; we read their documentation.</p>
+        <div class="dep"><span class="dep-name">librosa and mutagen</span><span class="dep-lic">ISC / GPL-2.0+</span><span class="dep-why">Logged fallbacks when Iron or Anvil cannot handle a file, plus waveforms and general metadata reading.</span></div>
+        <div class="dep"><span class="dep-name">Flask, Waitress, pywebview, MCP SDK</span><span class="dep-lic">BSD / ZPL / MIT</span><span class="dep-why">A small server on your own Mac shown in a native window, and an optional way for an AI assistant to drive the tools in a safe order.</span></div>
+        <p style="margin-top:24px">The reverse engineering of Pioneer's USB formats by Deep Symmetry (crate-digger and dysentery) and by Jan Holthuis (rekordcrate) is what our USB export work is built on. We did not figure that format out; we read their documentation.</p>
         </div>
     </details>
 
     <section class="panel">
         <h2>What we are not going to pretend about</h2>
-        <p><strong style="color:var(--ink)">The USB export works, once, on one player.</strong> We wrote a USB stick with FableGear, with no rekordbox involved, and it loaded and played on a CDJ-3000. That is a real result and it changes what this app can become. It is also one player on one day. We have not tested an XDJ, an OPUS-QUAD, or older 2000NXS2 hardware, and until we do, take a rekordbox-made stick to the gig as well.</p>
+        <p><strong style="color:var(--ink)">The USB export does not reach a CDJ yet.</strong> FableGear can write Pioneer's newer library format, and in July a stick written that way played on a CDJ-3000, though that stick may already have held a rekordbox export. A repeat in October on a CDJ-3000 running firmware 3.2x showed nothing, while a rekordbox-made stick loaded fine: that firmware reads only the older <code>export.pdb</code> format, which FableGear does not write yet. Building that writer is the next big piece of work. Until it ships, export your gig sticks from rekordbox.</p>
         <p><strong style="color:var(--ink)">Loudness normalization will often decline to do anything.</strong> Most commercial music is already mastered close to maximum. Our default target asks for more volume than those files have room for, so the tool correctly skips them instead of clipping. That is the safe behavior, but it means the feature does less than the name suggests. We would rather it do nothing than damage your audio.</p>
         <p><strong style="color:var(--ink)">It is macOS only.</strong> There is no Windows build. The code is not deeply tied to macOS, but nobody has done the work, so we are not going to promise a date.</p>
-        <p><strong style="color:var(--ink)">It is young.</strong> There are 528 automated tests and the destructive operations are the most heavily tested parts, because those are the ones that can cost you something. It is still a young project maintained by a small team. Back up your library before you point any new tool at it, including this one.</p>
+        <p><strong style="color:var(--ink)">It is young.</strong> There are more than 1,200 automated tests and the destructive operations are the most heavily tested parts, because those are the ones that can cost you something. It is still a young project maintained by a small team. Back up your library before you point any new tool at it, including this one.</p>
         <p><strong style="color:var(--ink)">It writes to your files and your database.</strong> That is the entire point, and it is also the risk. Every operation that changes something writes to a log first and can be undone, and destructive tools default to a preview run. Read the preview.</p>
     </section>
 
     <section class="panel">
         <h2>Where this is going</h2>
         <p>Right now FableGear supports rekordbox and expects you to keep using it. That support is not going away. Everything the app does is designed to leave your rekordbox library working.</p>
-        <p>The longer aim is that you should not need rekordbox to get music onto a player. The USB export result above is the first evidence that is achievable rather than wishful. If it holds up across more hardware, the choice of what manages your collection stops being made for you by whoever built the gear. That is the reason the source is public: a library tool you depend on should not be something that can be taken away from you.</p>
+        <p>The longer aim is that you should not need rekordbox to get music onto a player. The missing piece is the <code>export.pdb</code> writer described above. Once FableGear writes a stick every player reads, the choice of what manages your collection stops being made for you by whoever built the gear. That is the reason the source is public: a library tool you depend on should not be something that can be taken away from you.</p>
     </section>
 
     <section class="panel" id="pricing">
@@ -1531,14 +1522,22 @@
         <h2>Get the beta build</h2>
         <p>This is the current beta of FableGear for macOS. It is the same build whether you answered the survey or scrolled straight past it.</p>
 
-        <div class="caveat"><strong>Read this before you run it.</strong> The beta is <strong>not code-signed or notarized</strong>, so macOS Gatekeeper will refuse it on first open — you will need to allow it explicitly in System Settings → Privacy &amp; Security. It writes to your files and to your rekordbox database. Every operation that changes something logs first and can be undone, and the destructive tools default to a preview run. <strong>Read the preview.</strong> Back up your library before pointing any tool at it.</div>
+        <ol class="install-steps">
+            <li><strong>Install three things first.</strong> FableGear needs Python 3.11 to 3.13, ffmpeg, and fpcalc (part of Chromaprint). It checks for them but never installs system software for you. With Homebrew it is one line: <code>brew install ffmpeg chromaprint python@3.13</code></li>
+            <li><strong>Download and unzip.</strong> You get <strong>Install FableGear.app</strong>.</li>
+            <li><strong>Approve it once.</strong> The beta is not code-signed, so macOS blocks the first open. Click Done, then go to System Settings → Privacy &amp; Security, scroll to Security, and click <strong>Open Anyway</strong>.</li>
+            <li><strong>Let the installer finish.</strong> It builds a private Python environment, installs FableGear's packages into it, and puts <strong>FableGear</strong> in your Applications folder. Then open it and give it access to your music when macOS asks.</li>
+        </ol>
+        <p>To update, download the newest zip and run its installer again. Your library, settings, and environment are kept.</p>
+
+        <div class="caveat"><strong>Read this before you run it.</strong> FableGear writes to your files and to your rekordbox database. Every operation that changes something logs first and can be undone, and the destructive tools default to a preview run. <strong>Read the preview.</strong> Back up your library before pointing any tool at it.</div>
 
         <div class="cta-wrap" style="text-align:center">
             <a id="dl-btn"
                href="https://github.com/fabledharbinger0993/FableGear/releases/latest/download/FableGear.zip"
                class="cta-btn">Download the beta ↓</a>
             <span id="dl-version" class="cta-version" style="display:none"></span>
-            <span class="cta-note">Version 1.x is the beta · macOS 12 or later · unzip and open · free, permanently</span>
+            <span class="cta-note">Version 1.x is the beta · macOS 12 or later · unzip and run the installer · free, permanently</span>
         </div>
 
         <p style="margin-top:22px;">Every 1.x build is beta and every 1.x build is free — that is the whole numbering scheme, and it does not change until the feedback says it should. There is nothing to buy on this page. When there eventually is, <a href="#pricing">what it will cost</a> applies, including the part where downloading this now means you never pay for it.</p>

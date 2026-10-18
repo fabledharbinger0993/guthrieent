@@ -190,20 +190,26 @@
        picture. Positions are measured off website-design.png (3840×2160):
        left = button centre, top = button top edge, width = button width. */
     @media (min-width: 768px) and (min-aspect-ratio: 4/3) {
+      :root {
+        --stage-w: min(100vw, 177.78vh);
+        --stage-h: min(56.25vw, 100vh);
+      }
+
       .bg {
         background-image: image-set(url('/assets/home/bg-desktop.webp') type('image/webp'), url('/assets/home/bg-desktop.jpg') type('image/jpeg'));
         background-position: center;
       }
 
+      /* Centred with negative margins, not transform: a transformed
+         ancestor would trap the position: fixed corner badges below. */
       .stage {
         display: block;
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
-        width: min(100vw, 177.78vh);
-        aspect-ratio: 16 / 9;
-        margin: 0;
+        width: var(--stage-w);
+        height: var(--stage-h);
+        margin: calc(var(--stage-h) / -2) 0 0 calc(var(--stage-w) / -2);
         padding: 0;
       }
       .stage > .item,
@@ -217,8 +223,20 @@
       .stage > .interactive:hover  { transform: translateX(-50%) scale(1.035); }
       .stage > .interactive:active { transform: translateX(-50%) scale(0.93); }
 
-      .fable   { --x: 8.6%;  --y: 1.5%;  --w: 15.5%; }
-      .epk     { --x: 91.4%; --y: 2%;    --w: 14%; }
+      /* FableGear and EPK pin to the window corners, so on screens wider
+         than 16:9 they sit at the edges instead of the stage's. Sized off
+         the stage so they still scale with the rest of the picture. */
+      .stage > .fable,
+      .stage > .epk {
+        position: fixed;
+        top: calc(var(--stage-h) * 0.015);
+        transform: none;
+        z-index: 3;
+      }
+      .stage > .fable { left:  calc(var(--stage-w) * 0.006); width: calc(var(--stage-w) * 0.178); transform-origin: top left; }
+      .stage > .epk   { left: auto; right: calc(var(--stage-w) * 0.008); width: calc(var(--stage-w) * 0.161); transform-origin: top right; }
+      .stage > .fable:hover,  .stage > .epk:hover  { transform: scale(1.035); }
+      .stage > .fable:active, .stage > .epk:active { transform: scale(0.93); }
       .logo    { --x: 50%;   --y: 22%;   --w: 44%; }
       .event   { --x: 23.5%; --y: 67.6%; --w: 17.8%; z-index: 1; }
       .gear    { --x: 76.2%; --y: 68.4%; --w: 18.8%; z-index: 1; }
@@ -279,7 +297,7 @@
       </picture>
     </a>
 
-    <a class="item logo interactive" href="https://ososdiscos.com/epk" aria-label="Osos Discos, Cameron Kelly and Marshall T — view the EPK">
+    <a class="item logo interactive" href="https://www.instagram.com/ososdiscos" target="_blank" rel="noopener" aria-label="Osos Discos on Instagram">
       <picture>
         <source srcset="assets/home/logo-osos.webp" type="image/webp" />
         <img src="assets/home/logo-osos.png" width="1400" height="1168" alt="" fetchpriority="high" />

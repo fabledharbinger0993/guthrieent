@@ -67,11 +67,43 @@
       inset: 0;
       z-index: 0;
       pointer-events: none;
+      overflow: hidden;
       background-color: #000;
-      background-image: image-set(url('/assets/home/bg-phone-dark.webp') type('image/webp'), url('/assets/home/bg-phone-dark.jpg') type('image/jpeg'));
+    }
+    .bg-img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-image: image-set(url('/assets/home/bg-phone-tall.webp') type('image/webp'), url('/assets/home/bg-phone-tall.jpg') type('image/jpeg'));
       background-position: center top;
       background-size: cover;
       background-repeat: no-repeat;
+    }
+
+    /* ── PHONE: SLOW-TRACKING BACKGROUND (depth parallax) ─────
+       The foreground scrolls at full speed; the background (a tall
+       starfield-to-grid-floor image) drifts top to bottom over the WHOLE
+       page scroll, so far slower than the content, which makes the space
+       read as huge and far away, like falling toward the neon floor.
+       It's driven by scroll position, not time: CSS scroll timeline where
+       supported, a small rAF fallback in the script below otherwise. The
+       @supports guard matters: without scroll timelines the same keyframes
+       would run on a timer and jump straight to the end. */
+    @keyframes bg-fall {
+      from { transform: translateY(0); }
+      to   { transform: translateY(calc(100vh - 100%)); }
+    }
+    @media not ((min-width: 768px) and (min-aspect-ratio: 4/3)) {
+      /* bg-phone-tall.png is 2160x7840: show it full width, at its own height. */
+      .bg-img { height: max(100vh, calc(100vw * 7840 / 2160)); will-change: transform; }
+      @supports (animation-timeline: scroll()) {
+        .bg-img {
+          animation: bg-fall linear both;
+          animation-timeline: scroll(root block);
+        }
+      }
     }
 
     /* ── HEADLINES (real text, neon glow) ─────────────────── */
@@ -210,8 +242,20 @@
     .r-bar { justify-content: center; width: 82%; }
     .bars { display: grid; grid-template-columns: 1fr; justify-items: center; gap: 6px; width: 100%; }
 
-    .socials { gap: 3%; width: 100%; }
-    .social { flex: 0 0 17%; }
+    /* Socials sit right under the logo, two per row; the odd one out
+       (Instagram) centres on its own row. */
+    .socials {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      justify-items: center;
+      gap: 14px 18px;
+      width: 52%;
+    }
+    .social { width: 100%; }
+    /* Phone-only: outranks the desktop sizing, so it must not leak there. */
+    @media not ((min-width: 768px) and (min-aspect-ratio: 4/3)) {
+      .social:last-child:nth-child(odd) { grid-column: 1 / -1; width: calc(50% - 9px); }
+    }
 
     /* ── WIDE SCREENS: the mockup's 16:9 composition ─────────
        The stage is the largest 16:9 box that fits the viewport. Every
@@ -225,7 +269,7 @@
         --u: calc(var(--stage-w) / 3840);
       }
 
-      .bg {
+      .bg-img {
         background-image: image-set(url('/assets/home/bg-desktop-dark.webp') type('image/webp'), url('/assets/home/bg-desktop-dark.jpg') type('image/jpeg'));
         background-position: center;
       }
@@ -332,13 +376,14 @@
 
     @media (prefers-reduced-motion: reduce) {
       .logo, .scene { animation: none; }
+      .bg-img { animation: none !important; transform: none !important; height: 100%; }
       .src, .social, .tip-jar, .reveal .label { transition: none; }
     }
   </style>
 </head>
 <body>
 
-  <div class="bg scene"></div>
+  <div class="bg scene"><div class="bg-img"></div></div>
 
   <main class="stage">
     <h1 class="visually-hidden">Osos Discos — Cameron Kelly &amp; Marshall T, Philadelphia DJs</h1>
@@ -352,6 +397,41 @@
         <img src="assets/home/logo-ososdiscos.png" width="1470" height="1321" alt="" fetchpriority="high" />
       </picture>
     </a>
+
+    <p class="connect-head scene">Other ways to connect!</p>
+
+    <nav class="socials" aria-label="Osos Discos elsewhere">
+      <a class="at social s-tw scene" href="https://www.twitch.tv/chefcamalama" target="_blank" rel="noopener">
+        <picture>
+          <source srcset="assets/home/icon-twitch.webp" type="image/webp" />
+          <img src="assets/home/icon-twitch.png" width="280" height="280" alt="Twitch" />
+        </picture>
+      </a>
+      <a class="at social s-ra scene" href="https://ra.co/promoters/191868" target="_blank" rel="noopener">
+        <picture>
+          <source srcset="assets/home/icon-ra.webp" type="image/webp" />
+          <img src="assets/home/icon-ra.png" width="282" height="280" alt="Resident Advisor" />
+        </picture>
+      </a>
+      <a class="at social s-sc scene" href="https://soundcloud.com/kineticnola" target="_blank" rel="noopener">
+        <picture>
+          <source srcset="assets/home/icon-soundcloud.webp" type="image/webp" />
+          <img src="assets/home/icon-soundcloud.png" width="267" height="267" alt="SoundCloud" />
+        </picture>
+      </a>
+      <a class="at social s-fb scene" href="https://www.facebook.com/DjCameronKelly/" target="_blank" rel="noopener">
+        <picture>
+          <source srcset="assets/home/icon-fb.webp" type="image/webp" />
+          <img src="assets/home/icon-fb.png" width="264" height="264" alt="Facebook" />
+        </picture>
+      </a>
+      <a class="at social s-ig scene" href="https://www.instagram.com/ososdiscos" target="_blank" rel="noopener">
+        <picture>
+          <source srcset="assets/home/icon-ig.webp" type="image/webp" />
+          <img src="assets/home/icon-ig.png" width="272" height="271" alt="Instagram" />
+        </picture>
+      </a>
+    </nav>
 
     <a class="reveal r-cal scene" href="consult.html">
       <span class="src">
@@ -427,40 +507,6 @@
       </a>
     </div>
 
-    <p class="connect-head scene">Other ways to connect!</p>
-
-    <nav class="socials" aria-label="Osos Discos elsewhere">
-      <a class="at social s-tw scene" href="https://www.twitch.tv/chefcamalama" target="_blank" rel="noopener">
-        <picture>
-          <source srcset="assets/home/icon-twitch.webp" type="image/webp" />
-          <img src="assets/home/icon-twitch.png" width="280" height="280" alt="Twitch" />
-        </picture>
-      </a>
-      <a class="at social s-ra scene" href="https://ra.co/promoters/191868" target="_blank" rel="noopener">
-        <picture>
-          <source srcset="assets/home/icon-ra.webp" type="image/webp" />
-          <img src="assets/home/icon-ra.png" width="282" height="280" alt="Resident Advisor" />
-        </picture>
-      </a>
-      <a class="at social s-sc scene" href="https://soundcloud.com/kineticnola" target="_blank" rel="noopener">
-        <picture>
-          <source srcset="assets/home/icon-soundcloud.webp" type="image/webp" />
-          <img src="assets/home/icon-soundcloud.png" width="267" height="267" alt="SoundCloud" />
-        </picture>
-      </a>
-      <a class="at social s-fb scene" href="https://www.facebook.com/DjCameronKelly/" target="_blank" rel="noopener">
-        <picture>
-          <source srcset="assets/home/icon-fb.webp" type="image/webp" />
-          <img src="assets/home/icon-fb.png" width="264" height="264" alt="Facebook" />
-        </picture>
-      </a>
-      <a class="at social s-ig scene" href="https://www.instagram.com/ososdiscos" target="_blank" rel="noopener">
-        <picture>
-          <source srcset="assets/home/icon-ig.webp" type="image/webp" />
-          <img src="assets/home/icon-ig.png" width="272" height="271" alt="Instagram" />
-        </picture>
-      </a>
-    </nav>
   </main>
 
   <a class="tip-jar scene" href="https://venmo.com/u/Totoro_mg" target="_blank" rel="noopener" aria-label="Tip the sound guy on Venmo">
@@ -468,6 +514,30 @@
     <img class="tip-jar-qr" src="assets/qr-tip-venmo.svg" alt="" />
   </a>
 
+  <script>
+    /* ── PARALLAX FALLBACK ────────────────────────────────
+       Same motion as the bg-fall keyframes, for browsers without CSS
+       scroll timelines. Phone layout only; off for reduced motion. */
+    (function () {
+      if (window.CSS && CSS.supports('animation-timeline: scroll()')) return;
+      var img = document.querySelector('.bg-img');
+      var phone = matchMedia('not ((min-width: 768px) and (min-aspect-ratio: 4/3))');
+      var still = matchMedia('(prefers-reduced-motion: reduce)');
+      var queued = false;
+      function update() {
+        queued = false;
+        if (!phone.matches || still.matches) { img.style.transform = ''; return; }
+        var max = document.documentElement.scrollHeight - innerHeight;
+        var p = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+        var travel = img.offsetHeight - innerHeight;
+        img.style.transform = 'translateY(' + (-p * travel) + 'px)';
+      }
+      function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
+      addEventListener('scroll', queue, { passive: true });
+      addEventListener('resize', queue);
+      update();
+    })();
+  </script>
   <script src="track.js" defer></script>
 </body>
 </html>

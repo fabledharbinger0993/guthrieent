@@ -76,7 +76,7 @@
       top: 0;
       width: 100%;
       height: 100%;
-      background-image: image-set(url('/assets/home/bg-phone-tall.webp') type('image/webp'), url('/assets/home/bg-phone-tall.jpg') type('image/jpeg'));
+      background-image: image-set(url('/assets/home/bg-phone-fall.webp') type('image/webp'), url('/assets/home/bg-phone-fall.jpg') type('image/jpeg'));
       background-position: center top;
       background-size: cover;
       background-repeat: no-repeat;
@@ -96,8 +96,8 @@
       to   { transform: translateY(calc(100vh - 100%)); }
     }
     @media not ((min-width: 768px) and (min-aspect-ratio: 4/3)) {
-      /* bg-phone-tall.png is 2160x7840: show it full width, at its own height. */
-      .bg-img { height: max(100vh, calc(100vw * 7840 / 2160)); will-change: transform; }
+      /* bg-phone-fall is 720x2000 (about 1:2.8): full width, at its own height. That shape is the sweet spot: on a typical phone it overhangs the screen by ~30%, so it drifts at roughly a quarter of the content speed (measured 26% on 375x812 and 430x932). */
+      .bg-img { height: max(100vh, calc(100vw * 2000 / 720)); will-change: transform; }
       @supports (animation-timeline: scroll()) {
         .bg-img {
           animation: bg-fall linear both;

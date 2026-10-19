@@ -25,7 +25,13 @@
   <link rel="icon" type="image/png" href="assets/logo-osos.png" />
   <link rel="apple-touch-icon" href="assets/logo-osos.png" />
 
-  <link rel="preload" as="image" href="/assets/home/logo-osos.webp" type="image/webp" />
+  <link rel="preload" as="image" href="/assets/home/logo-ososdiscos.webp" type="image/webp" />
+
+  <!-- Jost: a free Futura-style face, the closest match to the mockup's headlines.
+       Allowed by the CSP in _headers (fonts.googleapis.com / fonts.gstatic.com). -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@1,800&display=swap" />
 
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -33,7 +39,7 @@
     html, body {
       width: 100%;
       min-height: 100%;
-      background: #0a0418;
+      background: #000;
       overflow-x: hidden;
     }
 
@@ -45,106 +51,102 @@
       white-space: nowrap;
     }
 
-    /* ── BACKGROUND ─────────────────────────────────────────
-       Two crops of the same scene. The phone crop is used whenever the
-       stacked layout is (same media query as .stage below), so the
-       buttons never sit over a background framed for the other shape. */
+    img { display: block; width: 100%; height: auto; }
+
+    /* ── INTRO ──────────────────────────────────────────────
+       Starts black; the logo fades in first, then the rest of the scene.
+       Opacity only, so it never fights the hover transforms below.
+       fill-mode both holds everything at 0 until its turn: no flash. */
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    .logo  { animation: fade-in 400ms ease-out both; }
+    .scene { animation: fade-in 300ms ease-out 350ms both; }
+
+    /* ── BACKGROUND ───────────────────────────────────────── */
     .bg {
       position: fixed;
       inset: 0;
       z-index: 0;
       pointer-events: none;
-      overflow: hidden;
-      background-color: #0a0418;
-      background-image: image-set(url('/assets/home/bg-phone.webp') type('image/webp'), url('/assets/home/bg-phone.jpg') type('image/jpeg'));
+      background-color: #000;
+      background-image: image-set(url('/assets/home/bg-phone-dark.webp') type('image/webp'), url('/assets/home/bg-phone-dark.jpg') type('image/jpeg'));
       background-position: center top;
       background-size: cover;
       background-repeat: no-repeat;
     }
 
-    .bg-video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0;
-      transition: opacity 0.8s ease;
+    /* ── HEADLINES (real text, neon glow) ─────────────────── */
+    .headline, .subhead, .connect-head {
+      font-family: 'Jost', 'Futura', 'Century Gothic', system-ui, sans-serif;
+      text-align: center;
+      text-transform: uppercase;
+      line-height: 1;
+      white-space: nowrap;
     }
-    .bg-video.ready { opacity: 1; }
-
-    /* ── BUTTONS ────────────────────────────────────────── */
-    .item { display: block; }
-    .item img { display: block; width: 100%; height: auto; }
-
-    .interactive {
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform 0.10s ease, filter 0.10s ease;
+    /* Styles follow icon-text.png (Marshall's own export of the headlines). */
+    .headline {
+      font-weight: 800;
+      font-style: italic;
+      color: #ffe3fb;
+      letter-spacing: 0.01em;
+      text-shadow:
+        0 0 0.05em #fff,
+        0 0 0.16em #ff4cf0,
+        0 0 0.4em #e21bd6,
+        0 0 0.8em #a3009b;
     }
-    .interactive:hover {
-      filter: brightness(1.15) drop-shadow(0 0 14px rgba(255, 90, 220, 0.6));
+    .subhead, .connect-head {
+      font-weight: 800;
+      font-style: italic;
+      color: #f2ffff;
+      text-shadow:
+        0 0 0.05em #fff,
+        0 0 0.16em #39f3ff,
+        0 0 0.4em #00c6e0,
+        0.04em 0.06em 0.1em rgba(0, 0, 0, 0.9);
+    }
+    /* The dark rounded backing behind "WE CAN HELP WITH THAT!" */
+    .subhead {
+      background: rgba(4, 14, 16, 0.92);
+      border-radius: 0.3em;
+      padding: 0.06em 0.22em 0.08em;
+      box-shadow: 0 0 0.25em rgba(0, 220, 240, 0.35);
+    }
+
+    /* ── LINKS / FOCUS ────────────────────────────────────── */
+    a { -webkit-tap-highlight-color: transparent; }
+    .src, .social { transition: transform 0.12s ease, filter 0.12s ease; }
+    .social:hover, .reveal:hover .src, .reveal:focus-visible .src {
+      filter: brightness(1.12) drop-shadow(0 0 14px rgba(255, 90, 220, 0.55));
       transform: scale(1.035);
     }
-    .interactive:active {
+    .social:active, a.reveal:active .src {
       transform: scale(0.93);
-      filter: brightness(0.68);
+      filter: brightness(0.7);
       transition-duration: 0.05s;
     }
-    .interactive:focus-visible {
+    .reveal:focus-visible, .social:focus-visible {
       outline: 2px solid #7ef9ff;
       outline-offset: 4px;
       border-radius: 10px;
     }
 
-    .socials {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+    /* ── REVEALS: lime text slides out of its bar / button ───
+       Each .reveal is one link (or, for the unlinked services bar, one
+       focusable group) covering the source object AND the full footprint
+       of its label, so hovering the empty space beside a bar opens it and
+       moving onto the text doesn't flicker. The label sits in a .clip
+       box whose inner edge runs under the source object (z-index above),
+       so the text reads as emerging from behind it, not fading in place.
+       Resting state is a transform, never display/visibility: the alt
+       text stays readable for screen readers. */
+    .reveal { display: block; position: relative; text-decoration: none; }
+    .reveal .src  { position: relative; z-index: 2; }
+    .reveal .clip { overflow: hidden; }
+    .reveal .label {
+      transition: transform 300ms cubic-bezier(0.2, 0.7, 0.2, 1);
     }
-    .socials img { display: block; width: 100%; height: auto; }
 
-    /* ── PHONE / PORTRAIT: stacked grid ──────────────────────
-       Follows "phone reference.png": FableGear and EPK side by side,
-       Gear then Event, socials 2×2 (RA, Facebook / Twitch, SoundCloud),
-       and the logo last with each Instagram icon beside its owner's face. */
-    .stage {
-      position: relative;
-      z-index: 2;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-areas:
-        "fable epk"
-        "gear  gear"
-        "event event"
-        "soc   soc"
-        "logo  logo";
-      align-items: center;
-      justify-items: center;
-      gap: 16px 12px;
-      width: min(100% - 32px, 520px);
-      margin: 0 auto;
-      padding: 24px 0 16px;
-    }
-    .fable  { grid-area: fable; width: 72%; }
-    .epk    { grid-area: epk;   width: 66%; }
-    .gear   { grid-area: gear;  width: 60%; }
-    .event  { grid-area: event; width: 56%; }
-    .socials { grid-area: soc;  width: 46%; }
-    .logo   { grid-area: logo;  width: 100%; margin-top: 4%; }
-    .ig-c, .ig-m {
-      grid-area: logo;
-      align-self: start;
-      width: 19%;
-      margin-top: 18%;
-      z-index: 1;
-    }
-    .ig-c { justify-self: start; margin-left: 2%; }
-    .ig-m { justify-self: end;   margin-right: 2%; }
-    .s-ra { order: 1; }
-    .s-fb { order: 2; }
-    .s-tw { order: 3; }
-    .s-sc { order: 4; }
+    .socials { display: flex; justify-content: center; }
 
     /* ── TIP JAR (Venmo QR) ──────────────────────────────── */
     .tip-jar {
@@ -163,14 +165,8 @@
       text-decoration: none;
       transition: transform 0.12s ease, box-shadow 0.12s ease;
     }
-    .tip-jar:hover {
-      transform: scale(1.04);
-      box-shadow: 0 6px 26px rgba(0, 0, 0, 0.55);
-    }
-    .tip-jar:active {
-      transform: scale(0.95);
-      transition-duration: 0.05s;
-    }
+    .tip-jar:hover { transform: scale(1.04); box-shadow: 0 6px 26px rgba(0, 0, 0, 0.55); }
+    .tip-jar:active { transform: scale(0.95); transition-duration: 0.05s; }
     .tip-jar-label {
       font-family: system-ui, sans-serif;
       font-size: 9px;
@@ -184,24 +180,56 @@
     }
     .tip-jar-qr { display: block; width: 58px; height: 58px; }
 
+    /* ── PHONE / PORTRAIT: stacked ───────────────────────────
+       No hover on phones, so every lime label is simply shown beside its
+       object (the spec's default for touch). */
+    .stage {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      width: min(100% - 32px, 520px);
+      margin: 0 auto;
+      padding: 28px 0 12px;
+    }
+    .headline { font-size: clamp(26px, 8.4vw, 44px); }
+    .subhead  { font-size: clamp(16px, 5vw, 26px); line-height: 1.05; }
+    .connect-head { font-size: clamp(17px, 5.2vw, 27px); margin-top: 6px; }
+    .logo { width: 92%; }
+
+    .reveal { display: flex; align-items: center; gap: 4%; width: 100%; }
+    .reveal .clip { overflow: visible; }
+    .r-cal .src, .r-spk .src { flex: 0 0 34%; }
+    .r-cal .clip, .r-spk .clip { flex: 0 0 52%; }
+    .r-cal, .r-spk { justify-content: center; }
+    .r-cal { flex-direction: row-reverse; }
+    .r-bar .src { flex: 0 0 5.5%; }
+    .r-bar .clip { flex: 0 0 40%; }
+    .r-bar { justify-content: center; width: 82%; }
+    .bars { display: grid; grid-template-columns: 1fr; justify-items: center; gap: 6px; width: 100%; }
+
+    .socials { gap: 3%; width: 100%; }
+    .social { flex: 0 0 17%; }
+
     /* ── WIDE SCREENS: the mockup's 16:9 composition ─────────
-       The stage is the largest 16:9 box that fits the viewport, and every
-       button is placed in % of that box, so the layout scales as one
-       picture. Positions are measured off website-design.png (3840×2160):
-       left = button centre, top = button top edge, width = button width. */
+       The stage is the largest 16:9 box that fits the viewport. Every
+       position below is in pixels of "website concept.png" (3840×2160),
+       measured by diffing it against the bare background, then scaled by
+       --u (one concept pixel). --l/--t/--w/--h = left/top/width/height. */
     @media (min-width: 768px) and (min-aspect-ratio: 4/3) {
       :root {
         --stage-w: min(100vw, 177.78vh);
         --stage-h: min(56.25vw, 100vh);
+        --u: calc(var(--stage-w) / 3840);
       }
 
       .bg {
-        background-image: image-set(url('/assets/home/bg-desktop.webp') type('image/webp'), url('/assets/home/bg-desktop.jpg') type('image/jpeg'));
+        background-image: image-set(url('/assets/home/bg-desktop-dark.webp') type('image/webp'), url('/assets/home/bg-desktop-dark.jpg') type('image/jpeg'));
         background-position: center;
       }
 
-      /* Centred with negative margins, not transform: a transformed
-         ancestor would trap the position: fixed corner badges below. */
       .stage {
         display: block;
         position: absolute;
@@ -212,44 +240,78 @@
         margin: calc(var(--stage-h) / -2) 0 0 calc(var(--stage-w) / -2);
         padding: 0;
       }
-      .stage > .item,
-      .stage > .socials {
+      .stage .at, .stage .reveal, .reveal .src, .reveal .clip, .reveal .label {
         position: absolute;
-        left: var(--x);
-        top: var(--y);
-        width: var(--w);
+        left: calc(var(--l, 0) * var(--u));
+        top: calc(var(--t, 0) * var(--u));
+        width: calc(var(--w) * var(--u));
+      }
+      /* Custom properties inherit, so without these resets a child with no
+         --t of its own would pick up its .reveal's offset and be pushed
+         down by it twice. */
+      .reveal .src, .reveal .clip, .reveal .label { --l: 0; --t: 0; }
+      .reveal, .reveal .clip { height: calc(var(--h) * var(--u)); }
+      .reveal { display: block; flex: none; }
+      .reveal .clip { overflow: hidden; z-index: 1; }
+
+      /* Text centred on a measured x, top-aligned to its measured cap line. */
+      .headline, .subhead, .connect-head {
+        position: absolute;
+        left: calc(var(--x) * var(--u));
+        top: calc(var(--t) * var(--u));
         transform: translateX(-50%);
+        margin: 0;
       }
-      .stage > .interactive:hover  { transform: translateX(-50%) scale(1.035); }
-      .stage > .interactive:active { transform: translateX(-50%) scale(0.93); }
+      .headline     { --x: 2030; --t: 56;   font-size: calc(206 * var(--u)); }
+      .subhead      { --x: 1920; --t: 258;  font-size: calc(104 * var(--u)); line-height: 0.85; }
+      .connect-head { --x: 1924; --t: 2028; font-size: calc(140 * var(--u)); }
 
-      /* FableGear and EPK pin to the window corners, so on screens wider
-         than 16:9 they sit at the edges instead of the stage's. Sized off
-         the stage so they still scale with the rest of the picture. */
-      .stage > .fable,
-      .stage > .epk {
-        position: fixed;
-        top: calc(var(--stage-h) * 0.015);
-        transform: none;
-        z-index: 3;
-      }
-      .stage > .fable { left:  calc(var(--stage-w) * 0.006); width: calc(var(--stage-w) * 0.178); transform-origin: top left; }
-      .stage > .epk   { left: auto; right: calc(var(--stage-w) * 0.008); width: calc(var(--stage-w) * 0.161); transform-origin: top right; }
-      .stage > .fable:hover,  .stage > .epk:hover  { transform: scale(1.035); }
-      .stage > .fable:active, .stage > .epk:active { transform: scale(0.93); }
-      .logo    { --x: 50%;   --y: 22%;   --w: 44%; }
-      .event   { --x: 23.5%; --y: 67.6%; --w: 17.8%; z-index: 1; }
-      .gear    { --x: 76.2%; --y: 68.4%; --w: 18.8%; z-index: 1; }
-      /* Instagram icons flank the logo beside each face, as on phones. */
-      .ig-c    { --x: 31.5%; --y: 47%;   --w: 6.4%; margin: 0; z-index: 1; }
-      .ig-m    { --x: 68.5%; --y: 47%;   --w: 6.4%; margin: 0; z-index: 1; }
-      .logo    { margin: 0; }
-      .socials { --x: 50%;   --y: 87.8%; --w: 29.6%; z-index: 1; display: flex; gap: 2.8%; }
-      .socials a { flex: 0 0 auto; width: 17.9%; order: 0; }
+      .logo { --l: 1211; --t: 298; --w: 1418; }
 
+      /* Bars: bar at the left edge, label emerges rightwards from it. */
+      .r-services  { --l: 43; --t: 58;   --w: 703; --h: 657; }
+      .r-fablegear { --l: 43; --t: 762;  --w: 485; --h: 657; }
+      .r-epk       { --l: 43; --t: 1450; --w: 440; --h: 695; }
+      .r-bar .src  { --l: 0; --w: 82; }
+      .r-epk .src  { --t: 18; }
+      .r-bar .clip { --l: 62; --t: 0; }
+      .r-services .clip  { --w: 641; }
+      .r-fablegear .clip { --w: 423; }
+      .r-epk .clip       { --w: 378; }
+      .r-services .label  { --l: -35; --t: 35; --w: 676; }
+      .r-fablegear .label { --l: -29; --t: 6;  --w: 452; }
+      .r-epk .label       { --l: -8;  --t: 0;  --w: 386; }
+      .r-bar .label { transform: translateX(-108%); }
+
+      /* Calendar: label emerges leftwards from behind the button. */
+      .r-cal        { --l: 1067; --t: 1346; --w: 864; --h: 382; }
+      .r-cal .src   { --l: 482; --t: 0; --w: 382; }
+      .r-cal .clip  { --l: 0;   --t: 0; --w: 533; }
+      .r-cal .label { --l: 0;   --t: 3; --w: 487; transform: translateX(108%); }
+
+      /* Speaker: label emerges rightwards from behind the button. */
+      .r-spk        { --l: 1969; --t: 1346; --w: 834; --h: 382; }
+      .r-spk .src   { --l: 0;   --t: 0; --w: 382; }
+      .r-spk .clip  { --l: 331; --t: 0; --w: 503; }
+      .r-spk .label { --l: 46;  --t: 6; --w: 457; transform: translateX(-108%); }
+
+      .reveal:hover .label,
+      .reveal:focus-within .label { transform: translateX(0); }
+
+      .bars { display: contents; }
+
+      .socials { display: contents; }
+      .social { --t: 1738; }
+      .s-tw { --l: 1192; --w: 280; }
+      .s-ra { --l: 1493; --w: 282; }
+      .s-sc { --l: 1798; --w: 267; }
+      .s-fb { --l: 2090; --w: 264; }
+      .s-ig { --l: 2382; --w: 272; }
+
+      /* Bottom-right: the mockup's bottom-left now belongs to the EPK bar. */
       .tip-jar {
         position: fixed;
-        left: 14px;
+        right: 14px;
         bottom: 14px;
         margin: 0;
         padding: 10px 10px 8px;
@@ -262,122 +324,150 @@
       .tip-jar { display: none; }
     }
 
-    @media (max-width: 600px) {
-      .bg-video { display: none; }
+    /* Touch screens big enough for the 16:9 layout (tablets in landscape):
+       no hover, so the labels sit in their final positions. */
+    @media (min-width: 768px) and (min-aspect-ratio: 4/3) and (hover: none) {
+      .reveal .label { transform: none; transition: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .interactive, .tip-jar { transition: none; }
+      .logo, .scene { animation: none; }
+      .src, .social, .tip-jar, .reveal .label { transition: none; }
     }
   </style>
 </head>
 <body>
 
-  <div class="bg">
-    <!-- Drop a `hero-bg.mp4` in the repo root to enable. Falls back to the static background automatically. -->
-    <video class="bg-video" id="bgVideo" autoplay muted loop playsinline preload="metadata">
-      <source src="hero-bg.mp4" type="video/mp4" />
-    </video>
-  </div>
+  <div class="bg scene"></div>
 
   <main class="stage">
     <h1 class="visually-hidden">Osos Discos — Cameron Kelly &amp; Marshall T, Philadelphia DJs</h1>
 
-    <a class="item fable interactive" href="fablegear.html">
+    <p class="headline scene">Do you need a DJ??</p>
+    <p class="subhead scene">We can help with<br />that!</p>
+
+    <a class="at logo" href="https://www.instagram.com/ososdiscos" target="_blank" rel="noopener" aria-label="Osos Discos on Instagram">
       <picture>
-        <source srcset="assets/home/fablegear.webp" type="image/webp" />
-        <img src="assets/home/fablegear.png" width="618" height="723" alt="FableGear: the custom DJ library that does what rekordbox does" />
+        <source srcset="assets/home/logo-ososdiscos.webp" type="image/webp" />
+        <img src="assets/home/logo-ososdiscos.png" width="1470" height="1321" alt="" fetchpriority="high" />
       </picture>
     </a>
 
-    <a class="item epk interactive" href="https://ososdiscos.com/epk">
-      <picture>
-        <source srcset="assets/home/epk.webp" type="image/webp" />
-        <img src="assets/home/epk.png" width="582" height="538" alt="EPK page — Guthrie Entertainment" />
-      </picture>
+    <a class="reveal r-cal scene" href="consult.html">
+      <span class="src">
+        <picture>
+          <source srcset="assets/home/btn-calendar.webp" type="image/webp" />
+          <img src="assets/home/btn-calendar.png" width="382" height="382" alt="" />
+        </picture>
+      </span>
+      <span class="clip">
+        <span class="label">
+          <picture>
+            <source srcset="assets/home/label-calendar.webp" type="image/webp" />
+            <img src="assets/home/label-calendar.png" width="487" height="368" alt="Tell us about the event. Schedule a consult." />
+          </picture>
+        </span>
+      </span>
     </a>
 
-    <a class="item logo interactive" href="https://www.instagram.com/ososdiscos" target="_blank" rel="noopener" aria-label="Osos Discos on Instagram">
-      <picture>
-        <source srcset="assets/home/logo-osos.webp" type="image/webp" />
-        <img src="assets/home/logo-osos.png" width="1400" height="1168" alt="" fetchpriority="high" />
-      </picture>
+    <a class="reveal r-spk scene" href="gear.html">
+      <span class="src">
+        <picture>
+          <source srcset="assets/home/btn-speaker.webp" type="image/webp" />
+          <img src="assets/home/btn-speaker.png" width="382" height="382" alt="" />
+        </picture>
+      </span>
+      <span class="clip">
+        <span class="label">
+          <picture>
+            <source srcset="assets/home/label-speaker.webp" type="image/webp" />
+            <img src="assets/home/label-speaker.png" width="457" height="368" alt="Browse the sound &amp; shelter. Build a cart." />
+          </picture>
+        </span>
+      </span>
     </a>
 
-    <a class="item event interactive" href="consult.html">
-      <picture>
-        <source srcset="assets/home/event-consult.webp" type="image/webp" />
-        <img src="assets/home/event-consult.png" width="710" height="475" alt="Event consult" />
-      </picture>
-    </a>
+    <div class="bars">
+      <!-- No services page yet: a focusable group so the text still reveals
+           on hover and keyboard focus, but it links nowhere. -->
+      <div class="reveal r-bar r-services scene" tabindex="0" role="group" aria-label="Browse other services (coming soon)">
+        <span class="src"><img src="assets/home/bar.png" width="82" height="657" alt="" /></span>
+        <span class="clip">
+          <span class="label">
+            <picture>
+              <source srcset="assets/home/label-services.webp" type="image/webp" />
+              <img src="assets/home/label-services.png" width="676" height="583" alt="Browse other services" />
+            </picture>
+          </span>
+        </span>
+      </div>
 
-    <a class="item gear interactive" href="gear.html">
-      <picture>
-        <source srcset="assets/home/gear-selection.webp" type="image/webp" />
-        <img src="assets/home/gear-selection.png" width="797" height="469" alt="Gear selection" />
-      </picture>
-    </a>
+      <a class="reveal r-bar r-fablegear scene" href="fablegear.html">
+        <span class="src"><img src="assets/home/bar.png" width="82" height="657" alt="" /></span>
+        <span class="clip">
+          <span class="label">
+            <picture>
+              <source srcset="assets/home/label-fablegear.webp" type="image/webp" />
+              <img src="assets/home/label-fablegear.png" width="452" height="636" alt="Check out FableGear" />
+            </picture>
+          </span>
+        </span>
+      </a>
 
-    <a class="item ig-c interactive" href="https://www.instagram.com/camalama/" target="_blank" rel="noopener" title="Cameron on Instagram">
-      <picture>
-        <source srcset="assets/home/instagram.webp" type="image/webp" />
-        <img src="assets/home/instagram.png" width="454" height="452" alt="Cameron on Instagram" />
-      </picture>
-    </a>
+      <a class="reveal r-bar r-epk scene" href="https://ososdiscos.com/epk">
+        <span class="src"><img src="assets/home/bar.png" width="82" height="657" alt="" /></span>
+        <span class="clip">
+          <span class="label">
+            <picture>
+              <source srcset="assets/home/label-epk.webp" type="image/webp" />
+              <img src="assets/home/label-epk.png" width="386" height="695" alt="Learn more about the DJs at their EPK page" />
+            </picture>
+          </span>
+        </span>
+      </a>
+    </div>
 
-    <a class="item ig-m interactive" href="https://www.instagram.com/djmarshall.t/" target="_blank" rel="noopener" title="Marshall on Instagram">
-      <picture>
-        <source srcset="assets/home/instagram.webp" type="image/webp" />
-        <img src="assets/home/instagram.png" width="454" height="452" alt="Marshall on Instagram" />
-      </picture>
-    </a>
+    <p class="connect-head scene">Other ways to connect!</p>
 
     <nav class="socials" aria-label="Osos Discos elsewhere">
-      <a class="interactive s-tw" href="https://www.twitch.tv/chefcamalama" target="_blank" rel="noopener">
+      <a class="at social s-tw scene" href="https://www.twitch.tv/chefcamalama" target="_blank" rel="noopener">
         <picture>
-          <source srcset="assets/home/twitch.webp" type="image/webp" />
-          <img src="assets/home/twitch.png" width="220" height="216" alt="Twitch" />
+          <source srcset="assets/home/icon-twitch.webp" type="image/webp" />
+          <img src="assets/home/icon-twitch.png" width="280" height="280" alt="Twitch" />
         </picture>
       </a>
-      <a class="interactive s-ra" href="https://ra.co/promoters/191868" target="_blank" rel="noopener">
+      <a class="at social s-ra scene" href="https://ra.co/promoters/191868" target="_blank" rel="noopener">
         <picture>
-          <source srcset="assets/home/resident-advisor.webp" type="image/webp" />
-          <img src="assets/home/resident-advisor.png" width="220" height="216" alt="Resident Advisor" />
+          <source srcset="assets/home/icon-ra.webp" type="image/webp" />
+          <img src="assets/home/icon-ra.png" width="282" height="280" alt="Resident Advisor" />
         </picture>
       </a>
-      <a class="interactive s-sc" href="https://soundcloud.com/kineticnola" target="_blank" rel="noopener">
+      <a class="at social s-sc scene" href="https://soundcloud.com/kineticnola" target="_blank" rel="noopener">
         <picture>
-          <source srcset="assets/home/soundcloud.webp" type="image/webp" />
-          <img src="assets/home/soundcloud.png" width="222" height="220" alt="SoundCloud" />
+          <source srcset="assets/home/icon-soundcloud.webp" type="image/webp" />
+          <img src="assets/home/icon-soundcloud.png" width="267" height="267" alt="SoundCloud" />
         </picture>
       </a>
-      <a class="interactive s-fb" href="https://www.facebook.com/DjCameronKelly/" target="_blank" rel="noopener">
+      <a class="at social s-fb scene" href="https://www.facebook.com/DjCameronKelly/" target="_blank" rel="noopener">
         <picture>
-          <source srcset="assets/home/facebook.webp" type="image/webp" />
-          <img src="assets/home/facebook.png" width="220" height="216" alt="Facebook" />
+          <source srcset="assets/home/icon-fb.webp" type="image/webp" />
+          <img src="assets/home/icon-fb.png" width="264" height="264" alt="Facebook" />
+        </picture>
+      </a>
+      <a class="at social s-ig scene" href="https://www.instagram.com/ososdiscos" target="_blank" rel="noopener">
+        <picture>
+          <source srcset="assets/home/icon-ig.webp" type="image/webp" />
+          <img src="assets/home/icon-ig.png" width="272" height="271" alt="Instagram" />
         </picture>
       </a>
     </nav>
   </main>
 
-  <a class="tip-jar" href="https://venmo.com/u/Totoro_mg" target="_blank" rel="noopener" aria-label="Tip the sound guy on Venmo">
+  <a class="tip-jar scene" href="https://venmo.com/u/Totoro_mg" target="_blank" rel="noopener" aria-label="Tip the sound guy on Venmo">
     <span class="tip-jar-label">Tip the<br />sound guy</span>
     <img class="tip-jar-qr" src="assets/qr-tip-venmo.svg" alt="" />
   </a>
 
-  <script>
-    /* ── HERO VIDEO ───────────────────────────────────────
-       If hero-bg.mp4 exists, fade it in over the background.
-       If not (404 or codec failure), leave the static background. */
-    (function () {
-      const v = document.getElementById('bgVideo');
-      if (!v) return;
-      v.addEventListener('canplay', () => v.classList.add('ready'), { once: true });
-      v.addEventListener('error', () => v.remove());
-      // If no <source> resolves, the video silently has no readyState — clean up.
-      setTimeout(() => { if (v.readyState === 0) v.remove(); }, 3000);
-    })();
-  </script>
   <script src="track.js" defer></script>
 </body>
 </html>

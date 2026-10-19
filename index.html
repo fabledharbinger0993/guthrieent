@@ -25,7 +25,15 @@
   <link rel="icon" type="image/png" href="assets/logo-osos.png" />
   <link rel="apple-touch-icon" href="assets/logo-osos.png" />
 
-  <link rel="preload" as="image" href="/assets/home/logo-osos.webp" type="image/webp" />
+  <link rel="preload" as="image" href="/assets/home/logo-ososdiscos.webp" type="image/webp" />
+
+  <!-- Jost: a free Futura-style face, the closest match to the mockup's headlines.
+       Allowed by the CSP in _headers (fonts.googleapis.com / fonts.gstatic.com). -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Bangers: the slanted, hand-drawn caps of the lime captions in
+       phone-render.png (phone layout only). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Jost:ital,wght@1,800&display=swap" />
 
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -33,7 +41,7 @@
     html, body {
       width: 100%;
       min-height: 100%;
-      background: #0a0418;
+      background: #000;
       overflow-x: hidden;
     }
 
@@ -45,106 +53,134 @@
       white-space: nowrap;
     }
 
-    /* ── BACKGROUND ─────────────────────────────────────────
-       Two crops of the same scene. The phone crop is used whenever the
-       stacked layout is (same media query as .stage below), so the
-       buttons never sit over a background framed for the other shape. */
+    img { display: block; width: 100%; height: auto; }
+
+    /* ── INTRO ──────────────────────────────────────────────
+       Starts black; the logo fades in first, then the rest of the scene.
+       Opacity only, so it never fights the hover transforms below.
+       fill-mode both holds everything at 0 until its turn: no flash. */
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    .logo  { animation: fade-in 400ms ease-out both; }
+    .scene { animation: fade-in 300ms ease-out 350ms both; }
+
+    /* ── BACKGROUND ───────────────────────────────────────── */
     .bg {
       position: fixed;
       inset: 0;
       z-index: 0;
       pointer-events: none;
       overflow: hidden;
-      background-color: #0a0418;
-      background-image: image-set(url('/assets/home/bg-phone.webp') type('image/webp'), url('/assets/home/bg-phone.jpg') type('image/jpeg'));
+      background-color: #000;
+    }
+    .bg-img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-image: image-set(url('/assets/home/bg-phone-fall.webp') type('image/webp'), url('/assets/home/bg-phone-fall.jpg') type('image/jpeg'));
       background-position: center top;
       background-size: cover;
       background-repeat: no-repeat;
     }
 
-    .bg-video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0;
-      transition: opacity 0.8s ease;
+    /* ── PHONE: SLOW-TRACKING BACKGROUND (depth parallax) ─────
+       The foreground scrolls at full speed; the background (a tall
+       starfield-to-grid-floor image) drifts top to bottom over the WHOLE
+       page scroll, so far slower than the content, which makes the space
+       read as huge and far away, like falling toward the neon floor.
+       It's driven by scroll position, not time: CSS scroll timeline where
+       supported, a small rAF fallback in the script below otherwise. The
+       @supports guard matters: without scroll timelines the same keyframes
+       would run on a timer and jump straight to the end. */
+    @keyframes bg-fall {
+      from { transform: translateY(0); }
+      to   { transform: translateY(calc(100vh - 100%)); }
     }
-    .bg-video.ready { opacity: 1; }
-
-    /* ── BUTTONS ────────────────────────────────────────── */
-    .item { display: block; }
-    .item img { display: block; width: 100%; height: auto; }
-
-    .interactive {
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform 0.10s ease, filter 0.10s ease;
+    @media not ((min-width: 768px) and (min-aspect-ratio: 4/3)) {
+      /* bg-phone-fall is 720x2000 (about 1:2.8): full width, at its own height. That shape is the sweet spot: on a typical phone it overhangs the screen by ~30%, so it drifts at roughly a quarter of the content speed (measured 26% on 375x812 and 430x932). */
+      .bg-img { height: max(100vh, calc(100vw * 2000 / 720)); will-change: transform; }
+      @supports (animation-timeline: scroll()) {
+        .bg-img {
+          animation: bg-fall linear both;
+          animation-timeline: scroll(root block);
+        }
+      }
     }
-    .interactive:hover {
-      filter: brightness(1.15) drop-shadow(0 0 14px rgba(255, 90, 220, 0.6));
+
+    /* ── HEADLINES (real text, neon glow) ─────────────────── */
+    .headline, .subhead, .connect-head {
+      font-family: 'Jost', 'Futura', 'Century Gothic', system-ui, sans-serif;
+      text-align: center;
+      text-transform: uppercase;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    /* Styles follow icon-text.png (Marshall's own export of the headlines). */
+    .headline {
+      font-weight: 800;
+      font-style: italic;
+      color: #ffe3fb;
+      letter-spacing: 0.01em;
+      text-shadow:
+        0 0 0.05em #fff,
+        0 0 0.16em #ff4cf0,
+        0 0 0.4em #e21bd6,
+        0 0 0.8em #a3009b;
+    }
+    .subhead, .connect-head {
+      font-weight: 800;
+      font-style: italic;
+      color: #f2ffff;
+      text-shadow:
+        0 0 0.05em #fff,
+        0 0 0.16em #39f3ff,
+        0 0 0.4em #00c6e0,
+        0.04em 0.06em 0.1em rgba(0, 0, 0, 0.9);
+    }
+    /* The dark rounded backing behind "WE CAN HELP WITH THAT!" */
+    .subhead {
+      background: rgba(4, 14, 16, 0.92);
+      border-radius: 0.3em;
+      padding: 0.06em 0.22em 0.08em;
+      box-shadow: 0 0 0.25em rgba(0, 220, 240, 0.35);
+    }
+
+    /* ── LINKS / FOCUS ────────────────────────────────────── */
+    a { -webkit-tap-highlight-color: transparent; }
+    .src, .social { transition: transform 0.12s ease, filter 0.12s ease; }
+    .social:hover, .reveal:hover .src, .reveal:focus-visible .src {
+      filter: brightness(1.12) drop-shadow(0 0 14px rgba(255, 90, 220, 0.55));
       transform: scale(1.035);
     }
-    .interactive:active {
+    .social:active, a.reveal:active .src {
       transform: scale(0.93);
-      filter: brightness(0.68);
+      filter: brightness(0.7);
       transition-duration: 0.05s;
     }
-    .interactive:focus-visible {
+    .reveal:focus-visible, .social:focus-visible {
       outline: 2px solid #7ef9ff;
       outline-offset: 4px;
       border-radius: 10px;
     }
 
-    .socials {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+    /* ── REVEALS: lime text slides out of its bar / button ───
+       Each .reveal is one link (or, for the unlinked services bar, one
+       focusable group) covering the source object AND the full footprint
+       of its label, so hovering the empty space beside a bar opens it and
+       moving onto the text doesn't flicker. The label sits in a .clip
+       box whose inner edge runs under the source object (z-index above),
+       so the text reads as emerging from behind it, not fading in place.
+       Resting state is a transform, never display/visibility: the alt
+       text stays readable for screen readers. */
+    .reveal { display: block; position: relative; text-decoration: none; }
+    .reveal .src  { position: relative; z-index: 2; }
+    .reveal .clip { overflow: hidden; }
+    .reveal .label {
+      transition: transform 300ms cubic-bezier(0.2, 0.7, 0.2, 1);
     }
-    .socials img { display: block; width: 100%; height: auto; }
 
-    /* ── PHONE / PORTRAIT: stacked grid ──────────────────────
-       Follows "phone reference.png": FableGear and EPK side by side,
-       Gear then Event, socials 2×2 (RA, Facebook / Twitch, SoundCloud),
-       and the logo last with each Instagram icon beside its owner's face. */
-    .stage {
-      position: relative;
-      z-index: 2;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-areas:
-        "fable epk"
-        "gear  gear"
-        "event event"
-        "soc   soc"
-        "logo  logo";
-      align-items: center;
-      justify-items: center;
-      gap: 16px 12px;
-      width: min(100% - 32px, 520px);
-      margin: 0 auto;
-      padding: 24px 0 16px;
-    }
-    .fable  { grid-area: fable; width: 72%; }
-    .epk    { grid-area: epk;   width: 66%; }
-    .gear   { grid-area: gear;  width: 60%; }
-    .event  { grid-area: event; width: 56%; }
-    .socials { grid-area: soc;  width: 46%; }
-    .logo   { grid-area: logo;  width: 100%; margin-top: 4%; }
-    .ig-c, .ig-m {
-      grid-area: logo;
-      align-self: start;
-      width: 19%;
-      margin-top: 18%;
-      z-index: 1;
-    }
-    .ig-c { justify-self: start; margin-left: 2%; }
-    .ig-m { justify-self: end;   margin-right: 2%; }
-    .s-ra { order: 1; }
-    .s-fb { order: 2; }
-    .s-tw { order: 3; }
-    .s-sc { order: 4; }
+    .socials { display: flex; justify-content: center; }
 
     /* ── TIP JAR (Venmo QR) ──────────────────────────────── */
     .tip-jar {
@@ -163,14 +199,8 @@
       text-decoration: none;
       transition: transform 0.12s ease, box-shadow 0.12s ease;
     }
-    .tip-jar:hover {
-      transform: scale(1.04);
-      box-shadow: 0 6px 26px rgba(0, 0, 0, 0.55);
-    }
-    .tip-jar:active {
-      transform: scale(0.95);
-      transition-duration: 0.05s;
-    }
+    .tip-jar:hover { transform: scale(1.04); box-shadow: 0 6px 26px rgba(0, 0, 0, 0.55); }
+    .tip-jar:active { transform: scale(0.95); transition-duration: 0.05s; }
     .tip-jar-label {
       font-family: system-ui, sans-serif;
       font-size: 9px;
@@ -184,14 +214,91 @@
     }
     .tip-jar-qr { display: block; width: 58px; height: 58px; }
 
+    /* ── PHONE / PORTRAIT: stacked ───────────────────────────
+       No hover on phones, so every lime label is simply shown beside its
+       object (the spec's default for touch). */
+    .stage {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      width: min(100% - 32px, 520px);
+      margin: 0 auto;
+      padding: 28px 0 12px;
+    }
+    .headline { font-size: clamp(26px, 8.4vw, 44px); }
+    .subhead  { font-size: clamp(20px, 7vw, 36px); line-height: 0.95; white-space: normal; }
+    .connect-head { font-size: clamp(20px, 6.6vw, 34px); margin-top: 4px; }
+    .logo { width: 92%; }
+
+    /* ── PHONE: CAPTIONED TILES (phone-render.png) ───────────
+       The phone has its own markup for the links: each tile is one link
+       holding its icon AND its caption, so the whole thing is tappable.
+       The desktop's bars, reveals and icon row are hidden here and the
+       tiles are hidden on desktop, so no link is ever shown twice. */
+    .socials, .reveal, .bars { display: none; }
+    .subhead { background: none; box-shadow: none; padding: 0; }
+
+    .tiles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px 4%;
+      /* Wider than the stage's 16px gutters: the mockup runs captions
+         nearly to the screen edge, and the extra room keeps words whole. */
+      width: min(100vw - 12px, 560px);
+    }
+    .tile {
+      display: grid;
+      grid-template-columns: 1fr 46%;
+      align-items: center;
+      gap: 5%;
+      text-decoration: none;
+    }
+    /* Right-hand tiles mirror: icon first, caption ranged left. */
+    .tile.r { grid-template-columns: 46% 1fr; }
+    .tile.r .icon { order: -1; }
+    .tile .icon { transition: transform 0.12s ease, filter 0.12s ease; }
+    .tile:active .icon { transform: scale(0.93); filter: brightness(0.7); transition-duration: 0.05s; }
+    .tile:focus-visible { outline: 2px solid #7ef9ff; outline-offset: 4px; border-radius: 10px; }
+
+    .cap {
+      font-family: 'Bangers', 'Impact', 'Arial Narrow', sans-serif;
+      font-size: clamp(14px, 4.2vw, 24px);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      text-align: right;
+      color: #efffd6;
+      text-shadow:
+        0 0 0.06em #fff,
+        0 0 0.2em #7dff2a,
+        0 0 0.45em #3fd400;
+    }
+    .tile.r .cap { text-align: left; }
+    .nb { white-space: nowrap; }
+
+    /* FableGear: a bigger icon centred across both columns, a caption
+       either side, and its closing line underneath. */
+    .tile.fg { grid-column: 1 / -1; grid-template-columns: 1fr 40% 1fr; gap: 3%; }
+    .tile.fg .cap-r { text-align: left; }
+    .tile.fg .cap-end { grid-column: 1 / -1; text-align: center; margin-top: 10px; font-size: clamp(17px, 5.4vw, 28px); }
+
     /* ── WIDE SCREENS: the mockup's 16:9 composition ─────────
-       The stage is the largest 16:9 box that fits the viewport, and every
-       button is placed in % of that box, so the layout scales as one
-       picture. Positions are measured off website-design.png (3840×2160):
-       left = button centre, top = button top edge, width = button width. */
+       The stage is the largest 16:9 box that fits the viewport. Every
+       position below is in pixels of "website concept.png" (3840×2160),
+       measured by diffing it against the bare background, then scaled by
+       --u (one concept pixel). --l/--t/--w/--h = left/top/width/height. */
     @media (min-width: 768px) and (min-aspect-ratio: 4/3) {
-      .bg {
-        background-image: image-set(url('/assets/home/bg-desktop.webp') type('image/webp'), url('/assets/home/bg-desktop.jpg') type('image/jpeg'));
+      :root {
+        --stage-w: min(100vw, 177.78vh);
+        --stage-h: min(56.25vw, 100vh);
+        --u: calc(var(--stage-w) / 3840);
+      }
+
+      .bg-img {
+        background-image: image-set(url('/assets/home/bg-desktop-dark.webp') type('image/webp'), url('/assets/home/bg-desktop-dark.jpg') type('image/jpeg'));
         background-position: center;
       }
 
@@ -200,164 +307,374 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
-        width: min(100vw, 177.78vh);
-        aspect-ratio: 16 / 9;
-        margin: 0;
+        width: var(--stage-w);
+        height: var(--stage-h);
+        margin: calc(var(--stage-h) / -2) 0 0 calc(var(--stage-w) / -2);
         padding: 0;
       }
-      .stage > .item,
-      .stage > .socials {
+      .stage .at, .stage .reveal, .reveal .src, .reveal .clip, .reveal .label {
         position: absolute;
-        left: var(--x);
-        top: var(--y);
-        width: var(--w);
-        transform: translateX(-50%);
+        left: calc(var(--l, 0) * var(--u));
+        top: calc(var(--t, 0) * var(--u));
+        width: calc(var(--w) * var(--u));
       }
-      .stage > .interactive:hover  { transform: translateX(-50%) scale(1.035); }
-      .stage > .interactive:active { transform: translateX(-50%) scale(0.93); }
+      /* Custom properties inherit, so without these resets a child with no
+         --t of its own would pick up its .reveal's offset and be pushed
+         down by it twice. */
+      .reveal .src, .reveal .clip, .reveal .label { --l: 0; --t: 0; }
+      .reveal, .reveal .clip { height: calc(var(--h) * var(--u)); }
+      .reveal { display: block; flex: none; }
+      .reveal .clip { overflow: hidden; z-index: 1; }
 
-      .fable   { --x: 8.6%;  --y: 1.5%;  --w: 15.5%; }
-      .epk     { --x: 91.4%; --y: 2%;    --w: 14%; }
-      .logo    { --x: 50%;   --y: 22%;   --w: 44%; }
-      .event   { --x: 23.5%; --y: 67.6%; --w: 17.8%; z-index: 1; }
-      .gear    { --x: 76.2%; --y: 68.4%; --w: 18.8%; z-index: 1; }
-      /* Instagram icons flank the logo beside each face, as on phones. */
-      .ig-c    { --x: 31.5%; --y: 47%;   --w: 6.4%; margin: 0; z-index: 1; }
-      .ig-m    { --x: 68.5%; --y: 47%;   --w: 6.4%; margin: 0; z-index: 1; }
-      .logo    { margin: 0; }
-      .socials { --x: 50%;   --y: 87.8%; --w: 29.6%; z-index: 1; display: flex; gap: 2.8%; }
-      .socials a { flex: 0 0 auto; width: 17.9%; order: 0; }
+      /* Text centred on a measured x, top-aligned to its measured cap line. */
+      .headline, .subhead, .connect-head {
+        position: absolute;
+        left: calc(var(--x) * var(--u));
+        top: calc(var(--t) * var(--u));
+        transform: translateX(-50%);
+        margin: 0;
+      }
+      .headline     { --x: 1968; --t: 68;   font-size: calc(183 * var(--u)); }
+      .subhead      { --x: 1920; --t: 258;  font-size: calc(97 * var(--u)); line-height: 0.85; }
+      .connect-head { --x: 1920; --t: 2048; font-size: calc(98 * var(--u)); }
 
+      .logo { --l: 1243; --t: 238; --w: 1418; }
+
+      /* The subhead overlaps the logo's starburst; it sits on top of it. */
+      .subhead { z-index: 1; }
+
+      /* Services bar: label emerges rightwards from it. Positions from
+         bg-reference-large.png, the desktop source of truth since 10/19. */
+      .r-services  { --l: 43; --t: 886;  --w: 703; --h: 657; }
+
+      /* Pinned to the WINDOW edges, not the 16:9 stage, so on screens wider
+         (or taller) than 16:9 they hug the edges. Still sized in --u so
+         they scale with everything else. position: fixed works here
+         because .stage is centred with margins, never a transform. */
+      .stage .r-services, .stage .r-fg, .stage .r-epk { position: fixed; }
+      .stage .r-services { top: calc(50vh - var(--stage-h) / 2 + var(--t) * var(--u)); }
+      .stage .r-fg  { top: auto; bottom: calc(var(--b) * var(--u)); }
+      .stage .r-epk { top: auto; left: auto; right: calc(var(--r) * var(--u)); bottom: calc(var(--b) * var(--u)); }
+      .r-bar .src  { --l: 0; --w: 82; }
+      /* The reference draws this bar thinner and shorter than bar.png. */
+      .r-services .src { --l: 39; --t: 95; --w: 57; }
+      .r-bar .clip { --l: 62; --t: 0; }
+      .r-services .clip  { --w: 641; }
+      .r-services .label  { --l: -35; --t: 35; --w: 676; }
+      .r-bar .label { transform: translateX(-108%); }
+
+      /* App-icon reveals in the bottom corners. The captions are real
+         text (Bangers, as on phones), not images. */
+      .r-app .label {
+        font-family: 'Bangers', 'Impact', 'Arial Narrow', sans-serif;
+        font-size: calc(72 * var(--u));
+        line-height: 0.95;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: #efffd6;
+        text-shadow: 0 0 0.06em #fff, 0 0 0.2em #7dff2a, 0 0 0.45em #3fd400;
+        white-space: nowrap; /* line breaks are set in the markup, as drawn */
+      }
+      /* FableGear, bottom-left corner: caption emerges rightwards.
+         Both icon PNGs carry ~80px of glow around the tile, so .src is
+         sized for the tile to match the reference, glow spilling past. */
+      .r-fg        { --l: 0; --b: 0; --w: 1040; --h: 681; }
+      .r-fg .src   { --l: 2;   --t: 0;   --w: 678; }
+      .r-fg .clip  { --l: 500; --t: 0;   --w: 540; }
+      /* -150%, not -108%: the label starts 138 units into its clip, so a
+         shorter slide leaves its last letters peeking out at rest. */
+      .r-fg .label { --l: 138; --t: 94;  --w: 320; transform: translateX(-150%); }
+      /* EPK, bottom-right corner: caption emerges leftwards. */
+      .r-epk       { --r: 17; --b: 0; --w: 923; --h: 672; }
+      .r-epk .src  { --l: 238; --t: 0;   --w: 685; }
+      .r-epk .clip { --l: 0;   --t: 0;   --w: 400; }
+      .r-epk .label { --l: 47; --t: 81;  --w: 260; text-align: right; transform: translateX(108%); }
+
+      /* Calendar: label emerges leftwards from behind the button. */
+      .r-cal        { --l: 1067; --t: 1346; --w: 864; --h: 382; }
+      .r-cal .src   { --l: 482; --t: 0; --w: 382; }
+      .r-cal .clip  { --l: 0;   --t: 0; --w: 533; }
+      .r-cal .label { --l: 0;   --t: 3; --w: 487; transform: translateX(108%); }
+
+      /* Speaker: label emerges rightwards from behind the button. */
+      .r-spk        { --l: 1969; --t: 1346; --w: 834; --h: 382; }
+      .r-spk .src   { --l: 0;   --t: 0; --w: 382; }
+      .r-spk .clip  { --l: 331; --t: 0; --w: 503; }
+      .r-spk .label { --l: 46;  --t: 6; --w: 457; transform: translateX(-108%); }
+
+      .reveal:hover .label,
+      .reveal:focus-within .label { transform: translateX(0); }
+
+      .bars { display: contents; }
+
+      .socials { display: contents; }
+      .social { --t: 1738; }
+      .s-tw { --l: 1192; --w: 280; }
+      .s-ra { --l: 1493; --w: 282; }
+      .s-sc { --l: 1798; --w: 267; }
+      .s-fb { --l: 2090; --w: 264; }
+      .s-ig { --l: 2382; --w: 272; }
+
+      /* Top-right: both bottom corners belong to the pinned app icons. */
       .tip-jar {
         position: fixed;
-        left: 14px;
-        bottom: 14px;
+        right: 14px;
+        top: 14px;
         margin: 0;
         padding: 10px 10px 8px;
       }
       .tip-jar-label { font-size: 10px; }
       .tip-jar-qr { width: 74px; height: 74px; }
+
+      /* Desktop keeps the concept layout: restore what the phone hides
+         (.reveal, .bars and .socials get their display above). */
+      .tiles { display: none; }
+      .subhead {
+        background: rgba(4, 14, 16, 0.92);
+        box-shadow: 0 0 0.25em rgba(0, 220, 240, 0.35);
+        padding: 0.06em 0.22em 0.08em;
+        white-space: nowrap;
+      }
     }
 
     @media (min-width: 768px) and (min-aspect-ratio: 4/3) and (max-height: 520px) {
       .tip-jar { display: none; }
     }
 
-    @media (max-width: 600px) {
-      .bg-video { display: none; }
+    /* Touch screens big enough for the 16:9 layout (tablets in landscape):
+       no hover, so the labels sit in their final positions. */
+    @media (min-width: 768px) and (min-aspect-ratio: 4/3) and (hover: none) {
+      .reveal .label { transform: none; transition: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .interactive, .tip-jar { transition: none; }
+      .logo, .scene { animation: none; }
+      .bg-img { animation: none !important; transform: none !important; height: 100%; }
+      .src, .social, .tip-jar, .reveal .label { transition: none; }
     }
   </style>
 </head>
 <body>
 
-  <div class="bg">
-    <!-- Drop a `hero-bg.mp4` in the repo root to enable. Falls back to the static background automatically. -->
-    <video class="bg-video" id="bgVideo" autoplay muted loop playsinline preload="metadata">
-      <source src="hero-bg.mp4" type="video/mp4" />
-    </video>
-  </div>
+  <div class="bg scene"><div class="bg-img"></div></div>
 
   <main class="stage">
     <h1 class="visually-hidden">Osos Discos — Cameron Kelly &amp; Marshall T, Philadelphia DJs</h1>
 
-    <a class="item fable interactive" href="fablegear.html">
+    <p class="headline scene">Do you need a DJ??</p>
+    <p class="subhead scene">We can help with<br />that!</p>
+
+    <a class="at logo" href="https://www.instagram.com/ososdiscos" target="_blank" rel="noopener" aria-label="Osos Discos on Instagram">
       <picture>
-        <source srcset="assets/home/fablegear.webp" type="image/webp" />
-        <img src="assets/home/fablegear.png" width="618" height="723" alt="FableGear: the custom DJ library that does what rekordbox does" />
+        <source srcset="assets/home/logo-ososdiscos.webp" type="image/webp" />
+        <img src="assets/home/logo-ososdiscos.png" width="1470" height="1321" alt="" fetchpriority="high" />
       </picture>
     </a>
 
-    <a class="item epk interactive" href="https://ososdiscos.com/epk">
-      <picture>
-        <source srcset="assets/home/epk.webp" type="image/webp" />
-        <img src="assets/home/epk.png" width="582" height="538" alt="EPK page — Guthrie Entertainment" />
-      </picture>
-    </a>
-
-    <a class="item logo interactive" href="https://ososdiscos.com/epk" aria-label="Osos Discos, Cameron Kelly and Marshall T — view the EPK">
-      <picture>
-        <source srcset="assets/home/logo-osos.webp" type="image/webp" />
-        <img src="assets/home/logo-osos.png" width="1400" height="1168" alt="" fetchpriority="high" />
-      </picture>
-    </a>
-
-    <a class="item event interactive" href="consult.html">
-      <picture>
-        <source srcset="assets/home/event-consult.webp" type="image/webp" />
-        <img src="assets/home/event-consult.png" width="710" height="475" alt="Event consult" />
-      </picture>
-    </a>
-
-    <a class="item gear interactive" href="gear.html">
-      <picture>
-        <source srcset="assets/home/gear-selection.webp" type="image/webp" />
-        <img src="assets/home/gear-selection.png" width="797" height="469" alt="Gear selection" />
-      </picture>
-    </a>
-
-    <a class="item ig-c interactive" href="https://www.instagram.com/camalama/" target="_blank" rel="noopener" title="Cameron on Instagram">
-      <picture>
-        <source srcset="assets/home/instagram.webp" type="image/webp" />
-        <img src="assets/home/instagram.png" width="454" height="452" alt="Cameron on Instagram" />
-      </picture>
-    </a>
-
-    <a class="item ig-m interactive" href="https://www.instagram.com/djmarshall.t/" target="_blank" rel="noopener" title="Marshall on Instagram">
-      <picture>
-        <source srcset="assets/home/instagram.webp" type="image/webp" />
-        <img src="assets/home/instagram.png" width="454" height="452" alt="Marshall on Instagram" />
-      </picture>
-    </a>
+    <p class="connect-head scene">Other ways to connect!</p>
 
     <nav class="socials" aria-label="Osos Discos elsewhere">
-      <a class="interactive s-tw" href="https://www.twitch.tv/chefcamalama" target="_blank" rel="noopener">
+      <a class="at social s-tw scene" href="https://www.twitch.tv/chefcamalama" target="_blank" rel="noopener">
         <picture>
-          <source srcset="assets/home/twitch.webp" type="image/webp" />
-          <img src="assets/home/twitch.png" width="220" height="216" alt="Twitch" />
+          <source srcset="assets/home/icon-twitch.webp" type="image/webp" />
+          <img src="assets/home/icon-twitch.png" width="280" height="280" alt="Twitch" />
         </picture>
       </a>
-      <a class="interactive s-ra" href="https://ra.co/promoters/191868" target="_blank" rel="noopener">
+      <a class="at social s-ra scene" href="https://ra.co/promoters/191868" target="_blank" rel="noopener">
         <picture>
-          <source srcset="assets/home/resident-advisor.webp" type="image/webp" />
-          <img src="assets/home/resident-advisor.png" width="220" height="216" alt="Resident Advisor" />
+          <source srcset="assets/home/icon-ra.webp" type="image/webp" />
+          <img src="assets/home/icon-ra.png" width="282" height="280" alt="Resident Advisor" />
         </picture>
       </a>
-      <a class="interactive s-sc" href="https://soundcloud.com/kineticnola" target="_blank" rel="noopener">
+      <a class="at social s-sc scene" href="https://soundcloud.com/kineticnola" target="_blank" rel="noopener">
         <picture>
-          <source srcset="assets/home/soundcloud.webp" type="image/webp" />
-          <img src="assets/home/soundcloud.png" width="222" height="220" alt="SoundCloud" />
+          <source srcset="assets/home/icon-soundcloud.webp" type="image/webp" />
+          <img src="assets/home/icon-soundcloud.png" width="267" height="267" alt="SoundCloud" />
         </picture>
       </a>
-      <a class="interactive s-fb" href="https://www.facebook.com/DjCameronKelly/" target="_blank" rel="noopener">
+      <a class="at social s-fb scene" href="https://www.facebook.com/DjCameronKelly/" target="_blank" rel="noopener">
         <picture>
-          <source srcset="assets/home/facebook.webp" type="image/webp" />
-          <img src="assets/home/facebook.png" width="220" height="216" alt="Facebook" />
+          <source srcset="assets/home/icon-fb.webp" type="image/webp" />
+          <img src="assets/home/icon-fb.png" width="264" height="264" alt="Facebook" />
+        </picture>
+      </a>
+      <a class="at social s-ig scene" href="https://www.instagram.com/ososdiscos" target="_blank" rel="noopener">
+        <picture>
+          <source srcset="assets/home/icon-ig.webp" type="image/webp" />
+          <img src="assets/home/icon-ig.png" width="272" height="271" alt="Instagram" />
         </picture>
       </a>
     </nav>
+
+    <!-- Phone only: captioned tiles, laid out per phone-render.png. -->
+    <nav class="tiles scene" aria-label="Book us, hear us, follow us">
+      <a class="tile" href="https://ra.co/promoters/191868" target="_blank" rel="noopener">
+        <span class="cap">Resident Advisor: public events</span>
+        <picture class="icon">
+          <source srcset="assets/home/icon-ra.webp" type="image/webp" />
+          <img src="assets/home/icon-ra.png" width="282" height="280" alt="" loading="lazy" />
+        </picture>
+      </a>
+      <a class="tile r" href="https://soundcloud.com/kineticnola" target="_blank" rel="noopener">
+        <span class="cap">SoundCloud: get familiar with how we sound!</span>
+        <picture class="icon">
+          <source srcset="assets/home/icon-soundcloud.webp" type="image/webp" />
+          <img src="assets/home/icon-soundcloud.png" width="267" height="267" alt="" loading="lazy" />
+        </picture>
+      </a>
+      <a class="tile" href="https://www.twitch.tv/chefcamalama" target="_blank" rel="noopener">
+        <span class="cap">Twitch: live streams on Thursdays, <span class="nb">7–9pm</span></span>
+        <picture class="icon">
+          <source srcset="assets/home/icon-twitch.webp" type="image/webp" />
+          <img src="assets/home/icon-twitch.png" width="280" height="280" alt="" loading="lazy" />
+        </picture>
+      </a>
+      <a class="tile r" href="https://www.facebook.com/DjCameronKelly/" target="_blank" rel="noopener">
+        <span class="cap">Cameron Kelly FB: social connections, event updates</span>
+        <picture class="icon">
+          <source srcset="assets/home/icon-fb.webp" type="image/webp" />
+          <img src="assets/home/icon-fb.png" width="264" height="264" alt="" loading="lazy" />
+        </picture>
+      </a>
+      <a class="tile" href="https://www.instagram.com/ososdiscos" target="_blank" rel="noopener">
+        <span class="cap">Osos Discos IG: it's brand new</span>
+        <picture class="icon">
+          <source srcset="assets/home/icon-ig.webp" type="image/webp" />
+          <img src="assets/home/icon-ig.png" width="272" height="271" alt="" loading="lazy" />
+        </picture>
+      </a>
+      <a class="tile r" href="https://ososdiscos.com/epk">
+        <span class="cap">Our EPK page: hear our story</span>
+        <picture class="icon">
+          <source srcset="assets/home/icon-epk.webp" type="image/webp" />
+          <img src="assets/home/icon-epk.png" width="690" height="676" alt="" loading="lazy" />
+        </picture>
+      </a>
+      <a class="tile" href="consult.html">
+        <span class="cap">Tell us about the event. Schedule a consult.</span>
+        <picture class="icon">
+          <source srcset="assets/home/btn-calendar.webp" type="image/webp" />
+          <img src="assets/home/btn-calendar.png" width="382" height="382" alt="" loading="lazy" />
+        </picture>
+      </a>
+      <a class="tile r" href="gear.html">
+        <span class="cap">Browse the rentables. Cart builder for sound and shelter</span>
+        <picture class="icon">
+          <source srcset="assets/home/btn-speaker.webp" type="image/webp" />
+          <img src="assets/home/btn-speaker.png" width="382" height="382" alt="" loading="lazy" />
+        </picture>
+      </a>
+      <a class="tile fg" href="fablegear.html">
+        <span class="cap">Our flagship DJ tool: FableGear. Designed to run database-first, but work at folder depth…</span>
+        <picture class="icon">
+          <source srcset="assets/home/icon-fablegear.webp" type="image/webp" />
+          <img src="assets/home/icon-fablegear.png" width="682" height="682" alt="" loading="lazy" />
+        </picture>
+        <span class="cap cap-r">How about a duplicate finder, track tagger, key/BPM finder, file-organizer and…</span>
+        <span class="cap cap-end">USBANLZ-building, Pioneer-recognized playlist export and library database: All. In. One.</span>
+      </a>
+    </nav>
+
+    <a class="reveal r-cal scene" href="consult.html">
+      <span class="src">
+        <picture>
+          <source srcset="assets/home/btn-calendar.webp" type="image/webp" />
+          <img src="assets/home/btn-calendar.png" width="382" height="382" alt="" />
+        </picture>
+      </span>
+      <span class="clip">
+        <span class="label">
+          <picture>
+            <source srcset="assets/home/label-calendar.webp" type="image/webp" />
+            <img src="assets/home/label-calendar.png" width="487" height="368" alt="Tell us about the event. Schedule a consult." />
+          </picture>
+        </span>
+      </span>
+    </a>
+
+    <a class="reveal r-spk scene" href="gear.html">
+      <span class="src">
+        <picture>
+          <source srcset="assets/home/btn-speaker.webp" type="image/webp" />
+          <img src="assets/home/btn-speaker.png" width="382" height="382" alt="" />
+        </picture>
+      </span>
+      <span class="clip">
+        <span class="label">
+          <picture>
+            <source srcset="assets/home/label-speaker.webp" type="image/webp" />
+            <img src="assets/home/label-speaker.png" width="457" height="368" alt="Browse the sound &amp; shelter. Build a cart." />
+          </picture>
+        </span>
+      </span>
+    </a>
+
+    <div class="bars">
+      <!-- No services page yet: a focusable group so the text still reveals
+           on hover and keyboard focus, but it links nowhere. -->
+      <div class="reveal r-bar r-services scene" tabindex="0" role="group" aria-label="Browse other services (coming soon)">
+        <span class="src"><img src="assets/home/bar.png" width="82" height="657" alt="" /></span>
+        <span class="clip">
+          <span class="label">
+            <picture>
+              <source srcset="assets/home/label-services.webp" type="image/webp" />
+              <img src="assets/home/label-services.png" width="676" height="583" alt="Browse other services" />
+            </picture>
+          </span>
+        </span>
+      </div>
+
+    </div>
+
+    <a class="reveal r-app r-fg scene" href="fablegear.html">
+      <span class="src">
+        <picture>
+          <source srcset="assets/home/icon-fablegear.webp" type="image/webp" />
+          <img src="assets/home/icon-fablegear.png" width="682" height="682" alt="" />
+        </picture>
+      </span>
+      <span class="clip"><span class="label">Check out<br />FableGear:<br />the<br />custom DJ<br />library<br />maintenance<br />tool</span></span>
+    </a>
+
+    <a class="reveal r-app r-epk scene" href="https://ososdiscos.com/epk">
+      <span class="src">
+        <picture>
+          <source srcset="assets/home/icon-epk.webp" type="image/webp" />
+          <img src="assets/home/icon-epk.png" width="690" height="676" alt="" />
+        </picture>
+      </span>
+      <span class="clip"><span class="label">Learn<br />more<br />about<br />the DJs<br />at their<br />EPK<br />page</span></span>
+    </a>
+
   </main>
 
-  <a class="tip-jar" href="https://venmo.com/u/Totoro_mg" target="_blank" rel="noopener" aria-label="Tip the sound guy on Venmo">
+  <a class="tip-jar scene" href="https://venmo.com/u/Totoro_mg" target="_blank" rel="noopener" aria-label="Tip the sound guy on Venmo">
     <span class="tip-jar-label">Tip the<br />sound guy</span>
     <img class="tip-jar-qr" src="assets/qr-tip-venmo.svg" alt="" />
   </a>
 
   <script>
-    /* ── HERO VIDEO ───────────────────────────────────────
-       If hero-bg.mp4 exists, fade it in over the background.
-       If not (404 or codec failure), leave the static background. */
+    /* ── PARALLAX FALLBACK ────────────────────────────────
+       Same motion as the bg-fall keyframes, for browsers without CSS
+       scroll timelines. Phone layout only; off for reduced motion. */
     (function () {
-      const v = document.getElementById('bgVideo');
-      if (!v) return;
-      v.addEventListener('canplay', () => v.classList.add('ready'), { once: true });
-      v.addEventListener('error', () => v.remove());
-      // If no <source> resolves, the video silently has no readyState — clean up.
-      setTimeout(() => { if (v.readyState === 0) v.remove(); }, 3000);
+      if (window.CSS && CSS.supports('animation-timeline: scroll()')) return;
+      var img = document.querySelector('.bg-img');
+      var phone = matchMedia('not ((min-width: 768px) and (min-aspect-ratio: 4/3))');
+      var still = matchMedia('(prefers-reduced-motion: reduce)');
+      var queued = false;
+      function update() {
+        queued = false;
+        if (!phone.matches || still.matches) { img.style.transform = ''; return; }
+        var max = document.documentElement.scrollHeight - innerHeight;
+        var p = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+        var travel = img.offsetHeight - innerHeight;
+        img.style.transform = 'translateY(' + (-p * travel) + 'px)';
+      }
+      function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
+      addEventListener('scroll', queue, { passive: true });
+      addEventListener('resize', queue);
+      update();
     })();
   </script>
   <script src="track.js" defer></script>

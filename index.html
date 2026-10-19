@@ -367,7 +367,7 @@
          text (Bangers, as on phones), not images. */
       .r-app .label {
         font-family: 'Bangers', 'Impact', 'Arial Narrow', sans-serif;
-        font-size: calc(72 * var(--u));
+        font-size: calc(96 * var(--u));
         line-height: 0.95;
         letter-spacing: 0.02em;
         text-transform: uppercase;
@@ -378,17 +378,17 @@
       /* FableGear, bottom-left corner: caption emerges rightwards.
          Both icon PNGs carry ~80px of glow around the tile, so .src is
          sized for the tile to match the reference, glow spilling past. */
-      .r-fg        { --l: 0; --b: 0; --w: 1040; --h: 681; }
+      .r-fg        { --l: 0; --b: 0; --w: 1200; --h: 681; }
       .r-fg .src   { --l: 2;   --t: 0;   --w: 678; }
-      .r-fg .clip  { --l: 500; --t: 0;   --w: 540; }
-      /* -150%, not -108%: the label starts 138 units into its clip, so a
+      .r-fg .clip  { --l: 500; --t: 0;   --w: 700; }
+      /* -150%, not -108%: the label starts 190 units into its clip, so a
          shorter slide leaves its last letters peeking out at rest. */
-      .r-fg .label { --l: 138; --t: 94;  --w: 320; transform: translateX(-150%); }
+      .r-fg .label { --l: 190; --t: 22;  --w: 480; transform: translateX(-150%); }
       /* EPK, bottom-right corner: caption emerges leftwards. */
-      .r-epk       { --r: 17; --b: 0; --w: 923; --h: 672; }
-      .r-epk .src  { --l: 238; --t: 0;   --w: 685; }
-      .r-epk .clip { --l: 0;   --t: 0;   --w: 400; }
-      .r-epk .label { --l: 47; --t: 81;  --w: 260; text-align: right; transform: translateX(108%); }
+      .r-epk       { --r: 17; --b: 0; --w: 1132; --h: 672; }
+      .r-epk .src  { --l: 447; --t: 0;   --w: 685; }
+      .r-epk .clip { --l: 0;   --t: 0;   --w: 540; }
+      .r-epk .label { --l: 40; --t: 22;  --w: 400; text-align: right; transform: translateX(130%); }
 
       /* Calendar: label emerges leftwards from behind the button. */
       .r-cal        { --l: 1067; --t: 1346; --w: 864; --h: 382; }

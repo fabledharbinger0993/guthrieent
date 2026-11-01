@@ -4,3 +4,4 @@ Thumbs.db
 .vscode/
 .qodo/
 node_modules/
+.wrangler/

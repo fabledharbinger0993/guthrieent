@@ -29,3 +29,13 @@ If more checks get added here later, keep the same discipline:
   comments do this on purpose; keep doing it as this file grows.
 - **Note deliberate trade-offs explicitly** (e.g. "slower, but adds no new
   supply-chain dependency") so nobody "fixes" a choice that was intentional.
+
+## Local checks (optional, not in CI)
+
+- Preview with a local server, not `file://` (which breaks `fetch` and some paths):
+  `python3 -m http.server 8000`. Pages Functions in `functions/` only run on Cloudflare or under
+  `wrangler pages dev`.
+- `npx html-validate "**/*.html"` checks markup and accessibility basics. With default rules it reports
+  many issues on `index.html` (81 on 2026-11-01), a mix of real errors and style preferences: triage
+  before fixing, and tune rules in a committed `.htmlvalidate.json` with a reason for each one turned off.
+- `.wrangler/` is wrangler's local cache and is gitignored.
